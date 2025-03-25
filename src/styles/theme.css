@@ -1,0 +1,220 @@
+/* Layout.css */
+.custom-navbar {
+    background: linear-gradient(to right, #00C1D4, #001B6C) !important;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 56px;
+  }
+  
+  .custom-navbar .navbar-brand {
+    color: white !important;
+  }
+  
+  .custom-navbar .nav-link {
+    color: white !important;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
+    font-weight: bold;
+  }
+  
+  .footer {
+    background: linear-gradient(to right, #00C1D4, #001B6C);
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 60px;
+  }
+  
+  /* Login.css */
+  .login-wrapper {
+    background: linear-gradient(135deg, #00C1D4 0%, #001B6C 100%);
+  }
+  
+  .platform-name {
+    color: #00C1D4;
+  }
+  
+  .platform-subtitle {
+    color: #001B6C;
+  }
+  
+  .start-learning-btn {
+    background: linear-gradient(135deg, #00C1D4 0%, #001B6C 100%);
+  }
+  
+  /* Analytics.css */
+  .analytics-content {
+    border: 2px solid #00C1D4;
+  }
+  
+  .chart-wrapper {
+    border: 1px solid #00C1D4;
+  }
+  
+  /* StudentDash.css */
+  .form-container {
+    background: linear-gradient(to bottom, rgba(0, 193, 212, 0.1), rgba(0, 27, 108, 0.05));
+    border: 1px solid #00C1D4;
+  }
+  
+  .btn-generate {
+    background: linear-gradient(to right, #00C1D4, #001B6C) !important;
+  }
+  
+  .question-item {
+    border: 1px solid #00C1D4;
+    background: linear-gradient(to bottom, rgba(0, 193, 212, 0.1), rgba(0, 27, 108, 0.05));
+  }
+  
+  /* ProgressDashboard.css */
+  .progress-card {
+    border: 1px solid #00C1D4;
+  }
+  
+  .streak-progress .progress-bar {
+    background: linear-gradient(to right, #00C1D4, #001B6C);
+  }
+  
+  /* LeaderboardPage.css */
+  .leaderboard-container {
+    background: linear-gradient(45deg, 
+      rgba(0,193,212,0.1), 
+      rgba(0,27,108,0.1), 
+      rgba(0,193,212,0.1)
+    );
+  }
+  
+  .rank-badge {
+    background: linear-gradient(45deg, #00C1D4, #001B6C);
+  }
+  
+  /* QuestsPage.css */
+  .quest-card {
+    border: 1px solid #00C1D4;
+    background: white;
+    transition: transform 0.3s ease;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 193, 212, 0.1);
+  }
+  
+  .quest-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 193, 212, 0.2);
+  }
+  
+  .quest-progress .progress-bar {
+    background: linear-gradient(to right, #00C1D4, #001B6C);
+  }
+  
+  .badge-primary {
+    background: #00C1D4;
+  }
+  
+  /* SoundConfigModal.css */
+  .modal-header {
+    background: linear-gradient(to right, #00C1D4, #001B6C);
+    color: white;
+  }
+  
+  .sound-test-button {
+    border: 1px solid #00C1D4;
+    color: #001B6C;
+  }
+  
+  .sound-test-button:hover {
+    background: linear-gradient(to right, #00C1D4, #001B6C);
+    color: white;
+  }
+  
+  /* Common Button Styles */
+  .btn-primary {
+    background: linear-gradient(to right, #00C1D4, #001B6C) !important;
+    border: none !important;
+    color: white !important;
+  }
+  
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  .btn-outline-primary {
+    border: 2px solid #00C1D4 !important;
+    color: #001B6C !important;
+    background: transparent !important;
+  }
+  
+  .btn-outline-primary:hover {
+    background: linear-gradient(to right, #00C1D4, #001B6C) !important;
+    color: white !important;
+  }
+  
+  /* Notifications */
+  .notification-badge {
+    background: #00C1D4 !important;
+  }
+  
+  /* Progress Bars */
+  .progress-bar {
+    background: linear-gradient(to right, #00C1D4, #001B6C) !important;
+  }
+  
+  /* Form Controls */
+  .form-control:focus {
+    border-color: #00C1D4;
+    box-shadow: 0 0 0 0.2rem rgba(0, 193, 212, 0.25);
+  }
+  
+  /* Select Dropdowns */
+  .select-container {
+    border-color: #00C1D4;
+  }
+  
+  .select-container:focus-within {
+    border-color: #001B6C;
+  }
+  
+  /* Achievement Badges */
+  .achievement-badge {
+    background: linear-gradient(to right, #00C1D4, #001B6C);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  
+  /* Level Badges */
+  .level-badge {
+    background: linear-gradient(to right, #00C1D4, #001B6C);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+  }
+  
+  /* Navigation */
+  .nav-tabs .nav-link.active {
+    color: #001B6C !important;
+    border-bottom: 2px solid #00C1D4;
+  }
+  
+  /* Cards */
+  .card {
+    border: 1px solid rgba(0, 193, 212, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .card:hover {
+    box-shadow: 0 5px 15px rgba(0, 193, 212, 0.1);
+  }
