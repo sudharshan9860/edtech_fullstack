@@ -259,7 +259,7 @@ return (
     if (!steps || !Array.isArray(steps) || steps.length === 0) {
       return <p>No solution steps available.</p>;
     }
-
+  
     return (
       <div className="solution-steps">
         {steps.map((step, index) => {
@@ -277,8 +277,9 @@ return (
           } else {
             // For steps without explicit "Step X:" format
             return (
-              <div key={index} className="solution-step">
-                {step}
+              <div key={index} className="solution-step-container">
+                {/* <div className="step-title">Step {index + 1}:</div> */}
+                <div className="step-description">{step}</div>
               </div>
             );
           }

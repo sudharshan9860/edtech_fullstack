@@ -3,8 +3,55 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCommentDots, faPaperPlane, faTimes } from '@fortawesome/free-solid-svg-icons';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 import axiosInstance from '../api/axiosInstance';
 import './ChatBox.css';
+
+const formatMessage = (text) => {
+  if (!text) return null;
+  
+  // Handle array responses
+  if (Array.isArray(text)) {
+    return (
+      <div className="paragraph-solution">
+        {text.map((paragraph, index) => (
+          <p key={index} className="solution-paragraph">
+            {formatMessageText(paragraph)}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  
+  return formatMessageText(text);
+};
+
+const formatMessageText = (text) => {
+  // Split text into segments based on math delimiters
+  const segments = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
+  
+  return segments.map((segment, index) => {
+    if (segment.startsWith('$$') && segment.endsWith('$$')) {
+      return <BlockMath key={index}>{segment.slice(2, -2)}</BlockMath>;
+    } else if (segment.startsWith('$') && segment.endsWith('$')) {
+      return <InlineMath key={index}>{segment.slice(1, -1)}</InlineMath>;
+    } else if (segment.startsWith('```') && segment.endsWith('```')) {
+      return (
+        <pre key={index} className="code-block">
+          <code>{segment.slice(3, -3)}</code>
+        </pre>
+      );
+    } else {
+      return <span key={index}>{segment.split('\n').map((line, i) => (
+        <React.Fragment key={i}>
+          {line}
+          {i !== segment.split('\n').length - 1 && <br />}
+        </React.Fragment>
+      ))}</span>;
+    }
+  });
+};
 
 const ChatBox = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -126,7 +173,7 @@ const ChatBox = () => {
               className={`message ${message.sender === 'user' ? 'user-message' : 'ai-message'}`}
             >
               <div className="message-bubble">
-                {message.text}
+                {formatMessage(message.text)}
               </div>
               <div className="message-time">
                 {message.timestamp ? 

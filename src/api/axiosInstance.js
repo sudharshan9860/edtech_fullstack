@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getErrorMessage } from '../utils/errorHandling';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://autogen.aieducator.com',
+  baseURL: 'http://127.0.0.1:8000',
   headers: {
     'Content-Type': 'application/json'
   },
