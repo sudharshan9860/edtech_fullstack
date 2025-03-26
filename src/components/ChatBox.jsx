@@ -59,7 +59,8 @@ const ChatBox = () => {
     { 
       id: 1, 
       text: "Hello! I'm your AI assistant. How can I help you with your questions today?", 
-      sender: 'ai' 
+      sender: 'ai',
+      timestamp: new Date()
     }
   ]);
   const [newMessage, setNewMessage] = useState('');
@@ -95,16 +96,16 @@ const ChatBox = () => {
       sender: 'user',
       timestamp: new Date()
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setNewMessage('');
     setIsTyping(true);
-    console.log('Sending message:', newMessage);
+    
     try {
       const response = await axiosInstance.post('/chatbot/', {
         message: newMessage
       });
-      console.log(response.data);
+      
       const aiResponse = {
         id: userMessageId + 1,
         text: response.data.step_by_step_solution || "I'm not sure about that. Could you try rephrasing your question?",
@@ -129,41 +130,24 @@ const ChatBox = () => {
     }
   };
 
-  // Simple simulated responses for testing
-  const getSimulatedResponse = (question) => {
-    const questionLower = question.toLowerCase();
-    
-    if (questionLower.includes('hello') || questionLower.includes('hi')) {
-      return "Hello! How can I help you with your studies today?";
-    } else if (questionLower.includes('thank')) {
-      return "You're welcome! Let me know if you have any other questions.";
-    } else if (questionLower.includes('math') || questionLower.includes('equation')) {
-      return "For math questions, it helps to break down the problem step by step. Can you tell me what specific concept you're struggling with?";
-    } else if (questionLower.includes('concept') || questionLower.includes('understand')) {
-      return "Learning new concepts can be challenging. Would you like me to explain it in a different way or provide an example?";
-    } else {
-      return "That's an interesting question! To better help you, could you provide more details or specify what part you're having difficulty with?";
-    }
-  };
-
   return (
     <div className="chat-box-container">
       {/* Chat toggle button */}
-      <Button 
+      <button 
         className={`chat-toggle-btn ${isOpen ? 'open' : ''}`} 
         onClick={toggleChat}
       >
         <FontAwesomeIcon icon={isOpen ? faTimes : faCommentDots} />
         {!isOpen && <span className="chat-label">Ask a question</span>}
-      </Button>
+      </button>
       
-      {/* Chat box */}
+      {/* Chat box with glass morphism effect */}
       <div className={`chat-box ${isOpen ? 'open' : ''}`}>
         <div className="chat-header">
           <h5>AI Tutor Assistant</h5>
-          <Button variant="link" className="close-btn" onClick={toggleChat}>
+          <button className="close-btn" onClick={toggleChat}>
             <FontAwesomeIcon icon={faTimes} />
-          </Button>
+          </button>
         </div>
         
         <div className="chat-messages">
@@ -196,8 +180,8 @@ const ChatBox = () => {
           <div ref={messagesEndRef} />
         </div>
         
-        <Form onSubmit={sendMessage}>
-          <InputGroup className="chat-input">
+        <Form onSubmit={sendMessage} className="chat-input">
+          <InputGroup>
             <Form.Control
               type="text"
               placeholder="Type your question..."
