@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .login-wrapper {
@@ -10,13 +10,54 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #00C1D4 0%, #001B6C 100%);
+  background: linear-gradient(135deg, #00c1d4 0%, #001b6c 100%);
   padding: 20px;
   position: relative;
   overflow: hidden;
 }
 
+.background-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.animated-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(5px);
+  animation: floaty 20s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes floaty {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translateY(-20px) scale(1.05);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(10px) scale(0.95);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translateY(-15px) scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.6;
+  }
+}
+
 .login-form-container {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 440px;
   background: rgba(255, 255, 255, 1);
@@ -33,13 +74,13 @@
 .platform-name {
   font-size: 36px;
   font-weight: 700;
-  color: #00C1D4;
+  color: #00c1d4;
   margin-bottom: 4px;
   letter-spacing: 2px;
 }
 
 .platform-subtitle {
-  color: #001B6C;
+  color: #001b6c;
   font-size: 18px;
   letter-spacing: 1px;
 }
@@ -57,14 +98,14 @@
 }
 
 .portal-icons svg {
-  color: #00C1D4;
+  color: #00c1d4;
   font-size: 24px;
 }
 
 .portal-title {
   font-size: 24px;
   font-weight: 600;
-  color: #001B6C;
+  color: #001b6c;
   margin-bottom: 8px;
 }
 
@@ -98,7 +139,7 @@
 }
 
 .input-icon {
-  color: #00C1D4;
+  color: #00c1d4;
 }
 
 .form-input {
@@ -107,13 +148,13 @@
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   font-size: 16px;
-  color: #001B6C;
+  color: #001b6c;
   transition: all 0.3s ease;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #00C1D4;
+  border-color: #00c1d4;
   box-shadow: 0 0 0 3px rgba(0, 193, 212, 0.1);
 }
 
@@ -124,7 +165,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #00C1D4;
+  color: #00c1d4;
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -133,7 +174,7 @@
 }
 
 .start-learning-btn {
-  background: linear-gradient(135deg, #00C1D4 0%, #001B6C 100%);
+  background: linear-gradient(135deg, #00c1d4 0%, #001b6c 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -157,7 +198,7 @@
 
 .reset-link,
 .support-link {
-  color: #00C1D4;
+  color: #00c1d4;
   text-decoration: none;
   font-size: 14px;
   transition: color 0.3s ease;
@@ -165,7 +206,7 @@
 
 .reset-link:hover,
 .support-link:hover {
-  color: #001B6C;
+  color: #001b6c;
 }
 
 .error-alert {

@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import './StudentDash.css';
-import axiosInstance from '../api/axiosInstance';
-import QuestionListModal from './QuestionListModal';
-import Select from 'react-select';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faSchool, 
-  faBookOpen, 
-  faListAlt, 
-  faClipboardQuestion 
-} from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect } from "react";
+import { Form, Button, Row, Col } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import "./StudentDash.css";
+import axiosInstance from "../api/axiosInstance";
+import QuestionListModal from "./QuestionListModal";
+import Select from "react-select";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Tutorial from "./Tutorial";
+import { useTutorial } from "../contexts/TutorialContext";
+import {
+  faSchool,
+  faBookOpen,
+  faListAlt,
+  faClipboardQuestion,
+  faQuestionCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 function StudentDash() {
   const navigate = useNavigate();
@@ -22,22 +25,89 @@ function StudentDash() {
   const [chapters, setChapters] = useState([]);
 
   // State for selections
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedChapters, setSelectedChapters] = useState([]);
-  const [questionType, setQuestionType] = useState('');
-  const [questionLevel, setQuestionLevel] = useState('');
+  const [questionType, setQuestionType] = useState("");
+  const [questionLevel, setQuestionLevel] = useState("");
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [questionList, setQuestionList] = useState([]);
+
+  // Enhanced tutorial usage
+  const {
+    shouldShowTutorialForPage,
+    markPageCompleted,
+    resetTutorial,
+    setCurrentPage,
+    continueTutorialFlow,
+    restartTutorialForPage,
+  } = useTutorial();
+
+  // Update current page when component mounts
+  useEffect(() => {
+    setCurrentPage("studentDash");
+  }, [setCurrentPage]);
+
+  const tutorialSteps = [
+    {
+      target: "#formClass",
+      content: "Start by selecting your class",
+      disableBeacon: true,
+    },
+    {
+      target: "#formSubject",
+      content: "Next, choose your subject",
+    },
+    {
+      target: ".select-chapters",
+      content: "Select one or more chapters to study",
+    },
+    {
+      target: "#formQuestionType",
+      content: "Choose the type of questions you want to practice",
+    },
+    {
+      target: ".btn-generate",
+      content:
+        "Click here to generate your questions. After this, we'll continue the tutorial on the question list.",
+    },
+  ];
+
+  // Determine if generate button should be enabled
+  const isGenerateButtonEnabled = () => {
+    // If external question type is selected, also check question level
+    if (questionType === "external") {
+      return (
+        selectedClass !== "" &&
+        selectedSubject !== "" &&
+        selectedChapters.length > 0 &&
+        questionType !== "" &&
+        questionLevel !== ""
+      );
+    }
+
+    // For other question types, just check the main 4 categories
+    return (
+      selectedClass !== "" &&
+      selectedSubject !== "" &&
+      selectedChapters.length > 0 &&
+      questionType !== ""
+    );
+  };
+
+  // Handle tutorial completion for this component
+  const handleTutorialComplete = () => {
+    console.log("Tutorial steps in StudentDash completed");
+  };
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const classResponse = await axiosInstance.get('/classes/');
+        const classResponse = await axiosInstance.get("/classes/");
         const classesData = classResponse.data.data;
         setClasses(classesData);
       } catch (error) {
-        console.error('Error fetching classes', error);
+        console.error("Error fetching classes", error);
       }
     }
     fetchData();
@@ -47,12 +117,17 @@ function StudentDash() {
     async function fetchSubjects() {
       if (selectedClass) {
         try {
-          const subjectResponse = await axiosInstance.post('/subjects/', {
-            class_id: selectedClass
+          const subjectResponse = await axiosInstance.post("/subjects/", {
+            class_id: selectedClass,
           });
           setSubjects(subjectResponse.data.data);
+          // Reset dependent fields when class changes
+          setSelectedSubject("");
+          setSelectedChapters([]);
+          setQuestionType("");
+          setQuestionLevel("");
         } catch (error) {
-          console.error('Error fetching subjects:', error);
+          console.error("Error fetching subjects:", error);
           setSubjects([]);
         }
       }
@@ -64,13 +139,17 @@ function StudentDash() {
     async function fetchChapters() {
       if (selectedSubject && selectedClass) {
         try {
-          const chapterResponse = await axiosInstance.post('/chapters/', {
+          const chapterResponse = await axiosInstance.post("/chapters/", {
             subject_id: selectedSubject,
             class_id: selectedClass,
           });
           setChapters(chapterResponse.data.data);
+          // Reset dependent fields when subject changes
+          setSelectedChapters([]);
+          setQuestionType("");
+          setQuestionLevel("");
         } catch (error) {
-          console.error('Error fetching chapters:', error);
+          console.error("Error fetching chapters:", error);
           setChapters([]);
         }
       }
@@ -80,43 +159,50 @@ function StudentDash() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!questionType || 
-      (questionType !== 'solved' && 
-       questionType !== 'exercise' && 
-       questionType !== 'external')) {
-      console.error('Please select a valid question type');
+
+    if (!isGenerateButtonEnabled()) {
+      console.error("Please select all required fields");
       return;
     }
-    
+
     const requestData = {
       classid: Number(selectedClass),
       subjectid: Number(selectedSubject),
       topicid: selectedChapters,
-      solved: questionType === 'solved',
-      exercise: questionType === 'exercise',
-      external: questionType === 'external' ? questionLevel : null
+      solved: questionType === "solved",
+      exercise: questionType === "exercise",
+      external: questionType === "external" ? questionLevel : null,
     };
-    
+
     try {
-      const response = await axiosInstance.post('/question-images/', requestData);
+      const response = await axiosInstance.post(
+        "/question-images/",
+        requestData
+      );
       // Process questions with images
-      const questionsWithImages = response.data.questions.map(question => ({
+      const questionsWithImages = response.data.questions.map((question) => ({
         ...question,
         question: question.question,
-        image: question.question_image ? `data:image/png;base64,${question.question_image}` : null
+        image: question.question_image
+          ? `data:image/png;base64,${question.question_image}`
+          : null,
       }));
-      
+
       setQuestionList(questionsWithImages);
+
+      // Continue tutorial flow to QuestionListModal before showing the modal
+      continueTutorialFlow("studentDash", "questionListModal");
+
+      // Show the modal after setting up tutorial flow
       setShowQuestionList(true);
     } catch (error) {
-      console.error('Error generating questions:', error);
-      alert('Failed to generate questions. Please try again.');
+      console.error("Error generating questions:", error);
+      alert("Failed to generate questions. Please try again.");
     }
   };
 
   const handleQuestionClick = (question, index, image) => {
-    navigate('/solvequestion', {
+    navigate("/solvequestion", {
       state: {
         question,
         questionNumber: index + 1,
@@ -124,17 +210,42 @@ function StudentDash() {
         class_id: selectedClass,
         subject_id: selectedSubject,
         topic_ids: selectedChapters,
-        subtopic: '',
-        image  // Make sure to include the image
-      }
+        subtopic: "",
+        image, // Make sure to include the image
+      },
     });
   };
 
+  // Reset Question Level when Question Type changes
+  useEffect(() => {
+    if (questionType !== "external") {
+      setQuestionLevel("");
+    }
+  }, [questionType]);
+
   return (
     <div className="d-flex flex-column min-vh-100">
+      {shouldShowTutorialForPage("studentDash") && (
+        <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
+      )}
       <main className="flex-fill d-flex justify-content-center align-items-center">
         <div className="form-container">
           <Form onSubmit={handleSubmit}>
+            <div className="restart-tutorial-btn-container mb-3 text-right">
+              <Button
+                variant="outline-info"
+                className="restart-tutorial-btn"
+                onClick={() => {
+                  console.log("Restarting tutorial on StudentDash page...");
+                  restartTutorialForPage("studentDash");
+                }}
+                size="sm"
+              >
+                <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
+                Replay Tutorial
+              </Button>
+            </div>
+
             <Row className="mb-3">
               <Col xs={12} md={6}>
                 <Form.Group controlId="formClass">
@@ -168,10 +279,14 @@ function StudentDash() {
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
                     className="form-control"
+                    disabled={!selectedClass}
                   >
                     <option value="">Select Subject</option>
                     {subjects.map((subject) => (
-                      <option key={subject.subject_code} value={subject.subject_code}>
+                      <option
+                        key={subject.subject_code}
+                        value={subject.subject_code}
+                      >
                         {subject.subject_name}
                       </option>
                     ))}
@@ -181,7 +296,7 @@ function StudentDash() {
             </Row>
 
             <Row className="mb-3">
-              <Col xs={12} md={6}>
+              <Col className="select-chapters" xs={12} md={6}>
                 <Form.Group controlId="formChapters">
                   <Form.Label>
                     <FontAwesomeIcon icon={faListAlt} className="me-2" />
@@ -195,20 +310,28 @@ function StudentDash() {
                     }))}
                     value={selectedChapters.map((code) => ({
                       value: code,
-                      label: chapters.find((chapter) => chapter.topic_code === code)?.name
+                      label: chapters.find(
+                        (chapter) => chapter.topic_code === code
+                      )?.name,
                     }))}
                     onChange={(selectedOptions) => {
-                      setSelectedChapters(selectedOptions.map(option => option.value));
+                      setSelectedChapters(
+                        selectedOptions.map((option) => option.value)
+                      );
                     }}
                     classNamePrefix="react-select"
                     placeholder="Select Chapters"
+                    isDisabled={!selectedSubject}
                   />
                 </Form.Group>
               </Col>
               <Col xs={12} md={6}>
                 <Form.Group controlId="formQuestionType">
                   <Form.Label>
-                    <FontAwesomeIcon icon={faClipboardQuestion} className="me-2" />
+                    <FontAwesomeIcon
+                      icon={faClipboardQuestion}
+                      className="me-2"
+                    />
                     Question Type
                   </Form.Label>
                   <Form.Control
@@ -216,6 +339,7 @@ function StudentDash() {
                     value={questionType}
                     onChange={(e) => setQuestionType(e.target.value)}
                     className="form-control"
+                    disabled={selectedChapters.length === 0}
                   >
                     <option value="">Select Question Type</option>
                     <option value="solved">Solved</option>
@@ -226,12 +350,15 @@ function StudentDash() {
               </Col>
             </Row>
 
-            {questionType === 'external' && (
+            {questionType === "external" && (
               <Row className="mb-3">
                 <Col xs={12} md={6}>
                   <Form.Group controlId="formQuestionLevel">
                     <Form.Label>
-                      <FontAwesomeIcon icon={faClipboardQuestion} className="me-2" />
+                      <FontAwesomeIcon
+                        icon={faClipboardQuestion}
+                        className="me-2"
+                      />
                       Question Level
                     </Form.Label>
                     <Form.Control
@@ -249,7 +376,12 @@ function StudentDash() {
             )}
 
             <div className="d-flex justify-content-end">
-              <Button variant="primary" type="submit" className="btn-generate mt-3">
+              <Button
+                variant="primary"
+                type="submit"
+                className="btn-generate mt-3"
+                disabled={!isGenerateButtonEnabled()}
+              >
                 Generate Questions
               </Button>
             </div>
