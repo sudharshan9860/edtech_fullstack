@@ -89,16 +89,28 @@ function SolveQuestion() {
         "Click here to check if your answer is correct. Our system will analyze your solution image.",
     },
     {
-      target: "button:contains('Solve')",
+      target: ".btn-back",
+      content:
+        "Click here to go back to the previous page.",
+    },
+    {
+      target: ".btn-question-list",
+      content:
+        "Click here to see the list of questions.",
+    },
+    
+
+    {
+      target: ".solve-btn",
       content: "If you're stuck, click here to see a step-by-step solution.",
     },
     {
-      target: "button:contains('Explain')",
+      target: ".explain-btn",
       content:
         "Need more help? Click here to get an explanation of the concepts needed to solve this problem.",
     },
     {
-      target: "button:contains('Gap Analysis')",
+      target: ".gap-btn",
       content:
         "This will analyze your knowledge gaps related to this question and recommend what to study next.",
     },
@@ -618,7 +630,7 @@ function SolveQuestion() {
               <Button
                 variant={isSolveEnabled ? "primary" : "secondary"}
                 onClick={handleSolve}
-                className="w-100"
+                className="w-100 solve-btn"
                 disabled={!isSolveEnabled || isAnyButtonProcessing()}
               >
                 {isButtonProcessing("solve") ? (
@@ -664,7 +676,7 @@ function SolveQuestion() {
               <Button
                 variant="primary"
                 onClick={handleExplain}
-                className="w-100"
+                className="w-100 explain-btn"
                 disabled={isAnyButtonProcessing()}
               >
                 {isButtonProcessing("explain") ? (
@@ -687,7 +699,7 @@ function SolveQuestion() {
               <Button
                 variant="info"
                 onClick={handleGapAnalysis}
-                className="w-100"
+                className="w-100 gap-btn"
                 disabled={isAnyButtonProcessing()}
               >
                 Gap Analysis

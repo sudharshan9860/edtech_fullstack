@@ -46,7 +46,36 @@
   border-radius: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
+  position: fixed;
+  top: 80px;
+  right: 20vh; /* Default for larger screens */
 }
+
+/* ✅ Responsive Design */
+@media (max-width: 1024px) {
+  .tutorial-close-btn {
+    right: 10vh; /* Adjust for tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .tutorial-close-btn {
+    right: 5vh; /* Adjust for smaller tablets */
+    top: 70px;
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tutorial-close-btn {
+    right: 10px; /* Closer to the edge for mobile */
+    top: 60px;
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}
+
 
 .tutorial-close-btn:hover {
   transform: scale(1.05);
