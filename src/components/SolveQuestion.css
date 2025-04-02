@@ -8,13 +8,37 @@
 
 .solve-question-container {
   background-color: #fff;
-  border: 1px solid #00C1D4;
+  border: 1px solid #00c1d4;
   border-radius: 15px;
   padding: 40px;
   box-shadow: 0 2px 6px rgba(0, 193, 212, 0.1);
-  background: linear-gradient(to bottom, rgba(0, 193, 212, 0.05), rgba(255, 255, 255, 1));
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 193, 212, 0.05),
+    rgba(255, 255, 255, 1)
+  );
   width: 100%;
   max-width: 1000px;
+}
+
+/* Tutorial Button Styles */
+.restart-tutorial-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.restart-tutorial-btn {
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.restart-tutorial-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .question-text-container {
@@ -90,7 +114,7 @@
   background: white;
   border: 1px solid #ced4da;
   border-radius: 4px;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: "Consolas", "Monaco", monospace;
   white-space: pre-wrap;
   max-height: 300px;
   overflow-y: auto;
@@ -115,7 +139,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(to right, #00C1D4, #001B6C) !important;
+  background: linear-gradient(to right, #00c1d4, #001b6c) !important;
   border: none !important;
 }
 
@@ -154,7 +178,7 @@
 }
 
 .progress-bar {
-  background: linear-gradient(to right, #00C1D4, #001B6C);
+  background: linear-gradient(to right, #00c1d4, #001b6c);
   color: white;
   font-weight: bold;
   padding: 0 5px;
@@ -177,7 +201,7 @@
   padding: 10px;
   background-color: rgba(0, 193, 212, 0.1);
   border-radius: 8px;
-  color: #001B6C;
+  color: #001b6c;
 }
 
 /* Error styles */
@@ -237,34 +261,22 @@
   .btn-explain {
     grid-column: auto;
   }
-  
+
   .uploaded-images {
     grid-template-columns: 1fr;
   }
-  
+
   .extracted-text-container {
     padding: 10px;
   }
-  
+
   .extracted-text {
     max-height: 200px;
-    padding: 10px;
-  }
-  
-  .progress {
-    height: 20px;
   }
 
-  .question-title {
-    font-size: 1.1rem;
-  }
-  
-  .question-text {
-    font-size: 1rem;
-  }
-  
-  .image-preview {
-    height: 150px;
+  .restart-tutorial-btn {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 }
 
@@ -275,20 +287,20 @@
     color: #f8f9fa;
     border-color: #555;
   }
-  
+
   .extracted-text-container {
     background: #222;
     border-color: #444;
   }
-  
+
   .progress {
     background-color: #444;
   }
-  
+
   .form-text.text-muted {
     color: #adb5bd;
   }
-  
+
   .alert-danger {
     background-color: rgba(220, 53, 69, 0.2);
     border-color: #dc3545;

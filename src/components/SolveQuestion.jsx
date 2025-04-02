@@ -1,79 +1,168 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Form, Button, Spinner, Alert, Row, Col } from 'react-bootstrap';
-import axiosInstance from '../api/axiosInstance';
-import './SolveQuestion.css';
-import QuestionListModal from './QuestionListModal';
-import { ProgressContext } from '../contexts/ProgressContext';
-import { NotificationContext } from '../contexts/NotificationContext';
-import { QuestContext } from '../contexts/QuestContext';
-import { QUEST_TYPES } from '../models/QuestSystem';
-import { useSoundFeedback } from '../hooks/useSoundFeedback';
+import React, { useState, useContext, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Form, Button, Spinner, Alert, Row, Col } from "react-bootstrap";
+import axiosInstance from "../api/axiosInstance";
+import "./SolveQuestion.css";
+import QuestionListModal from "./QuestionListModal";
+import { ProgressContext } from "../contexts/ProgressContext";
+import { NotificationContext } from "../contexts/NotificationContext";
+import { QuestContext } from "../contexts/QuestContext";
+import { QUEST_TYPES } from "../models/QuestSystem";
+import { useSoundFeedback } from "../hooks/useSoundFeedback";
+import Tutorial from "./Tutorial";
+import { useTutorial } from "../contexts/TutorialContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 function SolveQuestion() {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Progress and Notification Contexts
   const { updateStudySession } = useContext(ProgressContext);
   const { addProgressNotification } = useContext(NotificationContext);
   const { updateQuestProgress } = useContext(QuestContext);
+  const {
+    shouldShowTutorialForPage,
+    markPageCompleted,
+    resetTutorial,
+    setCurrentPage,
+    exitTutorialFlow,
+    setShowTutorial,
+    setCurrentStep,
+    restartTutorialForPage,
+  } = useTutorial();
 
   // Sound feedback hook
-  const { 
-    playQuestionSolvedSound, 
-    playAchievementSound 
-  } = useSoundFeedback();
+  const { playQuestionSolvedSound, playAchievementSound } = useSoundFeedback();
 
   // State for tracking study session
- const [studySessionStart, setStudySessionStart] = useState(Date.now());
- const [images, setImages] = useState([]);
- const [isSolveEnabled, setIsSolveEnabled] = useState(true);
- const [showQuestionListModal, setShowQuestionListModal] = useState(false);
- const [processingButton, setProcessingButton] = useState(null);
- const [uploadProgress, setUploadProgress] = useState(0);
- const [error, setError] = useState(null);
+  const [studySessionStart, setStudySessionStart] = useState(Date.now());
+  const [images, setImages] = useState([]);
+  const [isSolveEnabled, setIsSolveEnabled] = useState(true);
+  const [showQuestionListModal, setShowQuestionListModal] = useState(false);
+  const [processingButton, setProcessingButton] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState(null);
 
-   // Extract data from location state
-   const { question, index, questionList, class_id, subject_id, topic_ids, subtopic } = location.state || {};
-   const { questionNumber } = location.state || {};
-   const question_image = location.state?.image || questionList?.[index]?.image || '';  
+  // Extract data from location state
+  const {
+    question,
+    index,
+    questionList,
+    class_id,
+    subject_id,
+    topic_ids,
+    subtopic,
+  } = location.state || {};
+  const { questionNumber } = location.state || {};
+  const question_image =
+    location.state?.image || questionList?.[index]?.image || "";
 
   const [currentQuestion, setCurrentQuestion] = useState({
     question: question,
     questionNumber: questionNumber || (index !== undefined ? index + 1 : 1),
-    image: question_image
+    image: question_image,
   });
 
-    // Helper function to convert base64 to Blob
-    const base64ToBlob = (base64Data, mimeType) => {
-      try {
-        // Remove data URL prefix if it exists
-        const dataStart = base64Data.indexOf(',');
-        const actualData = dataStart !== -1 ? base64Data.slice(dataStart + 1) : base64Data;
-        
-        const byteCharacters = atob(actualData);
-        const byteArrays = [];
-        
-        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-          const slice = byteCharacters.slice(offset, offset + 512);
-          
-          const byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-          }
-          
-          const byteArray = new Uint8Array(byteNumbers);
-          byteArrays.push(byteArray);
+  // Tutorial steps for SolveQuestion page
+  const tutorialSteps = [
+    {
+      target: ".question-text-container",
+      content:
+        "This is the question you need to solve. Read it carefully to understand what's being asked.",
+      disableBeacon: true,
+    },
+    {
+      target: "input[type='file']",
+      content:
+        "Upload images of your solution by clicking here. You can take photos of your work on paper or upload existing images.",
+    },
+    {
+      target: ".btn-submit",
+      content:
+        "After uploading your solution, click this button to submit it for evaluation.",
+    },
+    {
+      target: "button.btn-correct",
+      content:
+        "Click here to check if your answer is correct. Our system will analyze your solution image.",
+    },
+    {
+      target: ".btn-back",
+      content:
+        "Click here to go back to the previous page.",
+    },
+    {
+      target: ".btn-question-list",
+      content:
+        "Click here to see the list of questions.",
+    },
+    
+
+    {
+      target: ".solve-btn",
+      content: "If you're stuck, click here to see a step-by-step solution.",
+    },
+    {
+      target: ".explain-btn",
+      content:
+        "Need more help? Click here to get an explanation of the concepts needed to solve this problem.",
+    },
+    {
+      target: ".gap-btn",
+      content:
+        "This will analyze your knowledge gaps related to this question and recommend what to study next.",
+    },
+  ];
+
+  // Set current page when component mounts
+  useEffect(() => {
+    setCurrentPage("solveQuestion");
+
+    // Log tutorial status for debugging
+    console.log(
+      "SolveQuestion component mounted, tutorial should show:",
+      shouldShowTutorialForPage("solveQuestion")
+    );
+  }, [setCurrentPage, shouldShowTutorialForPage]);
+
+  // Handle tutorial completion - this is the final step in the tutorial flow
+  const handleTutorialComplete = () => {
+    console.log("Tutorial completed in SolveQuestion");
+    markPageCompleted("solveQuestion");
+    exitTutorialFlow(); // Mark the entire tutorial flow as complete
+  };
+
+  // Helper function to convert base64 to Blob
+  const base64ToBlob = (base64Data, mimeType) => {
+    try {
+      // Remove data URL prefix if it exists
+      const dataStart = base64Data.indexOf(",");
+      const actualData =
+        dataStart !== -1 ? base64Data.slice(dataStart + 1) : base64Data;
+
+      const byteCharacters = atob(actualData);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
         }
-        
-        return new Blob(byteArrays, { type: mimeType });
-      } catch (error) {
-        console.error('Error converting base64 to blob:', error);
-        return null;
+
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
       }
-    };
-  
+
+      return new Blob(byteArrays, { type: mimeType });
+    } catch (error) {
+      console.error("Error converting base64 to blob:", error);
+      return null;
+    }
+  };
 
   // Log state for debugging
   useEffect(() => {
@@ -85,14 +174,16 @@ function SolveQuestion() {
   useEffect(() => {
     if (location.state) {
       setCurrentQuestion({
-        question: location.state.question || '',
-        questionNumber: location.state.questionNumber || (index !== undefined ? index + 1 : 1),
-        image: location.state.image || ''
+        question: location.state.question || "",
+        questionNumber:
+          location.state.questionNumber ||
+          (index !== undefined ? index + 1 : 1),
+        image: location.state.image || "",
       });
-      
+
       // Reset study session start time
       setStudySessionStart(Date.now());
-      
+
       // Reset other state
       setImages([]);
       setError(null);
@@ -104,15 +195,17 @@ function SolveQuestion() {
   // Handle image upload
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Validate file size before accepting
-    const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024); // 5MB limit
-    
+    const oversizedFiles = files.filter((file) => file.size > 5 * 1024 * 1024); // 5MB limit
+
     if (oversizedFiles.length > 0) {
-      setError(`Some files exceed the 5MB size limit. Please select smaller images.`);
+      setError(
+        `Some files exceed the 5MB size limit. Please select smaller images.`
+      );
       return;
     }
-    
+
     setImages(files);
     setIsSolveEnabled(files.length === 0);
     setError(null); // Clear previous errors
@@ -124,132 +217,136 @@ function SolveQuestion() {
   };
 
   // Handlers for different actions
-  const handleSubmit = () => sendFormData({ submit: true }, 'submit');
-  
-  const handleSolve = () => sendFormData({ solve: true }, 'solve');
-  
-  const handleExplain = () => sendFormData({ explain: true }, 'explain');
-  
+  const handleSubmit = () => sendFormData({ submit: true }, "submit");
+
+  const handleSolve = () => sendFormData({ solve: true }, "solve");
+
+  const handleExplain = () => sendFormData({ explain: true }, "explain");
+
   // Enhanced handleCorrect function
- // Enhanced handleCorrect function
- const handleCorrect = async () => {
-  console.log('Starting handleCorrect function');
-  setProcessingButton('correct');
-  setError(null);
+  const handleCorrect = async () => {
+    console.log("Starting handleCorrect function");
+    setProcessingButton("correct");
+    setError(null);
 
-  const formData = new FormData();
-  formData.append('class_id', class_id);
-  formData.append('subject_id', subject_id);
-  formData.append('topic_ids', topic_ids);
-  formData.append('question', currentQuestion.question);
-  formData.append('subtopic', subtopic);
-  formData.append('correct', true);
+    const formData = new FormData();
+    formData.append("class_id", class_id);
+    formData.append("subject_id", subject_id);
+    formData.append("topic_ids", topic_ids);
+    formData.append("question", currentQuestion.question);
+    formData.append("subtopic", subtopic);
+    formData.append("correct", true);
 
-  // Helper: finalize and send the form after appending everything
-  const finalizeAndSendForm = async () => {
-    // Add user's solution images
-    if (images.length > 0) {
-      images.forEach((image) => {
-        formData.append('ans_img', image);
-      });
-    }
-
-    try {
-      setUploadProgress(0);
-      const response = await axiosInstance.uploadFile('/anssubmit/', formData, handleUploadProgress);
-
-      // Update study session
-      updateStudySession(
-        new Date().toISOString().split('T')[0],
-        10,
-        1,
-        100
-      );
-
-      // Update quest progress
-      updateQuestProgress('daily_solve_questions', 1, QUEST_TYPES.DAILY);
-
-      // Navigate to result page
-      navigate('/resultpage', {
-        state: {
-          ...response.data,
-          actionType: 'correct',
-          questionList,
-          class_id,
-          subject_id,
-          topic_ids,
-          subtopic,
-          questionImage: currentQuestion.image,
-          questionNumber: currentQuestion.questionNumber
-        }
-      });
-
-      playQuestionSolvedSound(true, 100);
-
-    } catch (error) {
-      console.error('API Error:', error);
-      if (error.code === 'ECONNABORTED') {
-        setError('Request timed out. Please try with a smaller image or check your connection.');
-      } else if (error.friendlyMessage) {
-        setError(error.friendlyMessage);
-      } else {
-        setError('Failed to correct the solution. Please try again.');
+    // Helper: finalize and send the form after appending everything
+    const finalizeAndSendForm = async () => {
+      // Add user's solution images
+      if (images.length > 0) {
+        images.forEach((image) => {
+          formData.append("ans_img", image);
+        });
       }
-      setProcessingButton(null);
-      setUploadProgress(0);
+
+      try {
+        setUploadProgress(0);
+        const response = await axiosInstance.uploadFile(
+          "/anssubmit/",
+          formData,
+          handleUploadProgress
+        );
+
+        // Update study session
+        updateStudySession(new Date().toISOString().split("T")[0], 10, 1, 100);
+
+        // Update quest progress
+        updateQuestProgress("daily_solve_questions", 1, QUEST_TYPES.DAILY);
+
+        // Navigate to result page
+        navigate("/resultpage", {
+          state: {
+            ...response.data,
+            actionType: "correct",
+            questionList,
+            class_id,
+            subject_id,
+            topic_ids,
+            subtopic,
+            questionImage: currentQuestion.image,
+            questionNumber: currentQuestion.questionNumber,
+          },
+        });
+
+        playQuestionSolvedSound(true, 100);
+      } catch (error) {
+        console.error("API Error:", error);
+        if (error.code === "ECONNABORTED") {
+          setError(
+            "Request timed out. Please try with a smaller image or check your connection."
+          );
+        } else if (error.friendlyMessage) {
+          setError(error.friendlyMessage);
+        } else {
+          setError("Failed to correct the solution. Please try again.");
+        }
+        setProcessingButton(null);
+        setUploadProgress(0);
+      }
+    };
+
+    // Process question image as base64
+    if (currentQuestion.image) {
+      if (currentQuestion.image.startsWith("data:image")) {
+        // Already base64 – send as-is
+        console.log("Detected base64 question image");
+        formData.append("ques_img", currentQuestion.image);
+        finalizeAndSendForm();
+      } else if (currentQuestion.image.startsWith("http")) {
+        try {
+          const imageResponse = await fetch(currentQuestion.image);
+          if (!imageResponse.ok) {
+            throw new Error(`Failed to fetch image: ${imageResponse.status}`);
+          }
+
+          const blob = await imageResponse.blob();
+          const reader = new FileReader();
+
+          reader.onloadend = async () => {
+            const base64String = reader.result;
+            formData.append("question_img_base64", base64String);
+            finalizeAndSendForm(); // Proceed after conversion
+          };
+
+          reader.readAsDataURL(blob);
+        } catch (fetchError) {
+          console.error(
+            "Error fetching or converting image to base64:",
+            fetchError
+          );
+          setError(`Error fetching image: ${fetchError.message}`);
+          finalizeAndSendForm(); // Proceed even if image failed
+        }
+      } else {
+        console.warn(
+          "Unsupported image format:",
+          currentQuestion.image.substring(0, 30)
+        );
+        finalizeAndSendForm();
+      }
+    } else {
+      // No question image to process
+      finalizeAndSendForm();
     }
   };
 
-  // Process question image as base64
-  if (currentQuestion.image) {
-    if (currentQuestion.image.startsWith('data:image')) {
-      // Already base64 – send as-is
-      console.log('Detected base64 question image');
-      formData.append('ques_img', currentQuestion.image);
-      finalizeAndSendForm();
-    } else if (currentQuestion.image.startsWith('http')) {
-      try {
-        const imageResponse = await fetch(currentQuestion.image);
-        if (!imageResponse.ok) {
-          throw new Error(`Failed to fetch image: ${imageResponse.status}`);
-        }
-
-        const blob = await imageResponse.blob();
-        const reader = new FileReader();
-
-        reader.onloadend = async () => {
-          const base64String = reader.result;
-          formData.append('question_img_base64', base64String);
-          finalizeAndSendForm(); // Proceed after conversion
-        };
-
-        reader.readAsDataURL(blob);
-      } catch (fetchError) {
-        console.error('Error fetching or converting image to base64:', fetchError);
-        setError(`Error fetching image: ${fetchError.message}`);
-        finalizeAndSendForm(); // Proceed even if image failed
-      }
-    } else {
-      console.warn('Unsupported image format:', currentQuestion.image.substring(0, 30));
-      finalizeAndSendForm();
-    }
-  } else {
-    // No question image to process
-    finalizeAndSendForm();
-  }
-};
-
-  
   // New handler for Gap Analysis
   const handleGapAnalysis = () => {
-    navigate('/gap-analysis', {
+    navigate("/gap-analysis", {
       state: {
         question: currentQuestion.question,
         questionImage: currentQuestion.image,
         class_id,
         subject_id,
-        topic_ids
-      }
+        topic_ids,
+      },
     });
   };
 
@@ -257,13 +354,13 @@ function SolveQuestion() {
   const sendFormData = async (flags = {}, actionType) => {
     setProcessingButton(actionType);
     setError(null);
-    
+
     const formData = new FormData();
-    formData.append('class_id', class_id);
-    formData.append('subject_id', subject_id);
-    formData.append('topic_ids', topic_ids);
-    formData.append('question', currentQuestion.question);
-    formData.append('subtopic', subtopic);
+    formData.append("class_id", class_id);
+    formData.append("subject_id", subject_id);
+    formData.append("topic_ids", topic_ids);
+    formData.append("question", currentQuestion.question);
+    formData.append("subtopic", subtopic);
 
     Object.entries(flags).forEach(([key, value]) => {
       formData.append(key, value);
@@ -272,24 +369,28 @@ function SolveQuestion() {
     // Add images if required by the action
     if (flags.submit) {
       images.forEach((image) => {
-        formData.append('ans_img', image);
+        formData.append("ans_img", image);
       });
     }
 
     try {
       // Use the custom upload method for actions with file uploads
       let response;
-      
+
       if (flags.submit) {
         // Use custom upload method with progress tracking
-        response = await axiosInstance.uploadFile('/anssubmit/', formData, handleUploadProgress);
+        response = await axiosInstance.uploadFile(
+          "/anssubmit/",
+          formData,
+          handleUploadProgress
+        );
       } else {
         // Regular request for actions without file uploads
-        response = await axiosInstance.post('/anssubmit/', formData);
+        response = await axiosInstance.post("/anssubmit/", formData);
       }
 
       // Navigate to results page
-      navigate('/resultpage', {
+      navigate("/resultpage", {
         state: {
           ...response.data,
           actionType,
@@ -299,53 +400,62 @@ function SolveQuestion() {
           topic_ids,
           subtopic,
           questionImage: currentQuestion.image,
-          questionNumber: currentQuestion.questionNumber
-        }
+          questionNumber: currentQuestion.questionNumber,
+        },
       });
     } catch (error) {
-      console.error('API Error:', error);
-      
+      console.error("API Error:", error);
+
       // Set user-friendly error message
-      if (error.code === 'ECONNABORTED') {
-        setError('Request timed out. Please try with a smaller image or check your connection.');
+      if (error.code === "ECONNABORTED") {
+        setError(
+          "Request timed out. Please try with a smaller image or check your connection."
+        );
       } else if (error.friendlyMessage) {
         setError(error.friendlyMessage);
       } else {
-        setError('Failed to perform the action. Please try again.');
+        setError("Failed to perform the action. Please try again.");
       }
-      
+
       setProcessingButton(null);
       setUploadProgress(0);
     }
   };
 
-  // Cancel image upload                                                                  
+  // Cancel image upload
   const handleCancelImage = (index) => {
     const updatedImages = images.filter((_, i) => i !== index);
     setImages(updatedImages);
     setIsSolveEnabled(updatedImages.length === 0);
   };
 
-  // Select question from list
-  const handleQuestionSelect = (selectedQuestion, selectedIndex, selectedImage) => {
+  // Select question from list with tutorial flow handling
+  const handleQuestionSelect = (
+    selectedQuestion,
+    selectedIndex,
+    selectedImage
+  ) => {
     console.log("Selected question:", selectedQuestion);
     console.log("Selected image:", selectedImage);
-    
+
+    // Continue tutorial flow to SolveQuestion
+    setCurrentPage("solveQuestion");
+
     setCurrentQuestion({
       question: selectedQuestion,
       questionNumber: selectedIndex + 1,
-      image: selectedImage
+      image: selectedImage,
     });
-    
+
     // Reset study session start time
     setStudySessionStart(Date.now());
-    
+
     // Reset image related state
     setImages([]);
     setIsSolveEnabled(true);
     setError(null);
     setUploadProgress(0);
-    
+
     // Close modal
     setShowQuestionListModal(false);
   };
@@ -362,14 +472,34 @@ function SolveQuestion() {
 
   return (
     <div className="solve-question-wrapper">
+      {shouldShowTutorialForPage("solveQuestion") && (
+        <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
+      )}
+
       <div className="solve-question-container">
+        {/* Tutorial restart button */}
+        <div className="restart-tutorial-btn-container text-right mb-3">
+          <Button
+            variant="outline-info"
+            className="restart-tutorial-btn"
+            onClick={() => {
+              console.log("Restarting tutorial on SolveQuestion page...");
+              restartTutorialForPage("solveQuestion");
+            }}
+            size="sm"
+          >
+            <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
+            Replay Tutorial
+          </Button>
+        </div>
+
         {/* Question Display Section */}
         <div className="question-text-container">
           <span className="question-title">
             Question {currentQuestion.questionNumber}
           </span>
           {currentQuestion.image && (
-            <img 
+            <img
               src={currentQuestion.image}
               alt="Question"
               className="question-image"
@@ -406,18 +536,20 @@ function SolveQuestion() {
         {isAnyButtonProcessing() && uploadProgress > 0 && (
           <div className="upload-progress mt-3">
             <div className="progress">
-              <div 
-                className="progress-bar progress-bar-striped progress-bar-animated" 
-                role="progressbar" 
-                style={{ width: `${uploadProgress}%` }} 
-                aria-valuenow={uploadProgress} 
-                aria-valuemin="0" 
+              <div
+                className="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                style={{ width: `${uploadProgress}%` }}
+                aria-valuenow={uploadProgress}
+                aria-valuemin="0"
                 aria-valuemax="100"
               >
                 {uploadProgress}%
               </div>
             </div>
-            <p className="text-center mt-1">Uploading... Please don't close this page.</p>
+            <p className="text-center mt-1">
+              Uploading... Please don't close this page.
+            </p>
           </div>
         )}
 
@@ -474,18 +606,20 @@ function SolveQuestion() {
                 disabled={images.length === 0 || isAnyButtonProcessing()}
                 onClick={handleSubmit}
               >
-                {isButtonProcessing('submit') ? (
+                {isButtonProcessing("submit") ? (
                   <>
-                    <Spinner 
-                      as="span" 
-                      animation="border" 
-                      size="sm" 
-                      role="status" 
-                      aria-hidden="true" 
-                    /> {' '}
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />{" "}
                     Processing...
                   </>
-                ) : 'Submit'}
+                ) : (
+                  "Submit"
+                )}
               </Button>
             </Col>
           </Row>
@@ -496,70 +630,76 @@ function SolveQuestion() {
               <Button
                 variant={isSolveEnabled ? "primary" : "secondary"}
                 onClick={handleSolve}
-                className="w-100"
+                className="w-100 solve-btn"
                 disabled={!isSolveEnabled || isAnyButtonProcessing()}
               >
-                {isButtonProcessing('solve') ? (
+                {isButtonProcessing("solve") ? (
                   <>
-                    <Spinner 
-                      as="span" 
-                      animation="border" 
-                      size="sm" 
-                      role="status" 
-                      aria-hidden="true" 
-                    /> {' '}
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />{" "}
                     Processing...
                   </>
-                ) : 'Solve'}
+                ) : (
+                  "Solve"
+                )}
               </Button>
             </Col>
             <Col xs={6} md={3} className="mb-2">
               <Button
                 variant="primary"
                 onClick={handleCorrect}
-                className="w-100"
+                className="w-100 btn-correct"
                 disabled={images.length === 0 || isAnyButtonProcessing()}
               >
-                {isButtonProcessing('correct') ? (
+                {isButtonProcessing("correct") ? (
                   <>
-                    <Spinner 
-                      as="span" 
-                      animation="border" 
-                      size="sm" 
-                      role="status" 
-                      aria-hidden="true" 
-                    /> {' '}
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />{" "}
                     Processing...
                   </>
-                ) : 'Correct'}
+                ) : (
+                  "Correct"
+                )}
               </Button>
             </Col>
             <Col xs={6} md={3} className="mb-2">
               <Button
                 variant="primary"
                 onClick={handleExplain}
-                className="w-100"
+                className="w-100 explain-btn"
                 disabled={isAnyButtonProcessing()}
               >
-                {isButtonProcessing('explain') ? (
+                {isButtonProcessing("explain") ? (
                   <>
-                    <Spinner 
-                      as="span" 
-                      animation="border" 
-                      size="sm" 
-                      role="status" 
-                      aria-hidden="true" 
-                    /> {' '}
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />{" "}
                     Processing...
                   </>
-                ) : 'Explain'}
+                ) : (
+                  "Explain"
+                )}
               </Button>
             </Col>
             <Col xs={6} md={3} className="mb-2">
               <Button
                 variant="info"
                 onClick={handleGapAnalysis}
-                className="w-100"
+                className="w-100 gap-btn"
                 disabled={isAnyButtonProcessing()}
               >
                 Gap Analysis
@@ -570,7 +710,7 @@ function SolveQuestion() {
       </div>
 
       {/* Question List Modal */}
-      <QuestionListModal 
+      <QuestionListModal
         show={showQuestionListModal}
         onHide={() => setShowQuestionListModal(false)}
         questionList={questionList}
