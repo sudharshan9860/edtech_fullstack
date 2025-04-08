@@ -1,10 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
-
 .login-wrapper {
   display: flex;
   justify-content: center;
@@ -26,12 +27,15 @@
 .animated-circle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
   backdrop-filter: blur(5px);
   animation: floaty 20s ease-in-out infinite;
   pointer-events: none;
 }
-
 @keyframes floaty {
   0% {
     transform: translateY(0px) scale(1);
@@ -60,23 +64,53 @@
   z-index: 1;
   width: 100%;
   max-width: 440px;
-  background: rgba(255, 255, 255, 1);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
   padding: 40px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: formAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes formAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .logo-section {
   text-align: center;
   margin-bottom: 40px;
+  animation: logoAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+}
+
+@keyframes logoAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .platform-name {
   font-size: 36px;
   font-weight: 700;
-  color: #00c1d4;
-  margin-bottom: 4px;
-  letter-spacing: 2px;
+  background: linear-gradient(45deg, #00c1d4, #001b6c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
 }
 
 .platform-subtitle {
@@ -101,6 +135,10 @@
   color: #00c1d4;
   font-size: 24px;
 }
+.portal-icons svg:hover {
+  transform: scale(1.2);
+  color: #001b6c;
+}
 
 .portal-title {
   font-size: 24px;
@@ -112,6 +150,7 @@
 .portal-description {
   color: #666;
   font-size: 14px;
+  line-height: 2;
 }
 
 .login-form {
@@ -140,16 +179,18 @@
 
 .input-icon {
   color: #00c1d4;
+  transition: all 0.3s ease;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px 16px 12px 48px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  padding: 14px 16px 14px 48px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 193, 212, 0.2);
+
   font-size: 16px;
   color: #001b6c;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .form-input:focus {
@@ -168,27 +209,31 @@
   color: #00c1d4;
   cursor: pointer;
   padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #001b6c;
+  transform: translateY(-50%) scale(1.1);
 }
 
 .start-learning-btn {
-  background: linear-gradient(135deg, #00c1d4 0%, #001b6c 100%);
+  background: linear-gradient(45deg, #00c1d4, #001b6c);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 14px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 193, 212, 0.2);
+}
+.start-learning-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 193, 212, 0.3);
 }
 
-.start-learning-btn:hover {
-  opacity: 0.95;
-  transform: translateY(-1px);
-}
 
 .form-footer {
   display: flex;
@@ -201,7 +246,9 @@
   color: #00c1d4;
   text-decoration: none;
   font-size: 14px;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .reset-link:hover,
@@ -210,13 +257,36 @@
 }
 
 .error-alert {
-  background-color: #fee2e2;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   color: #ef4444;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
   margin-bottom: 20px;
   font-size: 14px;
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
 
 .copyright {
   text-align: center;

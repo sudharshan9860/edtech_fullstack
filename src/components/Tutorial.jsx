@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Joyride from "react-joyride";
 import { useTutorial } from "../contexts/TutorialContext";
 import { Button } from "react-bootstrap";
@@ -15,26 +15,21 @@ const Tutorial = ({ steps, onComplete }) => {
     currentPage,
     exitTutorialFlow,
   } = useTutorial();
+  
+  const [isButtonVisible, setIsButtonVisible] = useState(false);
+
+  useEffect(() => {
+    setIsButtonVisible(showTutorial);
+  }, [showTutorial]);
 
   const handleClose = () => {
-    // When closing manually, we should exit the tutorial flow entirely
     setShowTutorial(false);
+    setIsButtonVisible(false);
     exitTutorialFlow();
   };
 
   return (
     <>
-      <div className="tutorial-toggle">
-        <Button
-          variant="danger"
-          size="sm"
-          onClick={handleClose}
-          className="tutorial-close-btn"
-        >
-          <FontAwesomeIcon icon={faTimes} /> Close Tutorial
-        </Button>
-      </div>
-
       <Joyride
         steps={steps}
         run={showTutorial}
@@ -68,27 +63,30 @@ const Tutorial = ({ steps, onComplete }) => {
             currentPage,
           });
 
-          // Update current step when moving through tutorial
           if (type === "step:after") {
             setCurrentStep(index + 1);
           }
 
-          // Handle tutorial completion for this page
-          if (status === "finished") {
-            console.log(`Tutorial finished on ${currentPage}`);
-            if (onComplete) {
-              onComplete();
-            }
-          }
-
-          // If tutorial is skipped, turn it off completely
-          if (status === "skipped") {
-            console.log("Tutorial skipped, exiting flow");
+          if (["close", "skipped", "finished"].includes(status)) {
             setShowTutorial(false);
+            setIsButtonVisible(false);
             exitTutorialFlow();
           }
         }}
       />
+
+      {isButtonVisible && showTutorial && (
+        <div className="tutorial-toggle">
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={handleClose}
+            className="tutorial-close-btn"
+          >
+            <FontAwesomeIcon icon={faTimes} /> Close Tutorial
+          </Button>
+        </div>
+      )}
     </>
   );
 };

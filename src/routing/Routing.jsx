@@ -14,13 +14,14 @@ import SimilarQuestions from '../components/SimilarQuestions';
 import LeaderboardPage from '../components/LeaderBoardPage';
 import ProgressDashboard from '../components/ProgressDashboard';
 import QuestsPage from '../components/QuestsPage';
-
+import TeacherDash from '../components/TeacherDash';      
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />    
+      <Route path="/signup" element={<SignupPage />} />
+      
       <Route
         path="/student-dash"
         element={
@@ -31,6 +32,18 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+
+      <Route        
+        path="/teacher-dash"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <TeacherDash />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
       <Route
         path="/solvequestion"
         element={
