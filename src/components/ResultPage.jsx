@@ -275,6 +275,12 @@ return (
               </div>
             );
           } else {
+            step = step.replace(/["':,`\[\]]/g, "")                     // Remove unwanted characters
+             .replace(/step_by_step_solution/g, "")         // Remove specific word
+                                      // s
+                       // Remove empty lines
+                                               // Join back with single newline
+
             // For steps without explicit "Step X:" format
             return (
               <div key={index} className="solution-step-container">

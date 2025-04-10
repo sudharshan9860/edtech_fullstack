@@ -23,6 +23,7 @@ function StudentDash() {
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
+  const [subTopics, setSubTopics] = useState([]); // Added for external questions
 
   // State for selections
   const [selectedClass, setSelectedClass] = useState("");
@@ -157,6 +158,33 @@ function StudentDash() {
     fetchChapters();
   }, [selectedSubject, selectedClass]);
 
+  // New effect for fetching subtopics when External question type is selected
+  useEffect(() => {
+    async function fetchSubTopics() {
+      if (
+        questionType === "external" &&
+        selectedClass &&
+        selectedSubject &&
+        selectedChapters.length > 0
+      ) {
+        try {
+          const response = await axiosInstance.post("/question-images/", {
+            classid: selectedClass,
+            subjectid: selectedSubject,
+            topicid: selectedChapters[0], // Assuming single chapter selection
+            external: true,
+          });
+          console.log("the response data is : ", response);
+          setSubTopics(response.data.subtopics);
+        } catch (error) {
+          console.error("Error fetching subtopics:", error);
+          setSubTopics([]);
+        }
+      }
+    }
+    fetchSubTopics();
+  }, [questionType, selectedClass, selectedSubject, selectedChapters]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -171,7 +199,8 @@ function StudentDash() {
       topicid: selectedChapters,
       solved: questionType === "solved",
       exercise: questionType === "exercise",
-      external: questionType === "external" ? questionLevel : null,
+      // Modified to use subtopic instead of external level
+      subtopic: questionType === "external" ? questionLevel : null,
     };
 
     try {
@@ -210,7 +239,8 @@ function StudentDash() {
         class_id: selectedClass,
         subject_id: selectedSubject,
         topic_ids: selectedChapters,
-        subtopic: "",
+        // Include subtopic in navigation when external is selected
+        subtopic: questionType === "external" ? questionLevel : "",
         image, // Make sure to include the image
       },
     });
@@ -344,7 +374,7 @@ function StudentDash() {
                     <option value="">Select Question Type</option>
                     <option value="solved">Solved</option>
                     <option value="exercise">Exercise</option>
-                    <option value="external">External</option>
+                    <option value="external">Set of Questions</option>
                   </Form.Control>
                 </Form.Group>
               </Col>
@@ -359,7 +389,7 @@ function StudentDash() {
                         icon={faClipboardQuestion}
                         className="me-2"
                       />
-                      Question Level
+                      Select The Set
                     </Form.Label>
                     <Form.Control
                       as="select"
@@ -367,8 +397,12 @@ function StudentDash() {
                       onChange={(e) => setQuestionLevel(e.target.value)}
                       className="form-control"
                     >
-                      <option value="">Select Level</option>
-                      <option value="level-1">Level 1</option>
+                      <option value="">Select The Set</option>
+                      {subTopics.map((subTopic, index) => (
+                        <option key={subTopic} value={subTopic}>
+                          {`Exercise ${index + 1}`}
+                        </option>
+                      ))}
                     </Form.Control>
                   </Form.Group>
                 </Col>

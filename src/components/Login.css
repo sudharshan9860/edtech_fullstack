@@ -218,6 +218,8 @@
 }
 
 .start-learning-btn {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(45deg, #00c1d4, #001b6c);
   color: white;
   border: none;
@@ -228,11 +230,40 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 193, 212, 0.2);
+  z-index: 1;
 }
+
+/* Skewed sliding light effect */
+.start-learning-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: skew(30deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1), left 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+  z-index: 0;
+}
+
+/* On hover, animate the ::before layer */
+.start-learning-btn:hover::before {
+  left: 100%;
+  transform: skew(30deg);
+}
+
+.start-learning-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Maintain hover elevation effect */
 .start-learning-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 193, 212, 0.3);
 }
+
 
 
 .form-footer {
