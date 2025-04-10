@@ -33,7 +33,7 @@ const ResultPage = () => {
     student_answer, 
     concepts, 
     comment, 
-    concepts_used, 
+    concepts_used,
     solution, 
     score, 
     obtained_marks, 
@@ -41,6 +41,10 @@ const ResultPage = () => {
     question_marks,
     question_image_base64
   } = ai_data || {};
+
+  const formated_concepts_used= Array.isArray(concepts_used)
+  ? concepts_used.join(', ')
+  : concepts_used || '';
 
   // Auto-calculate score if none is provided from API
   useEffect(() => {
@@ -335,9 +339,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -363,9 +367,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -398,9 +402,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -433,9 +437,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
