@@ -54,6 +54,7 @@ function SolveQuestion() {
     subject_id,
     topic_ids,
     subtopic,
+    selectedQuestions,
   } = location.state || {};
   const { questionNumber } = location.state || {};
   const question_image =
@@ -90,15 +91,12 @@ function SolveQuestion() {
     },
     {
       target: ".btn-back",
-      content:
-        "Click here to go back to the previous page.",
+      content: "Click here to go back to the previous page.",
     },
     {
       target: ".btn-question-list",
-      content:
-        "Click here to see the list of questions.",
+      content: "Click here to see the list of questions.",
     },
-    
 
     {
       target: ".solve-btn",
@@ -118,13 +116,13 @@ function SolveQuestion() {
 
   // Set current page when component mounts
   useEffect(() => {
+    console.log("SolveQuestion component mounted");
     setCurrentPage("solveQuestion");
 
-    // Log tutorial status for debugging
-    console.log(
-      "SolveQuestion component mounted, tutorial should show:",
-      shouldShowTutorialForPage("solveQuestion")
-    );
+    // Check if tutorial should be shown
+    if (shouldShowTutorialForPage("solveQuestion")) {
+      console.log("Should show tutorial for SolveQuestion");
+    }
   }, [setCurrentPage, shouldShowTutorialForPage]);
 
   // Handle tutorial completion - this is the final step in the tutorial flow
@@ -435,11 +433,9 @@ function SolveQuestion() {
     selectedIndex,
     selectedImage
   ) => {
+    console.log("Question selected in SolveQuestion");
     console.log("Selected question:", selectedQuestion);
     console.log("Selected image:", selectedImage);
-
-    // Continue tutorial flow to SolveQuestion
-    setCurrentPage("solveQuestion");
 
     setCurrentQuestion({
       question: selectedQuestion,
@@ -713,8 +709,10 @@ function SolveQuestion() {
       <QuestionListModal
         show={showQuestionListModal}
         onHide={() => setShowQuestionListModal(false)}
-        questionList={questionList}
+        questionList={selectedQuestions || questionList}
         onQuestionClick={handleQuestionSelect}
+        isMultipleSelect={false}
+        onMultipleSelectSubmit={null}
       />
     </div>
   );

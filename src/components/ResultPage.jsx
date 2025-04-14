@@ -502,7 +502,7 @@ return (
               onClick={handlePracticeSimilar}
               className="practice-btn"
             >
-              Similar Practice Questions
+              Similar Questions
             </Button>
           </div>
         </Col>

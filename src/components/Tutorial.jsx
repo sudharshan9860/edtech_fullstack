@@ -15,7 +15,7 @@ const Tutorial = ({ steps, onComplete }) => {
     currentPage,
     exitTutorialFlow,
   } = useTutorial();
-  
+
   const [isButtonVisible, setIsButtonVisible] = useState(false);
 
   useEffect(() => {
@@ -23,6 +23,7 @@ const Tutorial = ({ steps, onComplete }) => {
   }, [showTutorial]);
 
   const handleClose = () => {
+    console.log("Tutorial closed manually");
     setShowTutorial(false);
     setIsButtonVisible(false);
     exitTutorialFlow();
@@ -61,6 +62,8 @@ const Tutorial = ({ steps, onComplete }) => {
             index,
             type,
             currentPage,
+            showTutorial,
+            currentStep,
           });
 
           if (type === "step:after") {
@@ -68,9 +71,14 @@ const Tutorial = ({ steps, onComplete }) => {
           }
 
           if (["close", "skipped", "finished"].includes(status)) {
+            console.log(`Tutorial ${status} for page ${currentPage}`);
             setShowTutorial(false);
             setIsButtonVisible(false);
-            exitTutorialFlow();
+            if (status === "finished") {
+              onComplete?.();
+            } else {
+              exitTutorialFlow();
+            }
           }
         }}
       />

@@ -33,6 +33,7 @@ function StudentDash() {
   const [questionLevel, setQuestionLevel] = useState("");
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [questionList, setQuestionList] = useState([]);
+  const [selectedQuestions, setSelectedQuestions] = useState([]);
 
   // Enhanced tutorial usage
   const {
@@ -199,7 +200,6 @@ function StudentDash() {
       topicid: selectedChapters,
       solved: questionType === "solved",
       exercise: questionType === "exercise",
-      // Modified to use subtopic instead of external level
       subtopic: questionType === "external" ? questionLevel : null,
     };
 
@@ -218,6 +218,7 @@ function StudentDash() {
       }));
 
       setQuestionList(questionsWithImages);
+      setSelectedQuestions([]); // Reset selected questions
 
       // Continue tutorial flow to QuestionListModal before showing the modal
       continueTutorialFlow("studentDash", "questionListModal");
@@ -239,9 +240,30 @@ function StudentDash() {
         class_id: selectedClass,
         subject_id: selectedSubject,
         topic_ids: selectedChapters,
-        // Include subtopic in navigation when external is selected
         subtopic: questionType === "external" ? questionLevel : "",
-        image, // Make sure to include the image
+        image,
+        selectedQuestions: selectedQuestions,
+      },
+    });
+  };
+
+  const handleMultipleSelectSubmit = (selectedQuestionsData) => {
+    setSelectedQuestions(selectedQuestionsData);
+    setShowQuestionList(false);
+
+    // Navigate to SolveQuestion with the first selected question
+    const firstQuestion = selectedQuestionsData[0];
+    navigate("/solvequestion", {
+      state: {
+        question: firstQuestion.question,
+        questionNumber: firstQuestion.index + 1,
+        questionList,
+        class_id: selectedClass,
+        subject_id: selectedSubject,
+        topic_ids: selectedChapters,
+        subtopic: questionType === "external" ? questionLevel : "",
+        image: firstQuestion.image,
+        selectedQuestions: selectedQuestionsData,
       },
     });
   };
@@ -428,6 +450,8 @@ function StudentDash() {
         onHide={() => setShowQuestionList(false)}
         questionList={questionList}
         onQuestionClick={handleQuestionClick}
+        isMultipleSelect={questionType === "external"}
+        onMultipleSelectSubmit={handleMultipleSelectSubmit}
       />
     </div>
   );

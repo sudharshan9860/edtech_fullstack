@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "./QuestionListModal.css";
 import Tutorial from "./Tutorial";
@@ -9,6 +9,8 @@ const QuestionListModal = ({
   onHide,
   questionList = [],
   onQuestionClick,
+  isMultipleSelect = false,
+  onMultipleSelectSubmit,
 }) => {
   const {
     markPageCompleted,
@@ -18,13 +20,19 @@ const QuestionListModal = ({
     exitTutorialFlow,
   } = useTutorial();
 
+  const [selectedQuestions, setSelectedQuestions] = useState([]);
+
   // Set current page when modal is shown
   useEffect(() => {
     if (show) {
+      console.log("QuestionListModal is now visible, setting current page");
       setCurrentPage("questionListModal");
-      console.log("QuestionListModal is now visible");
+      // Ensure tutorial is shown if it should be
+      if (shouldShowTutorialForPage("questionListModal")) {
+        console.log("Should show tutorial for QuestionListModal");
+      }
     }
-  }, [show, setCurrentPage]);
+  }, [show, setCurrentPage, shouldShowTutorialForPage]);
 
   const tutorialSteps = [
     {
@@ -41,34 +49,60 @@ const QuestionListModal = ({
   ];
 
   const handleTutorialComplete = () => {
-    // Don't mark as completed here, we'll do it when a question is clicked
     console.log("Tutorial steps in QuestionListModal completed");
   };
 
   const handleQuestionClick = (questionData, index) => {
-    // Continue tutorial flow to SolveQuestion
-    continueTutorialFlow("questionListModal", "solveQuestion");
+    if (isMultipleSelect) {
+      // Toggle selection for multiple select mode
+      setSelectedQuestions((prev) => {
+        const isSelected = prev.includes(index);
+        if (isSelected) {
+          return prev.filter((i) => i !== index);
+        } else {
+          if (prev.length < 5) {
+            return [...prev, index];
+          }
+          return prev;
+        }
+      });
+    } else {
+      // Single selection mode
+      console.log("Question clicked, continuing tutorial flow");
+      continueTutorialFlow("questionListModal", "solveQuestion");
 
-    // Extract the necessary data from the question object
-    const selectedQuestion = {
-      question: questionData.question,
-      image: questionData.question_image
-        ? `data:image/png;base64,${questionData.question_image}`
-        : null,
-    };
+      const selectedQuestion = {
+        question: questionData.question,
+        image: questionData.question_image
+          ? `data:image/png;base64,${questionData.question_image}`
+          : null,
+      };
 
-    // Call the onQuestionClick prop with the processed data
-    onQuestionClick(selectedQuestion.question, index, selectedQuestion.image);
+      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image);
+    }
   };
 
-  // Handle modal closing - if this happens during tutorial, make sure to mark as complete
+  const handleMultipleSelectSubmit = () => {
+    if (selectedQuestions.length === 5) {
+      const selectedQuestionsData = selectedQuestions.map((index) => ({
+        question: questionList[index].question,
+        image: questionList[index].question_image
+          ? `data:image/png;base64,${questionList[index].question_image}`
+          : null,
+        index: index,
+      }));
+      onMultipleSelectSubmit(selectedQuestionsData);
+    }
+  };
+
   const handleModalClose = () => {
+    console.log("QuestionListModal closing");
     if (shouldShowTutorialForPage("questionListModal")) {
-      console.log(
-        "Modal closed during tutorial, marking as complete and continuing flow"
-      );
+      console.log("Modal closed during tutorial, marking as complete");
+      markPageCompleted("questionListModal");
       exitTutorialFlow();
     }
+    setSelectedQuestions([]);
     onHide();
   };
 
@@ -85,7 +119,9 @@ const QuestionListModal = ({
       )}
 
       <Modal.Header closeButton>
-        <Modal.Title>Question List</Modal.Title>
+        <Modal.Title>
+          {isMultipleSelect ? "Select 5 Questions" : "Question List"}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="question-list-container">
@@ -94,9 +130,18 @@ const QuestionListModal = ({
               {questionList.map((questionData, index) => (
                 <li
                   key={index}
-                  className="question-item"
+                  className={`question-item ${
+                    selectedQuestions.includes(index) ? "selected" : ""
+                  }`}
                   onClick={() => handleQuestionClick(questionData, index)}
                 >
+                  {isMultipleSelect && (
+                    <input
+                      type="checkbox"
+                      checked={selectedQuestions.includes(index)}
+                      onChange={() => handleQuestionClick(questionData, index)}
+                    />
+                  )}
                   <div className="question-number">{index + 1}</div>
                   <div className="question-content">
                     <div className="question-text">{questionData.question}</div>
@@ -119,6 +164,15 @@ const QuestionListModal = ({
         </div>
       </Modal.Body>
       <Modal.Footer>
+        {isMultipleSelect && (
+          <Button
+            variant="primary"
+            onClick={handleMultipleSelectSubmit}
+            disabled={selectedQuestions.length !== 5}
+          >
+            Submit Selected Questions ({selectedQuestions.length}/5)
+          </Button>
+        )}
         <Button variant="secondary" onClick={handleModalClose}>
           Close
         </Button>

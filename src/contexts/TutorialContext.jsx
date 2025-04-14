@@ -78,61 +78,52 @@ export const TutorialProvider = ({ children }) => {
   const shouldShowTutorialForPage = (pageName) => {
     // Special handling for the tutorial flow
     if (tutorialFlow === "active") {
+      console.log(`Checking tutorial for ${pageName} in active flow`);
+      console.log(`Current completed pages:`, completedPages);
+
       // If we're in StudentDash, always show tutorial
       if (pageName === "studentDash") {
         const shouldShow = showTutorial && !completedPages.includes(pageName);
-        console.log(
-          `Tutorial check for ${pageName}: ${shouldShow} (flow: ${tutorialFlow})`
-        );
+        console.log(`StudentDash tutorial check: ${shouldShow}`);
         return shouldShow;
       }
 
-      // For QuestionListModal, show if StudentDash is completed and QuestionListModal isn't
+      // For QuestionListModal, show if StudentDash is completed
       if (pageName === "questionListModal") {
         const shouldShow =
-          showTutorial &&
-          completedPages.includes("studentDash") &&
-          !completedPages.includes(pageName);
-        console.log(
-          `Tutorial check for ${pageName}: ${shouldShow} (flow: ${tutorialFlow})`
-        );
-        console.log(`Completed pages:`, completedPages);
+          showTutorial && completedPages.includes("studentDash");
+        console.log(`QuestionListModal tutorial check: ${shouldShow}`);
         return shouldShow;
       }
 
-      // For SolveQuestion, show if QuestionListModal is completed and SolveQuestion isn't
+      // For SolveQuestion, show if QuestionListModal is completed
       if (pageName === "solveQuestion") {
         const shouldShow =
-          showTutorial &&
-          completedPages.includes("questionListModal") &&
-          !completedPages.includes(pageName);
-        console.log(
-          `Tutorial check for ${pageName}: ${shouldShow} (flow: ${tutorialFlow})`
-        );
-        console.log(`Completed pages:`, completedPages);
+          showTutorial && completedPages.includes("questionListModal");
+        console.log(`SolveQuestion tutorial check: ${shouldShow}`);
         return shouldShow;
       }
     }
 
     // Default fallback
     const shouldShow = showTutorial && !completedPages.includes(pageName);
-    console.log(
-      `Tutorial check for ${pageName}: ${shouldShow} (default flow check)`
-    );
+    console.log(`Default tutorial check for ${pageName}: ${shouldShow}`);
     return shouldShow;
   };
 
   // Function to continue the tutorial flow
   const continueTutorialFlow = (fromPage, toPage) => {
+    console.log(`Continuing tutorial flow from ${fromPage} to ${toPage}`);
+    console.log(`Current tutorial flow state:`, tutorialFlow);
+
     if (tutorialFlow === "active") {
-      console.log(`Tutorial flow: continuing from ${fromPage} to ${toPage}`);
       markPageCompleted(fromPage);
       setCurrentPage(toPage);
       setCurrentStep(0); // Reset step count for the new page
+      setShowTutorial(true); // Ensure tutorial is shown for the next page
+      console.log(`Tutorial flow continued to ${toPage}`);
     } else {
-      console.log(
-        `Tutorial flow: cannot continue because flow is ${tutorialFlow}`
-      );
+      console.log(`Cannot continue tutorial flow: flow is ${tutorialFlow}`);
     }
   };
 
