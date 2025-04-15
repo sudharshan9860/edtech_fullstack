@@ -1,23 +1,63 @@
-import React, { createContext, useState, } from 'react';
+import React, { createContext, useState, useEffect } from "react";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
-  const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  // Initialize state from localStorage with fallback
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem("accessToken");
+    return !!token;
+  });
 
-  const login = (user) => {
-    setIsAuthenticated(true);
-    setUsername(user);
-    localStorage.setItem('username', user);
+  const [username, setUsername] = useState(() => {
+    return localStorage.getItem("username") || "";
+  });
+
+  // Effect to sync localStorage with state
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "accessToken") {
+        setIsAuthenticated(!!e.newValue);
+      } else if (e.key === "username") {
+        setUsername(e.newValue || "");
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const login = (user, token) => {
+    try {
+      // Store both username and token
+      localStorage.setItem("username", user);
+      localStorage.setItem("accessToken", token);
+
+      // Update state
+      setIsAuthenticated(true);
+      setUsername(user);
+    } catch (error) {
+      console.error("Error during login:", error);
+      // Handle storage errors (e.g., quota exceeded)
+      throw new Error("Failed to store authentication data");
+    }
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    setUsername('');
-    localStorage.removeItem('accessToken');
-    // localStorage.removeItem('refreshToken');
-    localStorage.removeItem('username');
+    try {
+      // Clear all auth-related data
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("username");
+      localStorage.removeItem("streakData");
+      localStorage.removeItem("rewardData");
+      localStorage.removeItem("completedChapters");
+
+      // Update state
+      setIsAuthenticated(false);
+      setUsername("");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   };
 
   return (

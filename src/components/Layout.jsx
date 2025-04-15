@@ -79,7 +79,7 @@ const Layout = ({ children }) => {
                 </Nav.Link>
 
                 {/* Added margin to create spacing */}
-                <div className="ms-3">
+                <div className=" ms-3">
                   <NotificationDropdown />
                 </div>
                 

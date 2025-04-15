@@ -59,16 +59,21 @@ function LoginPage() {
       const { token } = response.data;
 
       if (token) {
+        // Store token and username in localStorage
         localStorage.setItem("accessToken", token);
         localStorage.setItem("username", username);
-        login(username);
+        
+        // Update auth context
+        login(username, token);
+        
+        // Navigate to dashboard
         navigate("/student-dash");
       } else {
         setError("Invalid username or password.");
       }
     } catch (error) {
-      setError("An error occurred. Please try again.");
-      console.error(error);
+      console.error("Login error:", error);
+      setError(error.response?.data?.message || "An error occurred. Please try again.");
     }
   };
 
@@ -160,7 +165,7 @@ function LoginPage() {
               className="password-toggle"
               onClick={togglePasswordVisibility}
             >
-              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+              <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
             </button>
           </div>
 

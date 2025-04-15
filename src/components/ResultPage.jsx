@@ -33,7 +33,7 @@ const ResultPage = () => {
     student_answer, 
     concepts, 
     comment, 
-    concepts_used, 
+    concepts_used,
     solution, 
     score, 
     obtained_marks, 
@@ -41,6 +41,10 @@ const ResultPage = () => {
     question_marks,
     question_image_base64
   } = ai_data || {};
+
+  const formated_concepts_used= Array.isArray(concepts_used)
+  ? concepts_used.join(', ')
+  : concepts_used || '';
 
   // Auto-calculate score if none is provided from API
   useEffect(() => {
@@ -275,6 +279,12 @@ return (
               </div>
             );
           } else {
+            step = step.replace(/["':,`\[\]]/g, "")                     // Remove unwanted characters
+             .replace(/step_by_step_solution/g, "")         // Remove specific word
+                                      // s
+                       // Remove empty lines
+                                               // Join back with single newline
+
             // For steps without explicit "Step X:" format
             return (
               <div key={index} className="solution-step-container">
@@ -329,9 +339,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -357,9 +367,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -392,9 +402,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -427,9 +437,9 @@ return (
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
-            {concepts_used && (
+            {formated_concepts_used && (
               <div className="result-explanation">
-                <p><strong>Concepts Used:</strong> {concepts_used}</p>
+                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -492,7 +502,7 @@ return (
               onClick={handlePracticeSimilar}
               className="practice-btn"
             >
-              Similar Practice Questions
+              Similar Questions
             </Button>
           </div>
         </Col>
