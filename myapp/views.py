@@ -315,7 +315,7 @@ class AnswerSubmit(APIView):
     
     # Explain 
     def Ai_Explaination(self, class_nums, question):
-        url = "http://139.59.86.115/api/generate-concepts-required/"
+        url = "http://128.199.19.226:8080/api/generate-concepts-required/"
         print(class_nums, question)
         data = {
             "question": question,
@@ -349,7 +349,9 @@ class AnswerSubmit(APIView):
                     
                     concepts.append(concept_dict)
                     # print(concept_dict['example'])
-
+                step_solution=[]
+                for step in step_by_step_solution:
+                    step_solution.append(step['step'])
                 # Construct the final output
                 output = {
                     
@@ -360,7 +362,7 @@ class AnswerSubmit(APIView):
                         "total_marks": 30,
                         "concepts": concepts,
                         "key": "explain",
-                        "solution":step_by_step_solution
+                        "solution":step_solution
                     }
                 
 
@@ -372,7 +374,7 @@ class AnswerSubmit(APIView):
     # Explain - step - by - step
     def Ai_Explaination_step_by_step(self, class_nums, question):
         
-        url = "http://139.59.86.115/api/generate-step-by-step-solution/"
+        url = "http://128.199.19.226:8080/api/generate-step-by-step-solution/"
         data = {
             "question": question,
             "class_nums": [class_nums]
@@ -383,8 +385,9 @@ class AnswerSubmit(APIView):
         if response.status_code == 200:
             if response.headers.get('Content-Type') == 'application/json':
                 json_data = response.json()
-                # data = new_replace_curly_quotes(response.json())
-                print(json_data['step_by_step_solution'],"=====---json_data['step_by_step_solution']---====")
+                print(json_data)
+                # data = n ew_replace_curly_quotes(response.json())
+                # print(json_data['step_by_step_solution'],"=====---json_data['step_by_step_solution']---====")
                 return json_data['step_by_step_solution']
         else:
             return Response({'error': 'Failed to retrieve data from external API'}, status=response.status_code)
@@ -412,7 +415,7 @@ class AnswerSubmit(APIView):
         
         response = requests.post(url,json=data)
         # print("response is :",response)
-        # print("response_text is :",response.text)
+        print("response_text is :",response.text)
         if response.status_code == 200:
             dict_data = response.json()
             # print(dict_data)
@@ -431,7 +434,7 @@ class AnswerSubmit(APIView):
         import tempfile
         import os
         import base64
-        auto_score_url = "http://139.59.86.115/api/auto-score/"
+        auto_score_url = "http://128.199.19.226:8080/api/auto-score/"
         question_fig_base64 = q_image_binary
         # print(question_fig_base64)
         # print(student_answer_base64)
@@ -616,7 +619,11 @@ class AnswerSubmit(APIView):
             # Image text submit the ai model then it solve the question
             # self.Ai_validation()
             ai_explaination = self.Ai_Explaination_step_by_step([int(class_obj.class_name)], question)
-
+            # print(ai_explaination)
+            new_steps=[]
+            for steps in ai_explaination:
+                new_steps.append(steps['step'])
+            ai_explaination = new_steps
             # question = "1. Find the radian measure of an angle subtended by an arc of length 5 units in a circle of radius 2 units."
             # ai_explaination = "Find the radian measure of an angle subtended by an arc of length 5 units in a circle with a radius of 2 units. To solve this, you can use the formula: Angle (in radians) = Arc length / Radius. In this case: The arc length is 5 units. The radius is 2 units. Using the formula: Angle = 5 / 2 = 2.5 radians. Thus, the angle subtended by the arc is 2.5 radians."
             data['question'] = question
@@ -890,6 +897,8 @@ class QuestionImageview(APIView):
                     sub_topic_code=subtopic,
                 ).order_by('?')[:]
                 all_questions.extend(questions)
+            all_questions = sorted(all_questions, key=lambda q: q.question)
+            # print(all_questions)
             serializer = QuestionWithImageSerializer(all_questions, many=True)
             return Response({"questions": serializer.data})
         
@@ -903,11 +912,11 @@ class QuestionImageview(APIView):
                 topic_code=topic
             ).order_by('?')[:5]  # Get 5 random questions per topic
             all_questions.extend(questions)
-        print(all_questions)
+        
         # If we have more than 5 questions in total, randomly select 5
         if len(all_questions) > 5:
             all_questions = sample(all_questions, 5)
-
+        print(all_questions)
         serializer = QuestionWithImageSerializer(all_questions, many=True)
         return Response({"questions": serializer.data})
 
@@ -925,7 +934,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 
 import re
-apikey=""
+
+apikey="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"
 class SimilarQuestionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -1036,3 +1046,33 @@ class SimilarQuestionsAPIView(APIView):
 
 class GapAnalysisAPIView(APIView):
     pass 
+
+
+class Questionupdateview(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # question_id = request.data.get('question_id')
+        question_subtopic=request.data.get('subtopic')
+        question_text = request.data.get('question_text')
+        question_image = request.FILES.get('question_image')
+        print("request is successfull")
+        print(question_subtopic)
+        print(question_text)
+        # print(question_image)
+        if not question_text:
+            return Response({"error": "Question ID and text are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            question = QuestionWithImage.objects.get(question=question_text)
+            question.question = question_text
+            if question_image:
+                question.question_image = question_image
+                print("image is updated")
+            if question_subtopic:
+                question.sub_topic_code = question_subtopic
+                print("subtopic is updated")
+            question.save()
+            return Response({"message": "Question updated successfully."}, status=status.HTTP_200_OK)
+        except QuestionWithImage.DoesNotExist:
+            return Response({"error": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
