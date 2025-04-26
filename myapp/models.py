@@ -118,5 +118,20 @@ class QuestionWithImage(models.Model):
 
 
  
+class GapAnalysis(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    class_name = models.TextField(null=True, blank=True)
+    subject = models.TextField(null=True, blank=True)
+    chapter_number = models.TextField(null=True, blank=True)
+    question_text = models.TextField(null=True, blank=True)
+    question_image_base64 = models.TextField(null=True, blank=True)
+    student_answer_base64 = models.TextField(null=True, blank=True)
+    student_answer = models.TextField(null=True, blank=True)
+    student_score = models.IntegerField(null=True, blank=True)
+    answering_type = models.TextField(max_length=50, null=True, blank=True)
+    session_key = models.CharField(max_length=255, null=True, blank=True)
+    date = models.DateTimeField()
 
+    def __str__(self):
+        return f"{self.student.fullname} - {self.class_name} - {self.subject} - Chapter {self.chapter_number}"
 

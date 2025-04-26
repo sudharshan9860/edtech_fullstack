@@ -94,6 +94,7 @@ def upload_student_list(request):
         return Response({"status": "failed", "error": str(e)}, status=400)
 
 
+
 @csrf_exempt
 def logins(request):
     print(request.body)
@@ -102,21 +103,39 @@ def logins(request):
         from django.test import RequestFactory
 
         data = json.loads(request.body)
-       
 
         # Create a new HttpRequest object with the parsed data
         factory = RequestFactory()
         new_request = factory.post('/login/', data, content_type='application/json')
 
         token_response = v1.obtain_auth_token(new_request)
-        # token_response=v1.obtain_auth_token(request)
+        
+        # Create a session if it doesn't exist
+        if not request.session.exists(request.session.session_key):
+            request.session.create()
+            
+        session_key = request.session.session_key
+        print(f"Session key created: {session_key}")
+        
+        # Store the user ID in the session
+        if token_response.status_code == 200:
+            # Get the user from the token
+            token = token_response.data.get('token', '')
+            user = Token.objects.get(key=token).user
+            
+            # Store user info in the session
+            request.session['user_id'] = user.id
+            request.session['username'] = user.username
+            
+            # You can also add session key to response data
+            token_response.data['session_key'] = session_key
+
         print(token_response.status_code)
-        token_response.set_cookie('token',token_response.data.get('token',''),max_age= 31622400)
+        token_response.set_cookie('token', token_response.data.get('token', ''), max_age=31622400)
         
         return token_response
     except Exception as exc:
-        return Response({"status":"Exception","description":str(exc)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        return Response({"status": "Exception", "description": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 def hello(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 

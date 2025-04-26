@@ -1,5 +1,5 @@
 from .models import classes, Subject, Topics, SubTopics, StudentSubmits, Question_Answers, QuestionWithImage
-
+from .models import GapAnalysis 
 from rest_framework import serializers
 
 class SubTopicSerializer(serializers.ModelSerializer):
@@ -91,3 +91,9 @@ class QuestionWithImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionWithImage
         fields = ['question','question_image']
+        
+        
+class GapAnalysisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GapAnalysis
+        fields = '__all__'

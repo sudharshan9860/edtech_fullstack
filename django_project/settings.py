@@ -176,7 +176,27 @@ CORS_ALLOWED_ORIGINS = [
     # Add more origins as needed
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'sessionkey',  # Add this line
+    'accept',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+# Use database-backed sessions
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
+# Set session expiration to 1 hour (3600 seconds)
+SESSION_COOKIE_AGE = 1209600
+
+# Ensure the session expires when the browser is closed
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Optional: Enable session security
+SESSION_SAVE_EVERY_REQUEST = True
 AUTH_USER_MODEL = 'Users.Student'
 
 REST_FRAMEWORK = {

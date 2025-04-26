@@ -17,4 +17,5 @@ urlpatterns = [
         path('similarquestion/',SimilarQuestionsAPIView.as_view(),name="similar-questions"),
         path('gapanalysis/',GapAnalysisAPIView.as_view(),name="gap-analysis"),
         path('questionupdate/',Questionupdateview.as_view(),name="question-update"),
+        path('gapanalysis/', GapAnalysisAPIView.as_view(), name='gap-analysis'),            
 ] 
