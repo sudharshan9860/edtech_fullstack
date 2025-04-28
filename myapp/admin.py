@@ -10,10 +10,25 @@ admin.site.register(QuestionWithImage)
 admin.site.register(GapAnalysis)
 from django.contrib.sessions.models import Session
 from django.contrib import admin
-class SessionAdmin(admin.ModelAdmin):
-    list_display = ['session_key', 'expire_date', 'get_decoded']
+from django.contrib.sessions.models import Session
+from django.contrib import admin
+from datetime import timedelta
 
-    def get_decoded(self, obj):
-        return obj.get_decoded()
-    get_decoded.short_description = 'Session Data'
+class SessionAdmin(admin.ModelAdmin):
+    list_display = ['session_key', 'created_date', 'expire_date', 'decoded_data']
+    readonly_fields = ['decoded_data']
+
+    def created_date(self, obj):
+        # Assuming session expiry is 2 weeks (default Django setting)
+        # So created_date = expire_date - 14 days
+        return obj.expire_date - timedelta(weeks=2)
+    created_date.short_description = 'Created Date'
+
+    def decoded_data(self, obj):
+        try:
+            return obj.get_decoded()
+        except Exception:
+            return "Could not decode"
+    decoded_data.short_description = 'Session Data (decoded)'
+
 admin.site.register(Session, SessionAdmin)
