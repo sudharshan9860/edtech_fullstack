@@ -95,47 +95,70 @@ def upload_student_list(request):
 
 
 
-@csrf_exempt
+from rest_framework.decorators import api_view
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+from rest_framework import status
+import json
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+
+from django.contrib.sessions.models import Session
+from django.utils import timezone
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def logins(request):
-    print(request.body)
     try:
-        import json
-        from django.test import RequestFactory
+        data = request.data
+        username = data.get('username')
+        password = data.get('password')
 
-        data = json.loads(request.body)
+        user = authenticate(username=username, password=password)
 
-        # Create a new HttpRequest object with the parsed data
-        factory = RequestFactory()
-        new_request = factory.post('/login/', data, content_type='application/json')
+        if user is not None:
+            # Get all active sessions
+            user_sessions = []
+            all_sessions = Session.objects.filter(expire_date__gte=timezone.now())
 
-        token_response = v1.obtain_auth_token(new_request)
-        
-        # Create a session if it doesn't exist
-        if not request.session.exists(request.session.session_key):
-            request.session.create()
-            
-        session_key = request.session.session_key
-        print(f"Session key created: {session_key}")
-        
-        # Store the user ID in the session
-        if token_response.status_code == 200:
-            # Get the user from the token
-            token = token_response.data.get('token', '')
-            user = Token.objects.get(key=token).user
-            
-            # Store user info in the session
+            for session in all_sessions:
+                session_data = session.get_decoded()
+                if session_data.get('user_id') == user.id:
+                    user_sessions.append(session)
+
+            if len(user_sessions) >= 2:
+                # 🧹 Sort sessions by expire_date and delete the oldest
+                oldest_session = sorted(user_sessions, key=lambda s: s.expire_date)[0]
+                oldest_session.delete()
+                print(f"Deleted oldest session for user {user.username}")
+
+            # Now create token and session normally
+            token, created = Token.objects.get_or_create(user=user)
+
+            if not request.session.exists(request.session.session_key):
+                request.session.create()
+
             request.session['user_id'] = user.id
             request.session['username'] = user.username
-            
-            # You can also add session key to response data
-            token_response.data['session_key'] = session_key
 
-        print(token_response.status_code)
-        token_response.set_cookie('token', token_response.data.get('token', ''), max_age=31622400)
-        
-        return token_response
+            response = Response({
+                "status": "Success",
+                "token": token.key,
+                "session_key": request.session.session_key
+            }, status=status.HTTP_200_OK)
+
+            max_age = 60 * 60 * 24 * 365  # 1 year
+            response.set_cookie('token', token.key, max_age=max_age, httponly=True, secure=False, samesite='Lax')
+            response.set_cookie('sessionid', request.session.session_key, max_age=max_age, httponly=True, secure=False, samesite='Lax')
+
+            return response
+        else:
+            return Response({"status": "Unauthorized", "description": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
     except Exception as exc:
         return Response({"status": "Exception", "description": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 def hello(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
