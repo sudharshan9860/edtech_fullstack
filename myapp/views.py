@@ -595,6 +595,7 @@ class AnswerSubmit(APIView):
             gap_analysis_object.answering_type="correct"
             gap_analysis_object.student_answer = ai_corr['student_answer_replication']
             gap_analysis_object.student_score=ai_corr['score']
+            gap_analysis_object.comment=ai_corr['comment']
             gap_analysis_object.save()
             data['ai_explaination'] = ai_corr['correct_answer_breakdown']
             data['comment'] = ai_corr['comment']
@@ -1028,6 +1029,25 @@ class SimilarQuestionsAPIView(APIView):
         
         return Response(response_data, status=status.HTTP_200_OK)
 
+class HistoryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        history_entries = GapAnalysis.objects.filter(student=user).values(
+            'subject',
+            'chapter_number',
+            'question_text',
+            'student_answer',
+            'student_score',
+            'answering_type',
+            'date'
+        ).order_by('-date')[:3]  # 💥 Get only the last 3
+
+        return Response({
+            "status": "success",
+            "data": list(history_entries)
+        }, status=status.HTTP_200_OK)
 
 class GapAnalysisAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1035,6 +1055,8 @@ class GapAnalysisAPIView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         chapter_number = request.data.get('chapter_number')
+        print(chapter_number)
+        print(type(chapter_number))
 
         if not chapter_number:
             return Response({
@@ -1042,26 +1064,36 @@ class GapAnalysisAPIView(APIView):
                 "message": "chapter_number is required in query parameters."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        
-        gap_entries = GapAnalysis.objects.filter(
-            student=user,
-            chapter_number=chapter_number
-        ).values(
-            'class_name',
-            'subject',
-            'chapter_number',
-            'question_text',
-            'question_image_base64',
-            'student_answer_base64',
-            'student_answer',
-            'student_score',
-            'answering_type',
-            'date'
-        )
+        chapter_numbers = []
+        if isinstance(chapter_number, str):
+            chapter_numbers = chapter_number.split(',')
+        elif isinstance(chapter_number, list):
+            chapter_numbers = [str(ch) for ch in chapter_number]
+
+        gap_entries = []
+        for chapter in chapter_numbers:
+            entries = GapAnalysis.objects.filter(
+                student=user,
+                chapter_number=chapter
+            ).values(
+                'class_name',
+                'subject',
+                'chapter_number',
+                'question_text',
+                # 'question_image_base64',
+                # 'student_answer_base64',
+                'student_answer',
+                'student_score',
+                'answering_type',
+                'date'
+            )
+            gap_entries.extend(entries)
+
         return Response({
             "status": "success",
             "data": list(gap_entries)
         }, status=status.HTTP_200_OK)
+
 class Questionupdateview(APIView):
     permission_classes = [IsAuthenticated]
 
