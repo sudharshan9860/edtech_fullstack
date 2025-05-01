@@ -596,6 +596,8 @@ class AnswerSubmit(APIView):
             gap_analysis_object.student_answer = ai_corr['student_answer_replication']
             gap_analysis_object.student_score=ai_corr['score']
             gap_analysis_object.comment=ai_corr['comment']
+            gap_analysis_object.concept_answer=ai_corr['concepts_used']
+            gap_analysis_object.ai_answer = ai_corr['correct_answer_breakdown']
             gap_analysis_object.save()
             data['ai_explaination'] = ai_corr['correct_answer_breakdown']
             data['comment'] = ai_corr['comment']
@@ -1055,6 +1057,7 @@ class GapAnalysisAPIView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         chapter_number = request.data.get('chapter_number')
+        class_name=request.data.get('class_name')
         print(chapter_number)
         print(type(chapter_number))
 
@@ -1074,7 +1077,8 @@ class GapAnalysisAPIView(APIView):
         for chapter in chapter_numbers:
             entries = GapAnalysis.objects.filter(
                 student=user,
-                chapter_number=chapter
+                chapter_number=chapter,
+                class_name=class_name
             ).values(
                 'class_name',
                 'subject',
@@ -1084,6 +1088,9 @@ class GapAnalysisAPIView(APIView):
                 # 'student_answer_base64',
                 'student_answer',
                 'student_score',
+                'concept_answer',
+                'comment',
+                'ai_answer',
                 'answering_type',
                 'date'
             )

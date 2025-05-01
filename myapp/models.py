@@ -130,6 +130,8 @@ class GapAnalysis(models.Model):
     student_score = models.IntegerField(null=True, blank=True)
     answering_type = models.TextField(max_length=50, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
+    ai_answer = models.TextField(null=True, blank=True)
+    concept_answer= models.TextField(null=True, blank=True)
     session_key = models.CharField(max_length=255, null=True, blank=True)
     
     date = models.DateTimeField()
