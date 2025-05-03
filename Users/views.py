@@ -95,15 +95,13 @@ def upload_student_list(request):
 
 
 
-from rest_framework.decorators import api_view
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
-from rest_framework import status
-import json
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
 
+from django.contrib.auth import authenticate, login
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 
@@ -118,46 +116,60 @@ def logins(request):
         user = authenticate(username=username, password=password)
 
         if user is not None:
-            # Get all active sessions
+            # ✅ Log the user in (crucial for session management)
+            login(request, user)
+
+            # 🔎 Get all sessions linked to this user
             user_sessions = []
             all_sessions = Session.objects.filter(expire_date__gte=timezone.now())
 
             for session in all_sessions:
                 session_data = session.get_decoded()
-                if session_data.get('user_id') == user.id:
+                if str(session_data.get('_auth_user_id')) == str(user.id):
                     user_sessions.append(session)
 
+            # 🧹 If more than 2 sessions, delete the oldest
             if len(user_sessions) >= 2:
-                # 🧹 Sort sessions by expire_date and delete the oldest
                 oldest_session = sorted(user_sessions, key=lambda s: s.expire_date)[0]
                 oldest_session.delete()
                 print(f"Deleted oldest session for user {user.username}")
 
-            # Now create token and session normally
+            # 🔑 Get or create token
             token, created = Token.objects.get_or_create(user=user)
 
+            # 🔐 Ensure session is created
             if not request.session.exists(request.session.session_key):
                 request.session.create()
 
+            # Store user info in session
             request.session['user_id'] = user.id
             request.session['username'] = user.username
 
+            # 📤 Build response with token and session info
             response = Response({
                 "status": "Success",
                 "token": token.key,
                 "session_key": request.session.session_key
             }, status=status.HTTP_200_OK)
 
+            # 🍪 Set token and sessionid cookies (customize max_age as needed)
             max_age = 60 * 60 * 24 * 365  # 1 year
             response.set_cookie('token', token.key, max_age=max_age, httponly=True, secure=False, samesite='Lax')
             response.set_cookie('sessionid', request.session.session_key, max_age=max_age, httponly=True, secure=False, samesite='Lax')
 
             return response
+
         else:
-            return Response({"status": "Unauthorized", "description": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({
+                "status": "Unauthorized",
+                "description": "Invalid credentials"
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
     except Exception as exc:
-        return Response({"status": "Exception", "description": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "status": "Exception",
+            "description": str(exc)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def hello(request):
     return HttpResponse("Hello, world. You're at the polls index.")
