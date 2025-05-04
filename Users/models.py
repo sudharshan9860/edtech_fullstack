@@ -90,3 +90,13 @@ class Student(AbstractBaseUser):
         Does the user have permissions to view the app `app_label`?
         """
         return True
+
+
+# models.py
+from django.db import models
+from django.contrib.auth.models import User
+
+class SessionSnapshot(models.Model):
+    user = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True)
+    session_data = models.JSONField()
+    timestamp = models.DateTimeField(auto_now_add=True)

@@ -484,11 +484,9 @@ class AnswerSubmit(APIView):
                     print(f"Failed to delete temporary file: {str(e)}")
     
     def post(self, request, *args, **kwargs):
-    
+        print(request.headers)
         
         session_key = request.headers.get('SessionKey')
-        
-      
         class_id = request.POST.get('class_id')
         subject_id = request.POST.get('subject_id')
         question = request.POST.get('question')
@@ -666,6 +664,26 @@ class AnswerSubmit(APIView):
             gap_analysis_object.student_answer = "not solved"
             gap_analysis_object.student_score=0
             gap_analysis_object.save()
+        # gap_analysis_data = {
+        #     'student': request.user.fullname,
+        #     'class_name': gap_analysis_object.class_id,
+        #     'subject': gap_analysis_object.subject_name,
+        #     'question_text': gap_analysis_object.question,
+        #     'student_answer_base64': image_binary,
+        #     'topic_ids': chapter,
+        #     'date': current_time.isoformat(),  # Store as ISO string
+        #     'question_image_base64': gap_analysis_object.question_image_base64,
+        #     'student_answer': gap_analysis_object.student_answer,
+        #     'student_score': gap_analysis_object.student_score,
+        #     'answering_type': gap_analysis_object.answering_type,
+        # }
+        if 'gap_analysis_data' not in request.session:
+            request.session['gap_analysis_data'] = []
+
+        # Append the current gap_analysis_object to the session list
+        request.session['gap_analysis_data'].append(GapAnalysisSerializer(gap_analysis_object).data)
+        # Mark the session as modified to ensure changes are saved
+        request.session.modified = True
         
         return Response({"message": "Answer submitted successfully!", 'ai_data':data}, status=status.HTTP_201_CREATED)
 
@@ -1101,6 +1119,43 @@ class GapAnalysisAPIView(APIView):
             "data": list(gap_entries)
         }, status=status.HTTP_200_OK)
 
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from datetime import datetime
+import pytz
+
+class UserGapAnalysisDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_user_gap_analysis_data(self, request):
+        """
+        Retrieves and filters the user's gap analysis data from the session.
+        """
+        user_id = request.user.id  # Get the current user's ID
+        gap_analysis_data = request.session.get('gap_analysis_data', [])
+        
+        # Filter the data to get only the entries for the current user
+        user_gap_analysis_data = [data for data in gap_analysis_data if data['student'] == user_id]
+        
+        return user_gap_analysis_data
+
+    def get(self, request, *args, **kwargs):
+        """
+        API endpoint to get the gap analysis data for the authenticated user.
+        """
+        # Retrieve the user's gap analysis data from the session
+        user_gap_analysis_data = self.get_user_gap_analysis_data(request)
+        
+        if not user_gap_analysis_data:
+            # If no data is found, return a 404 response
+            return Response({"message": "No gap analysis data found for this user."}, status=status.HTTP_404_NOT_FOUND)
+
+        # If data is found, return the data in the response
+        return Response({"gap_analysis_data": user_gap_analysis_data}, status=status.HTTP_200_OK)
+
 class Questionupdateview(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1129,3 +1184,4 @@ class Questionupdateview(APIView):
             return Response({"message": "Question updated successfully."}, status=status.HTTP_200_OK)
         except QuestionWithImage.DoesNotExist:
             return Response({"error": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
+        

@@ -172,11 +172,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     # "https://example.com",
-    "http://localhost:3000",
+    "http://localhost:5173",
     # "http://159.89.167.189/"
     # Add more origins as needed
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'content-type',
     'authorization',
@@ -200,15 +201,35 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
 AUTH_USER_MODEL = 'Users.Student'
 
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.TokenAuthentication',
+#     ],
+    
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',
+#     ],
+# }
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
-    
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://app1.aieducator.com",
+
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "https://app1.aieducator.com"
+
+]
+
 #  STATIC_ROOT and MEDIA_ROOT in settings.py file.
 STATIC_ROOT=os.path.join(BASE_DIR,'static')
 MEDIA_ROOT=os.path.join(BASE_DIR,'media')

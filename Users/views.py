@@ -104,8 +104,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login
 from django.contrib.sessions.models import Session
 from django.utils import timezone
+from django.middleware.csrf import get_token
 
 @api_view(['POST'])
+# Remove the csrf_exempt decorator
 @permission_classes([AllowAny])
 def logins(request):
     try:
@@ -116,46 +118,42 @@ def logins(request):
         user = authenticate(username=username, password=password)
 
         if user is not None:
-            # ✅ Log the user in (crucial for session management)
+            # Log the user in
             login(request, user)
 
-            # 🔎 Get all sessions linked to this user
-            user_sessions = []
-            all_sessions = Session.objects.filter(expire_date__gte=timezone.now())
+            # Get all sessions linked to this user
+            # user_sessions = []
+            # all_sessions = Session.objects.filter(expire_date__gte=timezone.now())
 
-            for session in all_sessions:
-                session_data = session.get_decoded()
-                if str(session_data.get('_auth_user_id')) == str(user.id):
-                    user_sessions.append(session)
+            # for session in all_sessions:
+            #     session_data = session.get_decoded()
+            #     if str(session_data.get('_auth_user_id')) == str(user.id):
+            #         user_sessions.append(session)
 
-            # 🧹 If more than 2 sessions, delete the oldest
-            if len(user_sessions) >= 2:
-                oldest_session = sorted(user_sessions, key=lambda s: s.expire_date)[0]
-                oldest_session.delete()
-                print(f"Deleted oldest session for user {user.username}")
+            # # If more than 2 sessions, delete the oldest
+            # if len(user_sessions) >= 2:
+            #     oldest_session = sorted(user_sessions, key=lambda s: s.expire_date)[0]
+            #     oldest_session.delete()
+            #     print(f"Deleted oldest session for user {user.username}")
 
-            # 🔑 Get or create token
+            # Get or create token
             token, created = Token.objects.get_or_create(user=user)
 
-            # 🔐 Ensure session is created
-            if not request.session.exists(request.session.session_key):
-                request.session.create()
-
-            # Store user info in session
-            request.session['user_id'] = user.id
-            request.session['username'] = user.username
-
-            # 📤 Build response with token and session info
+            # Build response with token and session info
             response = Response({
                 "status": "Success",
                 "token": token.key,
                 "session_key": request.session.session_key
             }, status=status.HTTP_200_OK)
 
-            # 🍪 Set token and sessionid cookies (customize max_age as needed)
+            # Set token and sessionid cookies
             max_age = 60 * 60 * 24 * 365  # 1 year
             response.set_cookie('token', token.key, max_age=max_age, httponly=True, secure=False, samesite='Lax')
             response.set_cookie('sessionid', request.session.session_key, max_age=max_age, httponly=True, secure=False, samesite='Lax')
+            
+            # Set a fresh CSRF token in the cookie
+            csrf_token = get_token(request)
+            response.set_cookie('csrftoken', csrf_token, max_age=max_age, secure=False, samesite='Lax')
 
             return response
 
@@ -170,9 +168,57 @@ def logins(request):
             "status": "Exception",
             "description": str(exc)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
 def hello(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 
+# utils.py or inside views.py
+from .models import SessionSnapshot
 
+def backup_session_data(request):
+    data = dict(request.session)
+    # Optional: remove Django-internal keys
+    data.pop('_auth_user_id', None)
+    data.pop('_auth_user_backend', None)
+    data.pop('_auth_user_hash', None)
+
+    SessionSnapshot.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        session_data=data
+    )
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
+from django.contrib.auth import logout
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+
+@api_view(['POST'])
+def logout_view(request):
+    try:
+        # Backup session data before logout
+        backup_session_data(request)
+
+        if request.user.is_authenticated:
+            logout(request)
+
+            response = Response({"status": "Success"}, status=status.HTTP_200_OK)
+            response.delete_cookie('token')
+            response.delete_cookie('sessionid')
+            return response
+
+        return Response({"status": "Already logged out"}, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        return Response({"status": "Error", "message": str(e)}, 
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        
+        
