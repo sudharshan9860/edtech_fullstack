@@ -26,6 +26,7 @@ const Layout = ({ children }) => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(soundManager.isSoundEnabled);
 
   const handleLogout = () => {
+    console.log('Logging out...');
     logout();
     navigate('/');
   };

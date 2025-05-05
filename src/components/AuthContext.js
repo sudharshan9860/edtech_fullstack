@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
-
+import axios from "axios"; 
+import axiosInstance from "../api/axiosInstance";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -43,24 +44,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+// Ensure this is uncommented
+
+  const logout = async () => {
     try {
-      // Clear all auth-related data
+      console.log("Logging out from try block...");
+      const response = await axiosInstance.post('logout/', {}, {
+        withCredentials: true
+      });
+      console.log("Logout response:", response);
+  
       localStorage.removeItem("accessToken");
       localStorage.removeItem("username");
       localStorage.removeItem("streakData");
       localStorage.removeItem("rewardData");
       localStorage.removeItem("completedChapters");
-
-      // Update state
+  
       setIsAuthenticated(false);
       setUsername("");
+  
+      window.location.href = "/login";
     } catch (error) {
       console.error("Error during logout:", error);
+      localStorage.clear();
+      setIsAuthenticated(false);
+      setUsername("");
+      window.location.href = "/login";
     }
   };
-
-  return (
+  
+    return (
     <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
       {children}
     </AuthContext.Provider>

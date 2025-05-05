@@ -594,7 +594,7 @@ function SolveQuestion() {
                 Question List
               </Button>
             </Col>
-            <Col xs={12} md={6} className="mt-2 mt-md-0">
+            {/* <Col xs={12} md={6} className="mt-2 mt-md-0">
               <Button
                 variant="success"
                 type="button"
@@ -617,7 +617,7 @@ function SolveQuestion() {
                   "Submit"
                 )}
               </Button>
-            </Col>
+            </Col> */}
           </Row>
 
           {/* Bottom Row with Action Buttons */}

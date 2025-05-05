@@ -22,12 +22,10 @@ const QuestionListModal = ({
 
   const [selectedQuestions, setSelectedQuestions] = useState([]);
 
-  // Set current page when modal is shown
   useEffect(() => {
     if (show) {
       console.log("QuestionListModal is now visible, setting current page");
       setCurrentPage("questionListModal");
-      // Ensure tutorial is shown if it should be
       if (shouldShowTutorialForPage("questionListModal")) {
         console.log("Should show tutorial for QuestionListModal");
       }
@@ -54,7 +52,6 @@ const QuestionListModal = ({
 
   const handleQuestionClick = (questionData, index) => {
     if (isMultipleSelect) {
-      // Toggle selection for multiple select mode
       setSelectedQuestions((prev) => {
         const isSelected = prev.includes(index);
         if (isSelected) {
@@ -67,7 +64,6 @@ const QuestionListModal = ({
         }
       });
     } else {
-      // Single selection mode
       console.log("Question clicked, continuing tutorial flow");
       continueTutorialFlow("questionListModal", "solveQuestion");
 
@@ -83,7 +79,7 @@ const QuestionListModal = ({
   };
 
   const handleMultipleSelectSubmit = () => {
-    if (selectedQuestions.length === 5) {
+    if (selectedQuestions.length >= 1 && selectedQuestions.length <= 5) {
       const selectedQuestionsData = selectedQuestions.map((index) => ({
         question: questionList[index].question,
         image: questionList[index].question_image
@@ -120,12 +116,12 @@ const QuestionListModal = ({
 
       <Modal.Header closeButton>
         <Modal.Title>
-          {isMultipleSelect ? "Select 5 Questions" : "Question List"}
+          {isMultipleSelect ? "Select up to 5 Questions" : "Question List"}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="question-list-container">
-          {questionList && questionList.length > 0 ? (
+          {questionList.length > 0 ? (
             <ul className="question-list">
               {questionList.map((questionData, index) => (
                 <li
@@ -144,7 +140,9 @@ const QuestionListModal = ({
                   )}
                   <div className="question-number">{index + 1}</div>
                   <div className="question-content">
-                    <div className="question-text">{questionData.question}</div>
+                    <div className="question-text">
+                      {questionData.question}
+                    </div>
                     {questionData.question_image && (
                       <div className="question-image-preview">
                         <img
@@ -168,7 +166,9 @@ const QuestionListModal = ({
           <Button
             variant="primary"
             onClick={handleMultipleSelectSubmit}
-            disabled={selectedQuestions.length !== 5}
+            disabled={
+              selectedQuestions.length < 1 || selectedQuestions.length > 5
+            }
           >
             Submit Selected Questions ({selectedQuestions.length}/5)
           </Button>

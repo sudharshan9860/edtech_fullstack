@@ -1,78 +1,81 @@
 import axios from "axios";
 import { getErrorMessage } from "../utils/errorHandling";
 
+// Helper to read CSRF token from cookie
+function getCSRFToken() {
+  const name = 'csrftoken';
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  console.log("CSRF Token:", match ? match[2] : null); // Debugging line to check CSRF token
+  return match ? match[2] : null;
+}
+
 const axiosInstance = axios.create({
-  baseURL: "https://autogen.aieducator.com/",
+  baseURL: "https://autogen.aieducator.com/", // must match backend run host
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 60000, // Increased to 60 seconds for file uploads
+  timeout: 60000,
 });
 
-// Request Interceptor - Adds Authorization Token and handles file uploads
+// Request Interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
+    // ✅ Remove token-based Authorization
+    // const token = localStorage.getItem("accessToken");
+    // if (token) {
+    //   config.headers.Authorization = `Token ${token}`;
+    // }
 
-    if (token) {
-      config.headers.Authorization = `Token ${token}`;
+    // ✅ CSRF token for POST/PUT/DELETE
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      config.headers["X-CSRFToken"] = csrfToken;
     }
 
-    // Handle FormData content type for file uploads
+    // ✅ Don't set Content-Type for FormData
     if (config.data instanceof FormData) {
-      // Don't set Content-Type for FormData - browser will set it with boundary
       delete config.headers["Content-Type"];
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response Interceptor - Handles Errors
+// Response Interceptor
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
-    // Handle timeout errors specifically
     if (error.code === "ECONNABORTED") {
       console.error("Request Timeout Error");
       return Promise.reject(new Error("Request timed out. Please try again."));
     }
 
-    // Handle authentication errors (401 Unauthorized)
     if (error.response?.status === 401) {
-      // Clear authentication data
-      localStorage.removeItem("accessToken");
+      // Clear frontend state
       localStorage.removeItem("username");
       localStorage.removeItem("streakData");
       localStorage.removeItem("rewardData");
       localStorage.removeItem("completedChapters");
 
-      // Redirect to login page
+      // Redirect to login
       window.location.href = "/login";
-      return Promise.reject(
-        new Error("Your session has expired. Please log in again.")
-      );
+      return Promise.reject(new Error("Your session has expired. Please log in again."));
     }
 
-    // For other errors, return a user-friendly message
     const errorMessage = getErrorMessage(error);
     return Promise.reject(new Error(errorMessage));
   }
 );
 
-// Custom method for file uploads with extended timeout
+// File Upload Method
 axiosInstance.uploadFile = async (url, formData, progressCallback) => {
   try {
+    const csrfToken = getCSRFToken();
     const response = await axiosInstance.post(url, formData, {
-      timeout: 120000, // 2 minutes for file uploads
-      headers: {
-        // Don't set Content-Type, axios will set it with the correct boundary
-      },
+      timeout: 120000,
+      headers: csrfToken ? { "X-CSRFToken": csrfToken } : {},
       onUploadProgress: (progressEvent) => {
         if (progressCallback && progressEvent.total) {
           const percentCompleted = Math.round(
@@ -84,10 +87,8 @@ axiosInstance.uploadFile = async (url, formData, progressCallback) => {
     });
     return response;
   } catch (error) {
-    // Create a more user-friendly error message for file uploads
     if (error.code === "ECONNABORTED") {
-      error.friendlyMessage =
-        "Upload timed out. Please try with a smaller image or check your connection.";
+      error.friendlyMessage = "Upload timed out. Please try with a smaller image or check your connection.";
     } else if (error.response?.status === 413) {
       error.friendlyMessage = "File too large. Please upload a smaller image.";
     } else {

@@ -241,21 +241,21 @@ return (
     }
     
     // If we have auto-calculated a score, show it
-    if (autoCalculatedScore !== null) {
-      return (
-        <div className="result-score auto-calculated">
-          <p><strong>Auto-Score:</strong> {autoCalculatedScore} / {totalValue}</p>
-          <span className="score-note">This score was auto-calculated based on your answer</span>
-        </div>
-      );
-    }
+    // if (autoCalculatedScore !== null) {
+    //   return (
+    //     <div className="result-score auto-calculated">
+    //       <p><strong>Auto-Score:</strong> {autoCalculatedScore} / {totalValue}</p>
+    //       <span className="score-note">This score was auto-calculated based on your answer</span>
+    //     </div>
+    //   );
+    // }
     
-    // Default case: show zero score
-    return (
-      <div className="result-score">
-        <p><strong>Score:</strong> 0 / {totalValue}</p>
-      </div>
-    );
+    // // Default case: show zero score
+    // return (
+    //   <div className="result-score">
+    //     <p><strong>Score:</strong> 0 / {totalValue}</p>
+    //   </div>
+    // );
   };
 
   // Function to render solution steps with proper formatting
@@ -324,6 +324,7 @@ return (
     }
 
     switch (actionType) {
+      
       case 'submit':
         return (
           <>
