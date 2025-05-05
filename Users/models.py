@@ -100,3 +100,5 @@ class SessionSnapshot(models.Model):
     user = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True)
     session_data = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return str(self.user)+" "+str(self.timestamp)

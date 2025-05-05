@@ -78,8 +78,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'django_project.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # DATABASES = {
 #     'default': {
@@ -87,36 +85,7 @@ WSGI_APPLICATION = 'django_project.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'newauth',
-#         'USER': 'postgres',
-#         'PASSWORD': '1234',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'newdb',
-#         'USER': 'myuser1',
-#         'PASSWORD': 'Aieducator@2024',
-#         'HOST': '165.232.177.206',
-#         'PORT': '5432',
-#     }
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'newdb2',
-#         'USER': 'myuser1',
-#         'PASSWORD': 'Aieducator@2024',
-#         'HOST': '165.232.177.206',
-#         'PORT': '5432',
-#     }
-# }
+
 
 DATABASES = {
     'default': {
