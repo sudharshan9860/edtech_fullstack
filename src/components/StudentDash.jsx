@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Row, Col } from "react-bootstrap";
+import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "./StudentDash.css";
 import axiosInstance from "../api/axiosInstance";
@@ -8,6 +8,7 @@ import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Tutorial from "./Tutorial";
 import { useTutorial } from "../contexts/TutorialContext";
+import RecentSessions from "./RecentSessions"; // Import the new component
 import {
   faSchool,
   faBookOpen,
@@ -72,6 +73,10 @@ function StudentDash() {
       target: ".btn-generate",
       content:
         "Click here to generate your questions. After this, we'll continue the tutorial on the question list.",
+    },
+    {
+      target: ".recent-sessions-container",
+      content: "Here you can see your recent study sessions and quickly resume where you left off.",
     },
   ];
 
@@ -280,169 +285,174 @@ function StudentDash() {
       {shouldShowTutorialForPage("studentDash") && (
         <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
       )}
-      <main className="flex-fill d-flex justify-content-center align-items-center">
-        <div className="form-container">
-          <Form onSubmit={handleSubmit}>
-            <div className="restart-tutorial-btn-container mb-3 text-right">
-              <Button
-                variant="outline-info"
-                className="restart-tutorial-btn"
-                onClick={() => {
-                  console.log("Restarting tutorial on StudentDash page...");
-                  restartTutorialForPage("studentDash");
-                }}
-                size="sm"
-              >
-                <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
-                Replay Tutorial
-              </Button>
-            </div>
+      <main className="flex-fill">
+        <Container className="py-4">
+          <div className="form-container mb-4">
+            <Form onSubmit={handleSubmit}>
+              <div className="restart-tutorial-btn-container mb-3 text-right">
+                <Button
+                  variant="outline-info"
+                  className="restart-tutorial-btn"
+                  onClick={() => {
+                    console.log("Restarting tutorial on StudentDash page...");
+                    restartTutorialForPage("studentDash");
+                  }}
+                  size="sm"
+                >
+                  <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
+                  Replay Tutorial
+                </Button>
+              </div>
 
-            <Row className="mb-3">
-              <Col xs={12} md={6}>
-                <Form.Group controlId="formClass">
-                  <Form.Label>
-                    <FontAwesomeIcon icon={faSchool} className="me-2" />
-                    Class
-                  </Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={selectedClass}
-                    onChange={(e) => setSelectedClass(e.target.value)}
-                    className="form-control"
-                  >
-                    <option value="">Select Class</option>
-                    {classes.map((cls) => (
-                      <option key={cls.class_code} value={cls.class_code}>
-                        {cls.class_name}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-              <Col xs={12} md={6}>
-                <Form.Group controlId="formSubject">
-                  <Form.Label>
-                    <FontAwesomeIcon icon={faBookOpen} className="me-2" />
-                    Subject
-                  </Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="form-control"
-                    disabled={!selectedClass}
-                  >
-                    <option value="">Select Subject</option>
-                    {subjects.map((subject) => (
-                      <option
-                        key={subject.subject_code}
-                        value={subject.subject_code}
-                      >
-                        {subject.subject_name}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row className="mb-3">
-              <Col className="select-chapters" xs={12} md={6}>
-                <Form.Group controlId="formChapters">
-                  <Form.Label>
-                    <FontAwesomeIcon icon={faListAlt} className="me-2" />
-                    Chapters
-                  </Form.Label>
-                  <Select
-                    isMulti
-                    options={chapters.map((chapter) => ({
-                      value: chapter.topic_code,
-                      label: chapter.name,
-                    }))}
-                    value={selectedChapters.map((code) => ({
-                      value: code,
-                      label: chapters.find(
-                        (chapter) => chapter.topic_code === code
-                      )?.name,
-                    }))}
-                    onChange={(selectedOptions) => {
-                      setSelectedChapters(
-                        selectedOptions.map((option) => option.value)
-                      );
-                    }}
-                    classNamePrefix="react-select"
-                    placeholder="Select Chapters"
-                    isDisabled={!selectedSubject}
-                  />
-                </Form.Group>
-              </Col>
-              <Col xs={12} md={6}>
-                <Form.Group controlId="formQuestionType">
-                  <Form.Label>
-                    <FontAwesomeIcon
-                      icon={faClipboardQuestion}
-                      className="me-2"
-                    />
-                    Question Type
-                  </Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={questionType}
-                    onChange={(e) => setQuestionType(e.target.value)}
-                    className="form-control"
-                    disabled={selectedChapters.length === 0}
-                  >
-                    <option value="">Select Question Type</option>
-                    <option value="solved">Solved</option>
-                    <option value="exercise">Exercise</option>
-                    <option value="external">Set of Questions</option>
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            {questionType === "external" && (
               <Row className="mb-3">
                 <Col xs={12} md={6}>
-                  <Form.Group controlId="formQuestionLevel">
+                  <Form.Group controlId="formClass">
                     <Form.Label>
-                      <FontAwesomeIcon
-                        icon={faClipboardQuestion}
-                        className="me-2"
-                      />
-                      Select The Set
+                      <FontAwesomeIcon icon={faSchool} className="me-2" />
+                      Class
                     </Form.Label>
                     <Form.Control
                       as="select"
-                      value={questionLevel}
-                      onChange={(e) => setQuestionLevel(e.target.value)}
+                      value={selectedClass}
+                      onChange={(e) => setSelectedClass(e.target.value)}
                       className="form-control"
                     >
-                      <option value="">Select The Set</option>
-                      {subTopics.map((subTopic, index) => (
-                        <option key={subTopic} value={subTopic}>
-                          {`Exercise ${index + 1}`}
+                      <option value="">Select Class</option>
+                      {classes.map((cls) => (
+                        <option key={cls.class_code} value={cls.class_code}>
+                          {cls.class_name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+                <Col xs={12} md={6}>
+                  <Form.Group controlId="formSubject">
+                    <Form.Label>
+                      <FontAwesomeIcon icon={faBookOpen} className="me-2" />
+                      Subject
+                    </Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={selectedSubject}
+                      onChange={(e) => setSelectedSubject(e.target.value)}
+                      className="form-control"
+                      disabled={!selectedClass}
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map((subject) => (
+                        <option
+                          key={subject.subject_code}
+                          value={subject.subject_code}
+                        >
+                          {subject.subject_name}
                         </option>
                       ))}
                     </Form.Control>
                   </Form.Group>
                 </Col>
               </Row>
-            )}
 
-            <div className="d-flex justify-content-end">
-              <Button
-                variant="primary"
-                type="submit"
-                className="btn-generate mt-3"
-                disabled={!isGenerateButtonEnabled()}
-              >
-                Generate Questions
-              </Button>
-            </div>
-          </Form>
-        </div>
+              <Row className="mb-3">
+                <Col className="select-chapters" xs={12} md={6}>
+                  <Form.Group controlId="formChapters">
+                    <Form.Label>
+                      <FontAwesomeIcon icon={faListAlt} className="me-2" />
+                      Chapters
+                    </Form.Label>
+                    <Select
+                      isMulti
+                      options={chapters.map((chapter) => ({
+                        value: chapter.topic_code,
+                        label: chapter.name,
+                      }))}
+                      value={selectedChapters.map((code) => ({
+                        value: code,
+                        label: chapters.find(
+                          (chapter) => chapter.topic_code === code
+                        )?.name,
+                      }))}
+                      onChange={(selectedOptions) => {
+                        setSelectedChapters(
+                          selectedOptions.map((option) => option.value)
+                        );
+                      }}
+                      classNamePrefix="react-select"
+                      placeholder="Select Chapters"
+                      isDisabled={!selectedSubject}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} md={6}>
+                  <Form.Group controlId="formQuestionType">
+                    <Form.Label>
+                      <FontAwesomeIcon
+                        icon={faClipboardQuestion}
+                        className="me-2"
+                      />
+                      Question Type
+                    </Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={questionType}
+                      onChange={(e) => setQuestionType(e.target.value)}
+                      className="form-control"
+                      disabled={selectedChapters.length === 0}
+                    >
+                      <option value="">Select Question Type</option>
+                      <option value="solved">Solved</option>
+                      <option value="exercise">Exercise</option>
+                      <option value="external">Set of Questions</option>
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {questionType === "external" && (
+                <Row className="mb-3">
+                  <Col xs={12} md={6}>
+                    <Form.Group controlId="formQuestionLevel">
+                      <Form.Label>
+                        <FontAwesomeIcon
+                          icon={faClipboardQuestion}
+                          className="me-2"
+                        />
+                        Select The Set
+                      </Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={questionLevel}
+                        onChange={(e) => setQuestionLevel(e.target.value)}
+                        className="form-control"
+                      >
+                        <option value="">Select The Set</option>
+                        {subTopics.map((subTopic, index) => (
+                          <option key={subTopic} value={subTopic}>
+                            {`Exercise ${index + 1}`}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              )}
+
+              <div className="d-flex justify-content-end">
+                <Button
+                  variant="primary"
+                  type="submit"
+                  className="btn-generate mt-3"
+                  disabled={!isGenerateButtonEnabled()}
+                >
+                  Generate Questions
+                </Button>
+              </div>
+            </Form>
+          </div>
+
+          {/* Recent Sessions Section */}
+          <RecentSessions />
+        </Container>
       </main>
 
       <QuestionListModal

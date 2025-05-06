@@ -10,6 +10,8 @@ import AppRoutes from "./routing/Routing";
 import ChatBox from "./components/ChatBox";
 import "./styles/theme.css";
 import { TutorialProvider } from "./contexts/TutorialContext";
+import { TimerProvider } from "./contexts/TimerContext";
+
 
 // Wrapper component to use location hook
 function AppContent() {
@@ -31,19 +33,20 @@ function App() {
     <AuthProvider>
       <NotificationProvider>
         <ProgressProvider>
-          <LeaderboardProvider>
-            <QuestProvider>
-              <TutorialProvider>
-                <Router>
-                  <AppContent />
-                </Router>
-              </TutorialProvider>
-            </QuestProvider>
-          </LeaderboardProvider>
+          <TimerProvider> {/* Add this line */}
+            <LeaderboardProvider>
+              <QuestProvider>
+                <TutorialProvider>
+                  <Router>
+                    <AppContent />
+                  </Router>
+                </TutorialProvider>
+              </QuestProvider>
+            </LeaderboardProvider>
+          </TimerProvider> {/* And this line */}
         </ProgressProvider>
       </NotificationProvider>
     </AuthProvider>
   );
 }
-
 export default App;

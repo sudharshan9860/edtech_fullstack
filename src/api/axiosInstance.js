@@ -10,7 +10,7 @@ function getCSRFToken() {
 }
 
 const axiosInstance = axios.create({
-  baseURL: "https://autogen.aieducator.com/", // must match backend run host
+  baseURL: "http://localhost:8000/", // must match backend run host
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

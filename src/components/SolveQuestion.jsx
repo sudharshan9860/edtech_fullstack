@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Form, Button, Spinner, Alert, Row, Col } from "react-bootstrap";
 import axiosInstance from "../api/axiosInstance";
@@ -9,10 +9,13 @@ import { NotificationContext } from "../contexts/NotificationContext";
 import { QuestContext } from "../contexts/QuestContext";
 import { QUEST_TYPES } from "../models/QuestSystem";
 import { useSoundFeedback } from "../hooks/useSoundFeedback";
+import { useTimer } from "../contexts/TimerContext"; // Import the Timer context
+import StudyTimer from "./StudyTimer"; // Import the StudyTimer component
 import Tutorial from "./Tutorial";
 import { useTutorial } from "../contexts/TutorialContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import "./StudyTimer.css"; // Import timer styles
 
 function SolveQuestion() {
   const location = useLocation();
@@ -25,19 +28,23 @@ function SolveQuestion() {
   const {
     shouldShowTutorialForPage,
     markPageCompleted,
-    resetTutorial,
     setCurrentPage,
     exitTutorialFlow,
-    setShowTutorial,
-    setCurrentStep,
     restartTutorialForPage,
   } = useTutorial();
+
+  // Timer context
+  const { 
+    startTimer, 
+    stopTimer, 
+    isTimerActive 
+  } = useTimer();
 
   // Sound feedback hook
   const { playQuestionSolvedSound, playAchievementSound } = useSoundFeedback();
 
   // State for tracking study session
-  const [studySessionStart, setStudySessionStart] = useState(Date.now());
+  const [studyTime, setStudyTime] = useState(0);
   const [images, setImages] = useState([]);
   const [isSolveEnabled, setIsSolveEnabled] = useState(true);
   const [showQuestionListModal, setShowQuestionListModal] = useState(false);
@@ -57,6 +64,7 @@ function SolveQuestion() {
     selectedQuestions,
   } = location.state || {};
   const { questionNumber } = location.state || {};
+  const questionId = location.state?.questionId || `question_${index}_${Date.now()}`;
   const question_image =
     location.state?.image || questionList?.[index]?.image || "";
 
@@ -64,15 +72,33 @@ function SolveQuestion() {
     question: question,
     questionNumber: questionNumber || (index !== undefined ? index + 1 : 1),
     image: question_image,
+    id: questionId
   });
+
+  // Start timer when component mounts
+  useEffect(() => {
+    if (currentQuestion.id) {
+      startTimer(currentQuestion.id);
+    }
+    
+    // Stop timer when component unmounts
+    return () => {
+      const timeSpent = stopTimer();
+      console.log(`Study session ended. Time spent: ${timeSpent}ms`);
+    };
+  }, [currentQuestion.id]);
 
   // Tutorial steps for SolveQuestion page
   const tutorialSteps = [
     {
+      target: ".study-timer",
+      content: "This timer tracks how long you spend on each question. It starts automatically when you open a question and stops when you submit your solution.",
+      disableBeacon: true,
+    },
+    {
       target: ".question-text-container",
       content:
         "This is the question you need to solve. Read it carefully to understand what's being asked.",
-      disableBeacon: true,
     },
     {
       target: "input[type='file']",
@@ -97,7 +123,6 @@ function SolveQuestion() {
       target: ".btn-question-list",
       content: "Click here to see the list of questions.",
     },
-
     {
       target: ".solve-btn",
       content: "If you're stuck, click here to see a step-by-step solution.",
@@ -171,16 +196,20 @@ function SolveQuestion() {
   // Update currentQuestion when location state changes
   useEffect(() => {
     if (location.state) {
+      const newQuestionId = location.state?.questionId || `question_${index}_${Date.now()}`;
+      
       setCurrentQuestion({
         question: location.state.question || "",
         questionNumber:
           location.state.questionNumber ||
           (index !== undefined ? index + 1 : 1),
         image: location.state.image || "",
+        id: newQuestionId
       });
 
-      // Reset study session start time
-      setStudySessionStart(Date.now());
+      // Stop previous timer and start a new one
+      stopTimer();
+      startTimer(newQuestionId);
 
       // Reset other state
       setImages([]);
@@ -214,18 +243,58 @@ function SolveQuestion() {
     setUploadProgress(percent);
   };
 
+  // Handle timer completion
+  const handleTimerComplete = (seconds) => {
+    setStudyTime(seconds);
+  };
+
   // Handlers for different actions
-  const handleSubmit = () => sendFormData({ submit: true }, "submit");
+  const handleSubmit = () => {
+    // Stop the timer and get the time spent
+    const timeSpentMs = stopTimer();
+    const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
+    
+    // Add study time to the request
+    sendFormData({ 
+      submit: true,
+      study_time_seconds: Math.floor(timeSpentMs / 1000),
+      study_time_minutes: timeSpentMinutes
+    }, "submit");
+  };
 
-  const handleSolve = () => sendFormData({ solve: true }, "solve");
+  const handleSolve = () => {
+    // Stop the timer and get the time spent
+    const timeSpentMs = stopTimer();
+    const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
+    
+    sendFormData({ 
+      solve: true,
+      study_time_seconds: Math.floor(timeSpentMs / 1000),
+      study_time_minutes: timeSpentMinutes
+    }, "solve");
+  };
 
-  const handleExplain = () => sendFormData({ explain: true }, "explain");
+  const handleExplain = () => {
+    // Stop the timer and get the time spent
+    const timeSpentMs = stopTimer();
+    const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
+    
+    sendFormData({ 
+      explain: true,
+      study_time_seconds: Math.floor(timeSpentMs / 1000),
+      study_time_minutes: timeSpentMinutes
+    }, "explain");
+  };
 
   // Enhanced handleCorrect function
   const handleCorrect = async () => {
     console.log("Starting handleCorrect function");
     setProcessingButton("correct");
     setError(null);
+
+    // Stop the timer and get the time spent
+    const timeSpentMs = stopTimer();
+    const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
 
     const formData = new FormData();
     formData.append("class_id", class_id);
@@ -234,6 +303,8 @@ function SolveQuestion() {
     formData.append("question", currentQuestion.question);
     formData.append("subtopic", subtopic);
     formData.append("correct", true);
+    formData.append("study_time_seconds", Math.floor(timeSpentMs / 1000));
+    formData.append("study_time_minutes", timeSpentMinutes);
 
     // Helper: finalize and send the form after appending everything
     const finalizeAndSendForm = async () => {
@@ -253,7 +324,12 @@ function SolveQuestion() {
         );
 
         // Update study session
-        updateStudySession(new Date().toISOString().split("T")[0], 10, 1, 100);
+        updateStudySession(
+          new Date().toISOString().split("T")[0], 
+          timeSpentMinutes, 
+          1, 
+          100
+        );
 
         // Update quest progress
         updateQuestProgress("daily_solve_questions", 1, QUEST_TYPES.DAILY);
@@ -287,6 +363,9 @@ function SolveQuestion() {
         }
         setProcessingButton(null);
         setUploadProgress(0);
+        
+        // Restart timer since submission failed
+        startTimer(currentQuestion.id);
       }
     };
 
@@ -337,6 +416,9 @@ function SolveQuestion() {
 
   // New handler for Gap Analysis
   const handleGapAnalysis = () => {
+    // Stop the timer before navigating
+    stopTimer();
+
     navigate("/gap-analysis", {
       state: {
         question: currentQuestion.question,
@@ -348,7 +430,7 @@ function SolveQuestion() {
     });
   };
 
-  // Send form data with progress tracking - simplified version since handleCorrect is handled separately
+  // Send form data with progress tracking
   const sendFormData = async (flags = {}, actionType) => {
     setProcessingButton(actionType);
     setError(null);
@@ -387,6 +469,16 @@ function SolveQuestion() {
         response = await axiosInstance.post("/anssubmit/", formData);
       }
 
+      // Update study session with time info if available
+      if (flags.study_time_minutes) {
+        updateStudySession(
+          new Date().toISOString().split("T")[0],
+          flags.study_time_minutes,
+          1,
+          0 // Accuracy unknown at this point
+        );
+      }
+
       // Navigate to results page
       navigate("/resultpage", {
         state: {
@@ -417,6 +509,9 @@ function SolveQuestion() {
 
       setProcessingButton(null);
       setUploadProgress(0);
+      
+      // Restart timer since submission failed
+      startTimer(currentQuestion.id);
     }
   };
 
@@ -437,14 +532,20 @@ function SolveQuestion() {
     console.log("Selected question:", selectedQuestion);
     console.log("Selected image:", selectedImage);
 
+    // Stop the current timer
+    stopTimer();
+
+    const newQuestionId = `question_${selectedIndex}_${Date.now()}`;
+    
     setCurrentQuestion({
       question: selectedQuestion,
       questionNumber: selectedIndex + 1,
       image: selectedImage,
+      id: newQuestionId
     });
 
-    // Reset study session start time
-    setStudySessionStart(Date.now());
+    // Start a new timer for the selected question
+    startTimer(newQuestionId);
 
     // Reset image related state
     setImages([]);
@@ -454,6 +555,13 @@ function SolveQuestion() {
 
     // Close modal
     setShowQuestionListModal(false);
+  };
+
+  // Handle back button click
+  const handleBackClick = () => {
+    // Stop the timer before navigating back
+    stopTimer();
+    navigate(-1);
   };
 
   // Determine if a specific button is processing
@@ -473,20 +581,31 @@ function SolveQuestion() {
       )}
 
       <div className="solve-question-container">
-        {/* Tutorial restart button */}
-        <div className="restart-tutorial-btn-container text-right mb-3">
-          <Button
-            variant="outline-info"
-            className="restart-tutorial-btn"
-            onClick={() => {
-              console.log("Restarting tutorial on SolveQuestion page...");
-              restartTutorialForPage("solveQuestion");
-            }}
-            size="sm"
-          >
-            <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
-            Replay Tutorial
-          </Button>
+        {/* Header section with timer */}
+        <div className="solve-question-header d-flex justify-content-between align-items-center mb-3">
+          {/* Tutorial restart button */}
+          <div className="restart-tutorial-btn-container">
+            <Button
+              variant="outline-info"
+              className="restart-tutorial-btn"
+              onClick={() => {
+                console.log("Restarting tutorial on SolveQuestion page...");
+                restartTutorialForPage("solveQuestion");
+              }}
+              size="sm"
+            >
+              <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
+              Replay Tutorial
+            </Button>
+          </div>
+          
+          {/* Study Timer */}
+          <StudyTimer 
+            isActive={isTimerActive}
+            questionId={currentQuestion.id}
+            onTimerComplete={handleTimerComplete}
+            className={processingButton ? "stopped" : ""}
+          />
         </div>
 
         {/* Question Display Section */}
@@ -577,7 +696,7 @@ function SolveQuestion() {
             <Col xs={6} md={3}>
               <Button
                 variant="secondary"
-                onClick={() => navigate(-1)}
+                onClick={handleBackClick}
                 className="btn-back w-100"
                 disabled={isAnyButtonProcessing()}
               >
@@ -594,30 +713,6 @@ function SolveQuestion() {
                 Question List
               </Button>
             </Col>
-            {/* <Col xs={12} md={6} className="mt-2 mt-md-0">
-              <Button
-                variant="success"
-                type="button"
-                className="btn-submit w-100"
-                disabled={images.length === 0 || isAnyButtonProcessing()}
-                onClick={handleSubmit}
-              >
-                {isButtonProcessing("submit") ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                    />{" "}
-                    Processing...
-                  </>
-                ) : (
-                  "Submit"
-                )}
-              </Button>
-            </Col> */}
           </Row>
 
           {/* Bottom Row with Action Buttons */}

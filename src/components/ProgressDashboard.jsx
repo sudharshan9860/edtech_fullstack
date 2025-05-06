@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { Card, Row, Col, Button, Modal } from 'react-bootstrap';
 import { 
   LineChart, 
@@ -8,7 +8,9 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  BarChart,
+  Bar
 } from 'recharts';
 import { ProgressContext } from '../contexts/ProgressContext';
 import StudyStreak from './StudyStreak';
@@ -18,18 +20,22 @@ import {
   faTrophy, 
   faChartLine, 
   faAward, 
-  faGift 
+  faGift,
+  faClock,
+  faQuestionCircle 
 } from '@fortawesome/free-solid-svg-icons';
 
 const ProgressDashboard = () => {
   const { 
     getProgressSummary, 
-    redeemReward 
+    redeemReward,
+    getWeeklyStudyData
   } = useContext(ProgressContext);
 
   const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [activeChartTab, setActiveChartTab] = useState('questions'); // 'questions' or 'time'
   
-  // Safely get progress data with default values
+  // Get progress data with all study time stats
   const progressData = getProgressSummary() || {
     streak: 0,
     longestStreak: 0,
@@ -39,17 +45,44 @@ const ProgressDashboard = () => {
     badges: [],
     totalQuestions: 0,
     correctQuestions: 0,
-    accuracy: 0
+    accuracy: 0,
+    totalStudyTime: 0,
+    dailyStudyTime: 0,
+    weeklyStudyData: []
   };
 
-  // Transform weekly summary into chart-friendly format
-  const chartData = Object.entries(progressData.weeklySummary?.dailyLogs || {})
-    .map(([date, data]) => ({
-      date,
-      studyTime: data?.studyTime || 0,
-      questionsAttempted: data?.questionsAttempted || 0
-    }));
+  // Get weekly study data for charts
+  const weeklyStudyData = useMemo(() => {
+    // Find most recent week data
+    const recentWeeks = progressData.weeklyStudyData || [];
+    const mostRecentWeek = recentWeeks.length > 0 
+      ? recentWeeks[recentWeeks.length - 1] 
+      : { dailyData: [] };
+      
+    // Format for chart display
+    return mostRecentWeek.dailyData || [];
+  }, [progressData.weeklyStudyData]);
 
+  // Format day names for better display
+  const formatDayName = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[date.getDay()];
+  };
+
+  // Prepare data for chart
+  const chartData = useMemo(() => {
+    return weeklyStudyData.map(day => ({
+      ...day,
+      dayName: formatDayName(day.date),
+      date: day.date,
+      studyTime: day.studyTime || 0,
+      questionsAttempted: day.questionsAttempted || 0
+    }));
+  }, [weeklyStudyData]);
+
+  // Rewards section
   const availableRewards = [
     { 
       name: 'Extra Practice Session', 
@@ -71,6 +104,7 @@ const ProgressDashboard = () => {
     }
   ];
 
+  // Handle reward redemption
   const handleRedeemReward = (rewardName) => {
     try {
       const redeemedReward = redeemReward(rewardName);
@@ -93,26 +127,45 @@ const ProgressDashboard = () => {
       {/* Performance Overview */}
       <div className="performance-card">
         <Card className="h-100">
-          <Card.Header>Performance Overview</Card.Header>
+          <Card.Header>
+            <h5 className="mb-0">Performance Overview</h5>
+          </Card.Header>
           <Card.Body>
-            <div className="d-flex justify-content-between mb-3">
-              <div>
-                <h5>Accuracy</h5>
-                <h3 className="text-primary">
-                  {progressData.accuracy.toFixed(2)}%
-                </h3>
-              </div>
-              <div>
-                <h5>Total Questions</h5>
-                <h3 className="text-success">
-                  {progressData.totalQuestions}
-                </h3>
-              </div>
-            </div>
+            <Row>
+              <Col md={4}>
+                <div className="text-center mb-3">
+                  <h5>Accuracy</h5>
+                  <h3 className="text-primary">
+                    {progressData.accuracy.toFixed(2)}%
+                  </h3>
+                </div>
+              </Col>
+              <Col md={4}>
+                <div className="text-center mb-3">
+                  <h5>Total Questions</h5>
+                  <h3 className="text-success">
+                    {progressData.totalQuestions}
+                  </h3>
+                </div>
+              </Col>
+              <Col md={4}>
+                <div className="text-center mb-3">
+                  <h5>Study Time</h5>
+                  <h3 className="text-info">
+                    {progressData.totalStudyTime} mins
+                  </h3>
+                </div>
+              </Col>
+            </Row>
             <div className="progress-details text-muted">
-              <small>
-                Correct Answers: {progressData.correctQuestions}
-              </small>
+              <div className="d-flex justify-content-between">
+                <small>
+                  Correct Answers: {progressData.correctQuestions}
+                </small>
+                <small>
+                  Today's Study Time: {progressData.dailyStudyTime} mins
+                </small>
+              </div>
             </div>
           </Card.Body>
         </Card>
@@ -121,28 +174,58 @@ const ProgressDashboard = () => {
       {/* Weekly Progress */}
       <div className="weekly-progress-card">
         <Card>
-          <Card.Header>Weekly Study Progress</Card.Header>
+          <Card.Header className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">Weekly Study Progress</h5>
+            <div className="btn-group">
+              <Button 
+                variant={activeChartTab === 'questions' ? 'primary' : 'outline-primary'} 
+                size="sm"
+                onClick={() => setActiveChartTab('questions')}
+              >
+                <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
+                Questions
+              </Button>
+              <Button 
+                variant={activeChartTab === 'time' ? 'primary' : 'outline-primary'} 
+                size="sm"
+                onClick={() => setActiveChartTab('time')}
+              >
+                <FontAwesomeIcon icon={faClock} className="me-2" />
+                Study Time
+              </Button>
+            </div>
+          </Card.Header>
           <Card.Body>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="studyTime" 
-                  stroke="#8884d8" 
-                  name="Study Time (mins)" 
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="questionsAttempted" 
-                  stroke="#82ca9d" 
-                  name="Questions Attempted" 
-                />
-              </LineChart>
+              {activeChartTab === 'questions' ? (
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="dayName" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar 
+                    dataKey="questionsAttempted" 
+                    name="Questions Attempted" 
+                    fill="#82ca9d" 
+                  />
+                </BarChart>
+              ) : (
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="dayName" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="studyTime" 
+                    stroke="#8884d8" 
+                    name="Study Time (mins)" 
+                    activeDot={{ r: 8 }}
+                  />
+                </LineChart>
+              )}
             </ResponsiveContainer>
           </Card.Body>
         </Card>
@@ -196,14 +279,14 @@ const ProgressDashboard = () => {
           <div className="rewards-section">
             <Card>
               <Card.Header>
-                <FontAwesomeIcon icon={faGift} className="mr-2" />
+                <FontAwesomeIcon icon={faGift} className="me-2" />
                 Rewards
               </Card.Header>
               <Card.Body>
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <div>
                     <h3 className="rewards-title">
-                      <span role="img" aria-label="gift">🎁</span> Rewards
+                      <span role="img" aria-label="gift">🎁</span> Points
                     </h3>
                     <div className="points-display">{progressData.points} Points</div>
                   </div>
