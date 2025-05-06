@@ -1184,4 +1184,35 @@ class Questionupdateview(APIView):
             return Response({"message": "Question updated successfully."}, status=status.HTTP_200_OK)
         except QuestionWithImage.DoesNotExist:
             return Response({"error": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+
+
+
+class UserAverageScoreAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        # Get all unique chapter numbers for the user
+        chapter_numbers = GapAnalysis.objects.filter(student=user).values_list('chapter_number', flat=True).distinct()
+
+        if not chapter_numbers:
+            return Response({"error": "No gap analysis data found for the user."}, status=status.HTTP_404_NOT_FOUND)
+
+        average_scores = {}
+        for chapter_number in chapter_numbers:
+            # Filter GapAnalysis objects for the current user and chapter
+            gap_analysis_objects = GapAnalysis.objects.filter(
+                student=user,
+                chapter_number=chapter_number
+            )
+
+            if gap_analysis_objects.exists():
+                # Calculate the average score for the chapter
+                total_score = sum(obj.student_score for obj in gap_analysis_objects)
+                average_score = total_score / gap_analysis_objects.count()
+                average_scores[chapter_number] = average_score
+            else:
+                average_scores[chapter_number] = 0  # Or handle the case where there's no data for the chapter
+
+        return Response(average_scores, status=status.HTTP_200_OK)
