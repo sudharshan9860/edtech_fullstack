@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button } from 'react-bootstrap';
+import { Card, Row, Col, Button, Nav, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -8,10 +8,11 @@ import {
   faSquareRootAlt, 
   faBook, 
   faClock,
-  faChevronRight
+  faChevronRight,
+  faHistory
 } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../api/axiosInstance';
-import SessionDetails from './SessionDetails'; // Import the SessionDetails component
+import SessionDetails from './SessionDetails';
 import './RecentSessions.css';
 
 const RecentSessions = () => {
@@ -20,6 +21,7 @@ const RecentSessions = () => {
   const [error, setError] = useState(null);
   const [selectedSession, setSelectedSession] = useState(null);
   const [showSessionDetails, setShowSessionDetails] = useState(false);
+  const [activeTab, setActiveTab] = useState('all'); // Default to show all sessions
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,11 +49,25 @@ const RecentSessions = () => {
     }
   };
 
+  // Get unique subjects from sessions
+  const getUniqueSubjects = () => {
+    const subjects = new Set(sessions.map(session => session.subject));
+    return Array.from(subjects);
+  };
+
+  // Filter sessions based on active tab
+  const getFilteredSessions = () => {
+    if (activeTab === 'all') {
+      return sessions;
+    }
+    return sessions.filter(session => session.subject === activeTab);
+  };
+
   // Get appropriate icon for session type
   const getSessionIcon = (subject, answeringType) => {
     if (subject && subject.toLowerCase().includes('math')) {
       return faCalculator;
-    } else if (subject && subject.toLowerCase().includes('code')) {
+    } else if (subject && subject.toLowerCase().includes('code') || subject && subject.toLowerCase().includes('computer')) {
       return faCode;
     } else if (answeringType === 'solve') {
       return faSquareRootAlt;
@@ -87,12 +103,14 @@ const RecentSessions = () => {
   const getSessionColor = (subject, answeringType) => {
     if (subject && subject.toLowerCase().includes('math')) {
       return '#34A853';
-    } else if (subject && subject.toLowerCase().includes('code')) {
+    } else if (subject && subject.toLowerCase().includes('code') || subject && subject.toLowerCase().includes('computer')) {
       return '#4285F4';
-    } else if (answeringType === 'solve') {
+    } else if (subject && subject.toLowerCase().includes('physics')) {
       return '#FBBC05';
-    } else if (answeringType === 'correct') {
+    } else if (subject && subject.toLowerCase().includes('chemistry')) {
       return '#EA4335';
+    } else if (subject && subject.toLowerCase().includes('biology')) {
+      return '#8E44AD';
     } else {
       return '#00C1D4';
     }
@@ -119,10 +137,69 @@ const RecentSessions = () => {
     setShowSessionDetails(false);
   };
 
+  // Get session count by subject for tab badges
+  const getSessionCountBySubject = (subject) => {
+    if (subject === 'all') {
+      return sessions.length;
+    }
+    return sessions.filter(session => session.subject === subject).length;
+  };
+
+  // Create tabs for filtering
+  const renderTabNav = () => {
+    const subjects = getUniqueSubjects();
+    
+    return (
+      <Nav variant="tabs" className="session-tabs mb-3">
+        <Nav.Item>
+          <Nav.Link 
+            active={activeTab === 'all'}
+            onClick={() => setActiveTab('all')}
+            className="d-flex align-items-center"
+          >
+            <FontAwesomeIcon icon={faHistory} className="me-1" />
+            All
+            <Badge bg="primary" pill className="ms-2">
+              {getSessionCountBySubject('all')}
+            </Badge>
+          </Nav.Link>
+        </Nav.Item>
+        
+        {subjects.map(subject => (
+          <Nav.Item key={subject}>
+            <Nav.Link 
+              active={activeTab === subject}
+              onClick={() => setActiveTab(subject)}
+              className="d-flex align-items-center"
+              style={{ color: getSessionColor(subject, 'exercise') }}
+            >
+              <FontAwesomeIcon 
+                icon={getSessionIcon(subject, 'exercise')} 
+                className="me-1" 
+              />
+              {subject}
+              <Badge 
+                pill 
+                className="ms-2"
+                bg="secondary"
+              >
+                {getSessionCountBySubject(subject)}
+              </Badge>
+            </Nav.Link>
+          </Nav.Item>
+        ))}
+      </Nav>
+    );
+  };
+
+  // Render loading state
   if (loading) {
     return (
       <div className="recent-sessions-container">
-        <h3 className="section-title">Recent Sessions</h3>
+        <h3 className="section-title">
+          <FontAwesomeIcon icon={faClock} className="me-2" />
+          Recent Sessions
+        </h3>
         <div className="text-center py-4">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -132,10 +209,14 @@ const RecentSessions = () => {
     );
   }
 
+  // Render error state
   if (error) {
     return (
       <div className="recent-sessions-container">
-        <h3 className="section-title">Recent Session</h3>
+        <h3 className="section-title">
+          <FontAwesomeIcon icon={faClock} className="me-2" />
+          Recent Sessions
+        </h3>
         <div className="text-center py-4 text-danger">
           {error}
           <div className="mt-2">
@@ -152,11 +233,14 @@ const RecentSessions = () => {
     );
   }
 
+  // Get filtered sessions based on active tab
+  const filteredSessions = getFilteredSessions();
+
   return (
     <div className="recent-sessions-container">
       <h3 className="section-title">
         <FontAwesomeIcon icon={faClock} className="me-2" />
-        Recent Session
+        Recent Sessions
       </h3>
       
       {sessions.length === 0 ? (
@@ -164,34 +248,50 @@ const RecentSessions = () => {
           No recent sessions found. Start solving questions to see your history here.
         </div>
       ) : (
-        <Row className="session-grid">
-          {sessions.slice(0, 3).map((session, index) => (
-            <Col key={index} md={4} sm={6} className="mb-3">
-              <Card 
-                className="session-card" 
-                onClick={() => handleSessionClick(session)}
-                style={{ borderColor: getSessionColor(session.subject, session.answering_type) }}
-              >
-                <Card.Body className="d-flex align-items-center">
-                  <div 
-                    className="session-icon-container"
-                    style={{ backgroundColor: getSessionColor(session.subject, session.answering_type) }}
+        <>
+          {/* Tabs for filtering */}
+          {renderTabNav()}
+          
+          {filteredSessions.length === 0 ? (
+            <div className="text-center py-4 text-muted">
+              No sessions found for this filter. Try another category.
+            </div>
+          ) : (
+            <Row className="session-grid">
+              {filteredSessions.map((session, index) => (
+                <Col key={index} md={4} sm={6} className="mb-3">
+                  <Card 
+                    className="session-card" 
+                    onClick={() => handleSessionClick(session)}
+                    style={{ borderColor: getSessionColor(session.subject, session.answering_type) }}
                   >
-                    <FontAwesomeIcon 
-                      icon={getSessionIcon(session.subject, session.answering_type)} 
-                      className="session-icon" 
-                    />
-                  </div>
-                  <div className="session-info flex-grow-1 ms-3">
-                    <h5 className="session-title">{getSessionTitle(session)}</h5>
-                    <p className="session-time mb-0">{formatTimeAgo(session.date)}</p>
-                  </div>
-                  <FontAwesomeIcon icon={faChevronRight} className="session-arrow" />
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+                    <Card.Body className="d-flex align-items-center">
+                      <div 
+                        className="session-icon-container"
+                        style={{ backgroundColor: getSessionColor(session.subject, session.answering_type) }}
+                      >
+                        <FontAwesomeIcon 
+                          icon={getSessionIcon(session.subject, session.answering_type)} 
+                          className="session-icon" 
+                        />
+                      </div>
+                      <div className="session-info flex-grow-1 ms-3">
+                        <h5 className="session-title">{getSessionTitle(session)}</h5>
+                        <div className="d-flex justify-content-between">
+                          <span className="session-time">{formatTimeAgo(session.date)}</span>
+                          <span className="session-score">
+                            Score: <strong>{session.student_score}%</strong>
+                          </span>
+                        </div>
+                      </div>
+                      <FontAwesomeIcon icon={faChevronRight} className="session-arrow" />
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
+        </>
       )}
 
       {/* Session Details Modal */}

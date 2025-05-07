@@ -5,8 +5,6 @@ import {
   faCalculator, 
   faCode, 
   faCalendarAlt, 
-  faCheckCircle,
-  faTimesCircle,
   faComment
 } from '@fortawesome/free-solid-svg-icons';
 import './SessionDetails.css';
@@ -31,38 +29,41 @@ const SessionDetails = ({ show, onHide, session }) => {
     }
   };
 
-  // Helper function to parse array-like strings
-  const parseArrayString = (str) => {
-    if (!str) return [];
+  // Helper function to parse array-like strings or handle direct string
+  const formatAIAnswer = (aiAnswer) => {
+    if (!aiAnswer) return 'No AI answer available';
+    
+    // If aiAnswer is already a string, return it directly
+    if (typeof aiAnswer === 'string' && !aiAnswer.startsWith('[')) {
+      return aiAnswer;
+    }
     
     try {
-      // Check if it's a string representation of an array
-      if (typeof str === 'string' && str.startsWith('[') && str.endsWith(']')) {
+      // Try to parse if it's a string representation of an array
+      if (typeof aiAnswer === 'string' && aiAnswer.startsWith('[') && aiAnswer.endsWith(']')) {
         // Convert to actual array and trim quotes
-        const cleanStr = str.replace(/^\[|\]$/g, '').trim();
-        if (!cleanStr) return [];
+        const cleanStr = aiAnswer.replace(/^\[|\]$/g, '').trim();
+        if (!cleanStr) return 'No AI answer available';
         
         // Split by commas that are followed by a quote
         const items = cleanStr.split(/,(?=\s*['"])/);
         
-        // Clean up each item (remove quotes)
-        return items.map(item => item.replace(/^['"]|['"]$/g, '').trim());
+        // Clean up each item (remove quotes) and join with line breaks
+        return items
+          .map(item => item.replace(/^['"]|['"]$/g, '').trim())
+          .join('\n');
+      }
+      
+      // If it's already an array, join with line breaks
+      if (Array.isArray(aiAnswer)) {
+        return aiAnswer.join('\n');
       }
     } catch (e) {
-      console.error("Error parsing array string:", e);
+      console.error("Error parsing AI answer:", e);
     }
     
-    return [str]; // Return as a single-item array if parsing failed
-  };
-
-  // Function to determine session status color
-  const getStatusColor = (score, type) => {
-    if (type === 'solve') return '#34A853'; // Green for solved examples
-    
-    // For exercises/correct attempts
-    if (score > 80) return '#34A853'; // Green for high scores
-    if (score > 40) return '#FBBC05'; // Yellow for medium scores
-    return '#EA4335'; // Red for low scores
+    // If all else fails, return the original
+    return String(aiAnswer);
   };
 
   // If no session is provided, don't render anything
@@ -102,11 +103,11 @@ const SessionDetails = ({ show, onHide, session }) => {
           <div className="session-meta mt-2">
             <span className="badge bg-primary me-2">Class {session.class_name}</span>
             <span className="badge bg-secondary me-2">Chapter {session.chapter_number}</span>
-            <span 
-              className={`badge ${session.student_score > 50 ? 'bg-success' : 'bg-danger'} me-2`}
-            >
-              Score: {session.student_score}%
-            </span>
+            {session.student_score !== undefined && (
+              <span className={`badge ${session.student_score > 50 ? 'bg-success' : 'bg-danger'} me-2`}>
+                Score: {session.student_score}
+              </span>
+            )}
           </div>
         </div>
 
@@ -152,23 +153,19 @@ const SessionDetails = ({ show, onHide, session }) => {
           </Card.Body>
         </Card>
 
-        {/* Correct Answer Section */}
+        {/* AI Answer Section */}
         <Card className="mb-4">
           <Card.Header className="bg-light">
-            <strong>Correct Answer</strong>
+            <strong>AI Answer</strong>
           </Card.Header>
           <Card.Body>
-            <div className="correct-answer">
-              {parseArrayString(session.ai_answer).map((step, index) => (
-                <div key={index} className="solution-step">
-                  <span className="step-number">{index + 1}.</span> {step}
-                </div>
-              ))}
-            </div>
+            <pre className="ai-answer">
+              {formatAIAnswer(session.ai_answer)}
+            </pre>
           </Card.Body>
         </Card>
 
-        {/* Teacher's Comment */}
+        {/* Teacher's Comment Section */}
         {session.comment && (
           <Card className="mb-4">
             <Card.Header className="bg-light">
@@ -180,22 +177,6 @@ const SessionDetails = ({ show, onHide, session }) => {
             </Card.Body>
           </Card>
         )}
-
-        {/* Session Result */}
-        <div className="session-result p-3 text-center">
-          <h5 className="mb-3">Session Result</h5>
-          <div 
-            className={`result-indicator ${session.student_score > 50 ? 'success' : 'danger'}`}
-          >
-            <FontAwesomeIcon 
-              icon={session.student_score > 50 ? faCheckCircle : faTimesCircle} 
-              size="2x"
-            />
-            <span className="ms-2">
-              {session.student_score > 50 ? 'Passed' : 'Needs Improvement'}
-            </span>
-          </div>
-        </div>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>

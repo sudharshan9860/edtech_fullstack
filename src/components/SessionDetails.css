@@ -102,28 +102,7 @@
     line-height: 1.6;
   }
   
-  .session-result {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-  }
-  
-  .result-indicator {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-weight: 600;
-  }
-  
-  .result-indicator.success {
-    background-color: rgba(52, 168, 83, 0.1);
-    color: #34A853;
-  }
-  
-  .result-indicator.danger {
-    background-color: rgba(234, 67, 53, 0.1);
-    color: #EA4335;
-  }
+  /* Removed session-result and result-indicator styles as requested */
   
   @media (max-width: 768px) {
     .session-title {
@@ -140,5 +119,26 @@
     
     .correct-answer {
       font-size: 0.9rem;
+    }
+  }
+
+  .ai-answer {
+    font-family: 'Courier New', monospace;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-height: 300px;
+    overflow-y: auto;
+    color: #333;
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .ai-answer {
+      background-color: #343a40;
+      color: #f8f9fa;
     }
   }
