@@ -945,7 +945,6 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 
 import re
-apikey="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"
 class SimilarQuestionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
