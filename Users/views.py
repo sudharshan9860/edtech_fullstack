@@ -251,3 +251,44 @@ class SessionDataView(APIView):
                 "status": "error",
                 "message": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+           
+            
+class AllSessionDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Retrieve all session data for the authenticated user.
+        """
+        try:
+            user = request.user
+            all_snapshots = SessionSnapshot.objects.all().order_by('-timestamp')
+
+            user_snapshots = []
+            for snapshot in all_snapshots:
+                if snapshot.user == user:
+                    user_snapshots.append({
+                        "timestamp": snapshot.timestamp,
+                        "session_data": snapshot.session_data
+                    })
+            print(len(user_snapshots))
+            if not user_snapshots:
+                return Response({
+                    "status": "error",
+                    "message": "No session data found for this user."
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            return Response({
+                "status": "success",
+                "sessions": user_snapshots
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+

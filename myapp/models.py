@@ -118,7 +118,7 @@ class QuestionWithImage(models.Model):
 
 
  
-class GapAnalysis(models.Model):
+class GapAnalysis(models.Model): 
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_name = models.TextField(null=True, blank=True)
     subject = models.TextField(null=True, blank=True)
@@ -132,8 +132,8 @@ class GapAnalysis(models.Model):
     comment = models.TextField(null=True, blank=True)
     ai_answer = models.TextField(null=True, blank=True)
     concept_answer= models.TextField(null=True, blank=True)
+    student_answering_time= models.IntegerField(null=True, blank=True)
     session_key = models.CharField(max_length=255, null=True, blank=True)
-    
     date = models.DateTimeField()
 
     def __str__(self):

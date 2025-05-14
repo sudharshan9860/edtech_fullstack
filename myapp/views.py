@@ -330,7 +330,7 @@ class AnswerSubmit(APIView):
                 
                 json_data = response.json()
                 # data = new_replace_curly_quotes(response.json())
-                
+                print(json_data)
                 question = json_data.get('question', '')
                 step_by_step_solution = json_data.get('step_by_step_solution', [])
                 concepts_required = json_data.get('concepts_required', [])
@@ -487,6 +487,7 @@ class AnswerSubmit(APIView):
         print(request.headers)
         
         session_key = request.headers.get('SessionKey')
+        print(request.POST)
         class_id = request.POST.get('class_id')
         subject_id = request.POST.get('subject_id')
         question = request.POST.get('question')
@@ -497,12 +498,16 @@ class AnswerSubmit(APIView):
         correct = request.POST.get('correct')
         explain = request.POST.get('explain')
         chapter=request.POST.get('topic_ids')
+        student_time=request.POST.get('study_time_seconds')
+        print(student_time)
+        if not student_time:
+            student_time = 0
         timezone_name = "Asia/Kolkata"
         timezone = pytz.timezone(timezone_name)
         current_time = datetime.now(timezone)
         subject_name = Subject.objects.get(class_name__class_code=class_id,subject_code=subject_id).subject_name
         
-        gap_analysis_object=GapAnalysis.objects.create(student=request.user, class_name=class_id, subject=subject_name, chapter_number=chapter, question_text=question, session_key=session_key,date=current_time)
+        gap_analysis_object=GapAnalysis.objects.create(student=request.user, class_name=class_id, subject=subject_name, chapter_number=chapter, question_text=question, session_key=session_key,date=current_time,student_answering_time=int(student_time))
         if 'ques_img' in request.POST:
             gap_analysis_object.question_image_base64 = request.POST.get('ques_img')
         else:
@@ -940,8 +945,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 
 import re
-
-apikey="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"
+apikey="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"
 class SimilarQuestionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -1046,7 +1050,7 @@ class SimilarQuestionsAPIView(APIView):
             "similar_question": similar_question,
             "theory_concepts": theory_concepts
         }
-        
+        print(response_data)
         return Response(response_data, status=status.HTTP_200_OK)
 
 class HistoryAPIView(APIView):
@@ -1107,6 +1111,7 @@ class GapAnalysisAPIView(APIView):
                 'student_answer',
                 'student_score',
                 'concept_answer',
+                'student_answering_time',
                 'comment',
                 'ai_answer',
                 'answering_type',
@@ -1206,9 +1211,10 @@ class UserAverageScoreAPIView(APIView):
                 student=user,
                 chapter_number=chapter_number
             )
-
+            # print(gap_analysis_objects)
             if gap_analysis_objects.exists():
                 # Calculate the average score for the chapter
+                # print(total_score)
                 total_score = sum(obj.student_score for obj in gap_analysis_objects)
                 average_score = total_score / gap_analysis_objects.count()
                 average_scores[chapter_number] = average_score
@@ -1216,3 +1222,52 @@ class UserAverageScoreAPIView(APIView):
                 average_scores[chapter_number] = 0  # Or handle the case where there's no data for the chapter
 
         return Response(average_scores, status=status.HTTP_200_OK)
+    
+    
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+# from rest_framework.permissions import IsAuthenticated  # Remove import
+from .models import GapAnalysis
+from .serializers import GapAnalysisSerializer
+from Users.models import Student  # Import the Student model
+from django.views.decorators.csrf import csrf_exempt
+
+# @csrf_exempt
+class AllStudentGapAnalysisAPIView(APIView):
+    # permission_classes = [IsAuthenticated]  # Remove permission class
+    @csrf_exempt
+    def get(self, request, *args, **kwargs):
+        """
+        API endpoint to retrieve all gap analysis records for all students,
+        formatted as {student_id: [gap_analysis_data], ...}.
+        """
+        try:
+            # Get all students
+            students = Student.objects.all()
+            
+            # Prepare the data structure to hold the results
+            gap_analysis_data = {}
+
+            # Iterate over each student
+            for student in students:
+                # Retrieve all GapAnalysis objects for the current student
+                gap_analysis_records = GapAnalysis.objects.filter(student=student)
+
+                # Serialize the data for the current student
+                serializer = GapAnalysisSerializer(gap_analysis_records, many=True)
+
+                # Add the serialized data to the results dictionary, using student ID as key
+                gap_analysis_data[student.username] = serializer.data
+
+            # Return the formatted data in the response
+            return Response({
+                "status": "success",
+                "data": gap_analysis_data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
