@@ -38,9 +38,10 @@ const RecentSessions = () => {
       if (response.data && response.data.status === 'success' && response.data.session_data && response.data.session_data.gap_analysis_data) {
         const sessionData = response.data.session_data.gap_analysis_data;
         setSessions(sessionData);
-      } else {
-        setError('Unexpected data format from server');
-      }
+      } 
+      // else {
+      //   setError('Unexpected data format from server');
+      // }
     } catch (error) {
       console.error('Error fetching recent sessions:', error);
       setError('Failed to load recent sessions');
@@ -245,7 +246,7 @@ const RecentSessions = () => {
       
       {sessions.length === 0 ? (
         <div className="text-center py-4 text-muted">
-          No recent sessions found. Start solving questions to see your history here.
+          You did not attempt any questions in the previous session.
         </div>
       ) : (
         <>
@@ -280,7 +281,7 @@ const RecentSessions = () => {
                         <div className="d-flex justify-content-between">
                           <span className="session-time">{formatTimeAgo(session.date)}</span>
                           <span className="session-score">
-                            Score: <strong>{session.student_score}%</strong>
+                            Score: <strong>{session.student_score}</strong>
                           </span>
                         </div>
                       </div>
