@@ -9,6 +9,7 @@ import {
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
 import axiosInstance from "../api/axiosInstance";
+import { useCurrentQuestion } from "../contexts/CurrentQuestionContext";
 import "./ChatBox.css";
 
 const formatMessage = (text) => {
@@ -88,6 +89,7 @@ const ChatBox = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const { currentQuestion } = useCurrentQuestion();
 
   useEffect(() => {
     scrollToBottom();
@@ -123,8 +125,13 @@ const ChatBox = () => {
     setIsTyping(true);
 
     try {
+      // Create a combined message that includes both the current question and the user's message
+      const combinedMessage = currentQuestion 
+        ? `${currentQuestion.question}${newMessage}`
+        : newMessage;
+
       const response = await axiosInstance.post("/chatbot/", {
-        message: newMessage,
+        message: combinedMessage,
       });
 
       // Process the solution data

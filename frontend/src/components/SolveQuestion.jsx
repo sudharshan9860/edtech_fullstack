@@ -16,6 +16,7 @@ import { useTutorial } from "../contexts/TutorialContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import "./StudyTimer.css"; // Import timer styles
+import { useCurrentQuestion } from "../contexts/CurrentQuestionContext";
 
 function SolveQuestion() {
   const location = useLocation();
@@ -74,6 +75,8 @@ function SolveQuestion() {
     image: question_image,
     id: questionId
   });
+
+  const { setCurrentQuestion: setContextQuestion } = useCurrentQuestion();
 
   // Start timer when component mounts
   useEffect(() => {
@@ -198,14 +201,17 @@ function SolveQuestion() {
     if (location.state) {
       const newQuestionId = location.state?.questionId || `question_${index}_${Date.now()}`;
       
-      setCurrentQuestion({
+      const newQuestion = {
         question: location.state.question || "",
         questionNumber:
           location.state.questionNumber ||
           (index !== undefined ? index + 1 : 1),
         image: location.state.image || "",
         id: newQuestionId
-      });
+      };
+
+      setCurrentQuestion(newQuestion);
+      setContextQuestion(newQuestion); // Update the context with the new question
 
       // Stop previous timer and start a new one
       stopTimer();
@@ -217,7 +223,7 @@ function SolveQuestion() {
       setUploadProgress(0);
       setProcessingButton(null);
     }
-  }, [location.state, index]);
+  }, [location.state, index, setContextQuestion]);
 
   // Handle image upload
   const handleImageChange = (e) => {

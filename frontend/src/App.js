@@ -6,6 +6,7 @@ import { NotificationProvider } from "./contexts/NotificationContext";
 import { ProgressProvider } from "./contexts/ProgressContext";
 import { LeaderboardProvider } from "./contexts/LeaderboardContext";
 import { QuestProvider } from "./contexts/QuestContext";
+import { CurrentQuestionProvider } from "./contexts/CurrentQuestionContext";
 import AppRoutes from "./routing/Routing";
 import ChatBox from "./components/ChatBox";
 import "./styles/theme.css";
@@ -33,17 +34,19 @@ function App() {
     <AuthProvider>
       <NotificationProvider>
         <ProgressProvider>
-          <TimerProvider> {/* Add this line */}
+          <TimerProvider>
             <LeaderboardProvider>
               <QuestProvider>
                 <TutorialProvider>
-                  <Router>
-                    <AppContent />
-                  </Router>
+                  <CurrentQuestionProvider>
+                    <Router>
+                      <AppContent />
+                    </Router>
+                  </CurrentQuestionProvider>
                 </TutorialProvider>
               </QuestProvider>
             </LeaderboardProvider>
-          </TimerProvider> {/* And this line */}
+          </TimerProvider>
         </ProgressProvider>
       </NotificationProvider>
     </AuthProvider>
