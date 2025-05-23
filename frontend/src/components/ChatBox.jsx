@@ -5,6 +5,7 @@ import {
   faCommentDots,
   faPaperPlane,
   faTimes,
+  faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
@@ -88,12 +89,25 @@ const ChatBox = () => {
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
   const { currentQuestion } = useCurrentQuestion();
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  // Clean up preview URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -107,17 +121,60 @@ const ChatBox = () => {
     setNewMessage(e.target.value);
   };
 
+  // File handling functions
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    handleFile(file);
+  };
+
+  const handleFile = (file) => {
+    if (!file) return;
+    
+    // Check if file is an image
+    if (!file.type.match('image.*')) {
+      alert('Please upload an image file');
+      return;
+    }
+    
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size should not exceed 5MB');
+      return;
+    }
+    
+    setSelectedFile(file);
+    
+    // Create a preview
+    const fileUrl = URL.createObjectURL(file);
+    setPreviewUrl(fileUrl);
+  };
+
+  const clearSelectedFile = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setSelectedFile(null);
+    setPreviewUrl(null);
+  };
+
+  const handleFileButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
   const sendMessage = async (e) => {
     e.preventDefault();
 
-    if (newMessage.trim() === "") return;
+    if (newMessage.trim() === "" && !selectedFile) return;
 
     const userMessageId = Date.now();
+    
+    // Create user message with text and/or image
     const userMessage = {
       id: userMessageId,
       text: newMessage,
       sender: "user",
       timestamp: new Date(),
+      image: previewUrl
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -125,13 +182,23 @@ const ChatBox = () => {
     setIsTyping(true);
 
     try {
-      // Create a combined message that includes both the current question and the user's message
-      const combinedMessage = currentQuestion 
-        ? `${currentQuestion.question}${newMessage}`
-        : newMessage;
+      // Create FormData for sending files
+      const formData = new FormData();
+      formData.append('message', newMessage);
+      
+      if (currentQuestion) {
+        formData.append('question_text', currentQuestion.question);
+      }
+      
+      if (selectedFile) {
+        formData.append('ans_img', selectedFile);
+      }
 
-      const response = await axiosInstance.post("/chatbot/", {
-        message: combinedMessage,
+      // Send to backend using axios
+      const response = await axiosInstance.post("/chatbot/", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
       // Process the solution data
@@ -165,6 +232,7 @@ const ChatBox = () => {
       setMessages((prev) => [...prev, errorResponse]);
     } finally {
       setIsTyping(false);
+      clearSelectedFile();
     }
   };
 
@@ -178,7 +246,9 @@ const ChatBox = () => {
         {!isOpen && <span className="chat-label">Ask a question</span>}
       </button>
 
-      <div className={`chat-box ${isOpen ? "open" : ""}`}>
+      <div 
+        className={`chat-box ${isOpen ? "open" : ""}`}
+      >
         <div className="chat-header">
           <h5>AI Tutor Assistant</h5>
           <button className="close-btn" onClick={toggleChat}>
@@ -190,19 +260,26 @@ const ChatBox = () => {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`message ${
-                message.sender === "user" ? "user-message" : "ai-message"
-              }`}
+              className={`message ${message.sender === "user" ? "user-message" : "ai-message"}`}
             >
               <div className="message-bubble">
                 {formatMessage(message.text)}
+                {message.image && (
+                  <div className="message-image-container">
+                    <img 
+                      src={message.image} 
+                      alt="User uploaded" 
+                      className="message-image"
+                    />
+                  </div>
+                )}
               </div>
               <div className="message-time">
                 {message.timestamp
                   ? new Date(message.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                   : ""}
               </div>
             </div>
@@ -229,10 +306,46 @@ const ChatBox = () => {
               value={newMessage}
               onChange={handleInputChange}
             />
-            <Button type="submit" disabled={!newMessage.trim()}>
-              <FontAwesomeIcon icon={faPaperPlane} />
-            </Button>
+            
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
+            
+            {previewUrl ? (
+              <div className="input-thumbnail-container">
+                <div className="input-thumbnail">
+                  <img src={previewUrl} alt="Thumbnail" className="thumbnail-image" />
+                  <button 
+                    className="remove-thumbnail-btn" 
+                    onClick={clearSelectedFile}
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <Button 
+                className="ms-1 d-flex align-items-center justify-content-center" 
+                type="button"
+                onClick={handleFileButtonClick}
+              >
+                <FontAwesomeIcon className="flex" icon={faUpload} />
+              </Button>
+            )}
           </InputGroup>
+          <Button 
+            className="ms-1 d-flex align-items-center justify-content-center"  
+            type="submit" 
+            disabled={!newMessage.trim() && !selectedFile}
+          >
+            <FontAwesomeIcon icon={faPaperPlane} />
+          </Button>
         </Form>
       </div>
     </div>
