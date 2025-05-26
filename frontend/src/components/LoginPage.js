@@ -55,9 +55,11 @@ function LoginPage() {
           },
         }
       );
-
+      // console.log("Login response:", response.data);
       const { token } = response.data;
-
+      const role  =response.data.role;
+      console.log("User role:", role);
+      
       if (token) {
         // Store token and username in localStorage
         localStorage.setItem("accessToken", token);
@@ -65,9 +67,14 @@ function LoginPage() {
         
         // Update auth context
         login(username, token);
-        
+        if (role === "teacher") {
+          navigate("/teacher-dash");
+        } else {
+          navigate("/student-dash");
+        }
+
         // Navigate to dashboard
-        navigate("/student-dash");
+        // navigate("/student-dash");
       } else {
         setError("Invalid username or password.");
       }

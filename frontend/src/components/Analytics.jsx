@@ -1,29 +1,53 @@
-import React from 'react';
-import { Container } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Container, Spinner } from 'react-bootstrap';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import axiosInstance from '../api/axiosInstance';
 import './Analytics.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Analytics = () => {
-  const data = {
-    labels: [
-      'Chapter 1', 'Chapter 2', 'Chapter 3', 'Chapter 4', 'Chapter 5', 
-      'Chapter 6', 'Chapter 7', 'Chapter 8', 'Chapter 9', 'Chapter 10'
-    ],
-    datasets: [
-      {
-        label: 'Student Progress (%)',
-        data: [75, 50, 90, 60, 85, 45, 70, 80, 55, 65],
-        backgroundColor: '#00C1D4',
-        borderColor: '#001B6C',
-        borderWidth: 1,
-        borderRadius: 6,
-        hoverBackgroundColor: '#001B6C'
-      },
-    ],
-  };
+  const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAverageScores = async () => {
+      try {
+        const response = await axiosInstance.get('/average-score/');
+        const data = response.data;
+
+        // Transform backend data: keys are chapter numbers, values are scores
+        const chapterNumbers = Object.keys(data).sort((a, b) => Number(a) - Number(b));
+        const labels = chapterNumbers.map(num => `Chapter ${num}`);
+        const scores = chapterNumbers.map(num => Number(data[num]));
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: 'Average Score (%)',
+              data: scores,
+              backgroundColor: '#00C1D4',
+              borderColor: '#001B6C',
+              borderWidth: 1,
+              borderRadius: 6,
+              hoverBackgroundColor: '#001B6C'
+            }
+          ]
+        });
+      } catch (error) {
+        setChartData({
+          labels: [],
+          datasets: []
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAverageScores();
+  }, []);
 
   const options = {
     responsive: true,
@@ -33,42 +57,31 @@ const Analytics = () => {
         position: 'top',
         labels: {
           color: '#001B6C',
-          font: {
-            weight: 'bold'
-          }
+          font: { weight: 'bold' }
         }
       },
       title: {
         display: true,
         text: 'Student Progress by Chapter',
         color: '#001B6C',
-        font: {
-          size: 20,
-          weight: 'bold'
-        },
+        font: { size: 20, weight: 'bold' },
         padding: 20
-      },
+      }
     },
     scales: {
       x: {
-        grid: {
-          display: false
-        },
-        ticks: {
-          color: '#001B6C'
-        }
+        grid: { display: false },
+        ticks: { color: '#001B6C' }
       },
       y: {
         beginAtZero: true,
-        max: 100,
-        grid: {
-          color: 'rgba(0, 193, 212, 0.1)'
-        },
+        max: 10,
+        grid: { color: 'rgba(0, 193, 212, 0.1)' },
         ticks: {
           color: '#001B6C',
-          callback: (value) => `${value}%`
+          callback: value => `${value}%`
         }
-      },
+      }
     },
     animation: {
       duration: 2000,
@@ -80,8 +93,14 @@ const Analytics = () => {
     <div className="analytics-container">
       <Container className="analytics-content">
         <h2 className="analytics-title">Analytics Dashboard</h2>
-        <div className="chart-wrapper">
-          <Bar data={data} options={options} />
+        <div className="chart-wrapper" style={{ minHeight: 400 }}>
+          {loading ? (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: 300 }}>
+              <Spinner animation="border" variant="info" />
+            </div>
+          ) : (
+            <Bar data={chartData} options={options} />
+          )}
         </div>
       </Container>
     </div>
