@@ -43,8 +43,7 @@ const RecentSessions = () => {
       //   setError('Unexpected data format from server');
       // }
     } catch (error) {
-      console.error('Error fetching recent sessions:', error);
-      setError('Failed to load recent sessions');
+      
     } finally {
       setLoading(false);
     }
