@@ -151,7 +151,7 @@ const RecentSessions = () => {
     const subjects = getUniqueSubjects();
     
     return (
-      <Nav variant="tabs" className="session-tabs mb-3">
+      <Nav variant="tabs" className="session-tabs mb-5">
         <Nav.Item>
           <Nav.Link 
             active={activeTab === 'all'}

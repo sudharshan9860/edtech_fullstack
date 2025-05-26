@@ -121,7 +121,7 @@ const QuestionListModal = ({
       </Modal.Header>
       <Modal.Body>
         <div className="question-list-container">
-          {questionList.length > 0 ? (
+          {Array.isArray(questionList) && questionList.length > 0 ? (
             <ul className="question-list">
               {questionList.map((questionData, index) => (
                 <li

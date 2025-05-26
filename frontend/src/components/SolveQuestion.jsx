@@ -76,6 +76,8 @@ function SolveQuestion() {
     id: questionId
   });
 
+  console.log("questionList", questionList);
+
   const { setCurrentQuestion: setContextQuestion } = useCurrentQuestion();
 
   // Start timer when component mounts
@@ -194,7 +196,9 @@ function SolveQuestion() {
   useEffect(() => {
     console.log("Location state:", location.state);
     console.log("Current question:", currentQuestion);
-  }, [location.state, currentQuestion]);
+    console.log("Selected Questions:", selectedQuestions);
+    console.log("Question List:", questionList);
+  }, [location.state, currentQuestion, selectedQuestions, questionList]);
 
   // Update currentQuestion when location state changes
   useEffect(() => {
@@ -810,7 +814,7 @@ function SolveQuestion() {
       <QuestionListModal
         show={showQuestionListModal}
         onHide={() => setShowQuestionListModal(false)}
-        questionList={selectedQuestions || questionList}
+        questionList={Array.isArray(selectedQuestions) && selectedQuestions.length > 0 ? selectedQuestions : questionList}
         onQuestionClick={handleQuestionSelect}
         isMultipleSelect={false}
         onMultipleSelectSubmit={null}
