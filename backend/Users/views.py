@@ -112,6 +112,7 @@ from django.middleware.csrf import get_token
 def logins(request):
     try:
         data = request.data
+        # print(data)
         username = data.get('username')
         password = data.get('password')
 
@@ -120,7 +121,7 @@ def logins(request):
         if user is not None:
             # Log the user in
             login(request, user)
-
+            
             # Get all sessions linked to this user
             # user_sessions = []
             # all_sessions = Session.objects.filter(expire_date__gte=timezone.now())
@@ -143,7 +144,9 @@ def logins(request):
             response = Response({
                 "status": "Success",
                 "token": token.key,
-                "session_key": request.session.session_key
+                "session_key": request.session.session_key,
+                "role": "teacher" if user.is_teacher else "student" if user.is_student else "admin"
+
             }, status=status.HTTP_200_OK)
 
             # Set token and sessionid cookies
@@ -251,9 +254,7 @@ class SessionDataView(APIView):
                 "status": "error",
                 "message": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-           
-            
+                        
 class AllSessionDataView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -290,5 +291,125 @@ class AllSessionDataView(APIView):
                 "message": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from Users.permissions import IsTeacher  # Import the IsTeacher permission
 
+class TeacherOnlyAPIView(APIView):
+    permission_classes = [IsTeacher]  # Apply the IsTeacher permission
 
+    def get(self, request):
+        """
+        API endpoint accessible only to teachers.
+        """
+        try:
+            # Your logic for the teacher-only API endpoint goes here
+            data = {"message": "This endpoint is accessible only to teachers."}
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class BulkTeacherUploadAPIView(APIView):
+    """
+    API endpoint to bulk upload teachers based on their school names.
+    Expects a CSV file with columns: Teacher_Name, Phone_Number, Username, Password, School_Name, School_Code, Class_Name, Email
+    """
+    def post(self, request):
+        try:
+            if 'teacher_list' not in request.FILES:
+                return Response({"status": "failed", "error": "No file uploaded with key 'teacher_list'."}, status=400)
+
+            file = request.FILES['teacher_list']
+            df = pd.read_csv(file)
+
+            with transaction.atomic():
+                for _, row in df.iterrows():
+                    teacher_name = row.get('Teacher_Name')
+                    phone_number = row.get('Phone_Number')
+                    username = row.get('Username')
+                    password = row.get('Password')
+                    school_name = row.get('School_Name')
+                    school_code = row.get('School_Code')
+                    class_name = row.get('Class_Name')
+                    email = row.get('Email')
+
+                    # Get or create school
+                    school, _ = School.objects.get_or_create(name=school_name, code=school_code)
+
+                    # Get class object if provided
+                    class_obj = None
+                    if class_name:
+                        try:
+                            class_obj = classes.objects.get(class_name=class_name)
+                        except classes.DoesNotExist:
+                            class_obj = None
+
+                    # Check if teacher already exists
+                    teacher_exists = Student.objects.filter(username=username, school=school, is_teacher=True).exists()
+                    if not teacher_exists:
+                        Student.objects.create_user(
+                            fullname=teacher_name,
+                            roll_number=username,  # or use a separate field if available
+                            phone_number=phone_number,
+                            username=username,
+                            password=password,
+                            email=email,
+                            school=school,
+                            class_name=class_obj,
+                            is_teacher=True,
+                            is_student=False
+                        )
+                return Response({"status": "Teachers Registered Successfully from file"}, status=200)
+        except Exception as e:
+            return Response({"status": "failed", "error": str(e)}, status=400)
+        
+class AllStudentsAPIView(APIView):
+         
+    permission_classes=[IsTeacher]
+    def get(self, request):
+        """
+        API endpoint to retrieve all students for the authenticated teacher.
+        """
+        try:
+            # Assuming the teacher is authenticated and has a school associated
+            if not request.user.is_authenticated or not request.user.is_teacher:
+                return Response({"status": "error", "message": "Unauthorized access."}, status=status.HTTP_403_FORBIDDEN)
+
+            school = request.user.school  # Get the school of the authenticated teacher
+            students = Student.objects.filter(school=school, is_student=True).values(
+                'fullname', 'roll_number', 'phone_number', 'username', 'email', 'class_name'
+            )
+
+            return Response({"status": "success", "students": list(students)}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GapAnalysisReportApiView(APIView):
+    pass   
+class TeacheDashboardAPIView(APIView):
+    """
+    API endpoint for teacher dashboard.
+    """
+    permission_classes = [IsTeacher]  # Ensure only teachers can access this endpoint
+
+    def get(self, request):
+        try:
+            # Logic for fetching teacher-specific data
+            # For example, fetching classes, students, etc.
+            data = {
+                "message": "Welcome to the teacher dashboard.",
+                # Add more data as needed
+            }
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
