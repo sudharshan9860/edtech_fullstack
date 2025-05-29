@@ -3,7 +3,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   PieChart, Pie, Cell, Sector, LineChart, Line, Area, AreaChart
 } from 'recharts';
-import './TeacherDash.css';
+import './EnhancedTeacherDash.css';
+import axiosInstance from '../api/axiosInstance';
+import TeacherDashboard from './TeacherDashboard';
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
@@ -149,9 +151,14 @@ const renderActiveShape = (props) => {
 const EnhancedTeacherDash = () => {
   const [analyticsData] = useState(generateAnalyticsData());
   const [selectedClass, setSelectedClass] = useState({ id: 1, name: "Class 6" });
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('class');
   const [showReport, setShowReport] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [studentDetails, setStudentDetails] = useState(null);
+  const [assignments, setAssignments] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
 
   // Original mock data (keeping existing functionality)
   const classes = [
@@ -164,8 +171,44 @@ const EnhancedTeacherDash = () => {
     { id: 7, name: "Class 12" },
   ];
 
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  const fetchStudents = async () => {
+    try {
+      const response = await axiosInstance.get("/allstudents/");
+      setStudents(response.data.students);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
+
+  const fetchStudentDetails = async (studentId) => {
+    try {
+      const response = await axiosInstance.get(`/student/${studentId}`);
+      setStudentDetails(response.data);
+    } catch (error) {
+      console.error("Error fetching student details:", error);
+    }
+  };
+
+  const handleStudentSelect = (student) => {
+    setSelectedStudent(student);
+    fetchStudentDetails(student.id);
+  };
+
   const onPieEnter = (_, index) => {
     setActiveIndex(index);
+  };
+
+  const handleAssignmentSubmit = async (assignment) => {
+    try {
+      const response = await axiosInstance.post('/assignments/', assignment);
+      setAssignments(prev => [...prev, response.data]);
+    } catch (error) {
+      console.error('Error creating assignment:', error);
+    }
   };
 
   const renderAIGeneratedReport = () => {
@@ -237,6 +280,67 @@ const EnhancedTeacherDash = () => {
     );
   };
 
+  const renderStudentList = () => {
+    return (
+      <div className="card">
+        <div className="cardHeader">
+          <div className="cardTitle">👥 Students List</div>
+          <div className="cardDescription">Select a student to view detailed analysis</div>
+        </div>
+        <div className="cardContent">
+          <div className="student-list">
+            {students.map((student) => (
+              <div 
+                key={student.id}
+                className={`student-item ${selectedStudent?.id === student.id ? 'selected' : ''}`}
+                onClick={() => handleStudentSelect(student)}
+              >
+                <div className="student-avatar">
+                  {student.name.charAt(0)}
+                </div>
+                <div className="student-info">
+                  <div className="student-name">{student.name}</div>
+                  <div className="student-class">Class {student.class}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStudentAnalysis = () => {
+    if (!selectedStudent || !studentDetails) {
+      return (
+        <div className="card">
+          <div className="cardContent">
+            <p>Select a student to view their detailed analysis</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="card">
+        <div className="cardHeader">
+          <div className="cardTitle">📊 Student Analysis: {selectedStudent.name}</div>
+          <div className="cardDescription">Detailed performance metrics and insights</div>
+        </div>
+        <div className="cardContent">
+          {/* Add student-specific charts and metrics here */}
+          <div className="student-metrics">
+            <div className="metric-card">
+              <div className="metric-value">{studentDetails.overallScore || 'N/A'}%</div>
+              <div className="metric-label">Overall Score</div>
+            </div>
+            {/* Add more metric cards as needed */}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="appContainer">
       <div className="mainContent">
@@ -257,221 +361,263 @@ const EnhancedTeacherDash = () => {
           </div>
         </div>
 
-        {/* AI Generated Report */}
-        {showReport && renderAIGeneratedReport()}
-
-        {/* Analytics Section */}
-        <div className="cardGrid">
-          {/* Weekly Efficiency Progress */}
-          <div className="card wideCard">
-            <div className="cardHeader">
-              <div className="cardTitle">📈 Weekly Efficiency Progress</div>
-              <div className="cardDescription">Efficiency Score Progression (Date Range View)</div>
-            </div>
-            <div className="cardContent">
-              <div style={{height: '300px'}}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={analyticsData.weeklyEfficiency}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip 
-                      formatter={(value, name) => [
-                        name === 'efficiency' ? `${value}%` : value,
-                        name === 'efficiency' ? 'Efficiency Score' : 'Tasks Completed'
-                      ]}
-                    />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="efficiency" 
-                      stroke="#0284c7" 
-                      strokeWidth={3}
-                      dot={{ fill: '#0284c7', strokeWidth: 2, r: 6 }}
-                      name="Efficiency (%)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-
-          {/* Error Types Analysis - Updated with Dark Theme */}
-          <div className="card error-analysis-card">
-            <div className="cardHeader error-analysis-header">
-              <div className="cardTitle error-analysis-title">
-                🎯 Error Types Analysis
-              </div>
-              <div className="cardDescription">Error Distribution by Week</div>
-            </div>
-            <div className="cardContent error-analysis-content">
-              <h4 className="error-analysis-subtitle">Error Distribution by Week</h4>
-              <div style={{height: '400px', background: '#2d3748', borderRadius: '8px', padding: '20px'}}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={analyticsData.errorTypesByWeek}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
-                    <XAxis 
-                      dataKey="week" 
-                      tick={{ fill: '#e2e8f0', fontSize: 12 }}
-                      axisLine={{ stroke: '#4a5568' }}
-                      tickLine={{ stroke: '#4a5568' }}
-                      angle={0}
-                      textAnchor="middle"
-                      height={60}
-                    />
-                    <YAxis 
-                      tick={{ fill: '#e2e8f0', fontSize: 12 }}
-                      axisLine={{ stroke: '#4a5568' }}
-                      tickLine={{ stroke: '#4a5568' }}
-                      label={{ 
-                        value: 'Percentage (%)', 
-                        angle: -90, 
-                        position: 'insideLeft',
-                        style: { textAnchor: 'middle', fill: '#e2e8f0' }
-                      }}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: '#2d3748',
-                        border: '1px solid #4a5568',
-                        borderRadius: '8px',
-                        color: '#e2e8f0'
-                      }}
-                      formatter={(value, name) => [`${value}%`, name]}
-                    />
-                    <Legend 
-                      wrapperStyle={{
-                        paddingTop: '20px',
-                        color: '#e2e8f0'
-                      }}
-                      iconType="rect"
-                    />
-                    <Bar 
-                      dataKey="Conceptual" 
-                      fill="#ef4444" 
-                      name="Conceptual"
-                      radius={[0, 0, 0, 0]}
-                    />
-                    <Bar 
-                      dataKey="No Error" 
-                      fill="#22c55e" 
-                      name="No"
-                      radius={[0, 0, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              
-              {/* Error Type Legend */}
-              <div className="error-legend">
-                <div className="error-legend-item">
-                  <div className="error-legend-color conceptual"></div>
-                  <span>Conceptual</span>
-                </div>
-                <div className="error-legend-item">
-                  <div className="error-legend-color no-error"></div>
-                  <span>No</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="tabs">
+          <button 
+            className={`tabButton ${activeTab === 'class' ? 'tabButtonActive' : ''}`}
+            onClick={() => setActiveTab('class')}
+          >
+            Class Analysis
+          </button>
+          <button 
+            className={`tabButton ${activeTab === 'student' ? 'tabButtonActive' : ''}`}
+            onClick={() => setActiveTab('student')}
+          >
+            Student Analysis
+          </button>
+          <button 
+            className={`tabButton ${activeTab === 'homework' ? 'tabButtonActive' : ''}`}
+            onClick={() => setActiveTab('homework')}
+          >
+            Homework
+          </button>
         </div>
+        
 
-        {/* Chapter-wise Performance Over Time */}
-        <div className="card">
-          <div className="cardHeader">
-            <div className="cardTitle">📚 Chapter-wise Performance Over Time</div>
-            <div className="cardDescription">Chapter Performance Over Time (Date Range View)</div>
-          </div>
-          <div className="cardContent">
-            <div style={{height: '400px'}}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={analyticsData.chapterPerformanceOverTime}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="Chapter1" stroke="#0088FE" strokeWidth={2} name="Chapter 1" />
-                  <Line type="monotone" dataKey="Chapter2" stroke="#00C49F" strokeWidth={2} name="Chapter 2" />
-                  <Line type="monotone" dataKey="Chapter3" stroke="#FFBB28" strokeWidth={2} name="Chapter 3" />
-                  <Line type="monotone" dataKey="Chapter4" stroke="#FF8042" strokeWidth={2} name="Chapter 4" />
-                  <Line type="monotone" dataKey="Chapter5" stroke="#8884D8" strokeWidth={2} name="Chapter 5" />
-                  <Line type="monotone" dataKey="Chapter6" stroke="#82ca9d" strokeWidth={2} name="Chapter 6" />
-                  <Line type="monotone" dataKey="Chapter7" stroke="#ffc658" strokeWidth={2} name="Chapter 7" />
-                  <Line type="monotone" dataKey="Chapter8" stroke="#ff7c7c" strokeWidth={2} name="Chapter 8" />
-                  <Line type="monotone" dataKey="Chapter9" stroke="#8dd1e1" strokeWidth={2} name="Chapter 9" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="overallAverage" 
-                    stroke="#000000" 
-                    strokeWidth={3} 
-                    strokeDasharray="5 5"
-                    name="Overall Efficiency Average"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
+        {/* Content based on active tab */}
+        {activeTab === 'class' ? (
+          <>
+            {showReport && renderAIGeneratedReport()}
+            {/* Existing class analysis content */}
+            <div className="cardGrid">
+              {/* Weekly Efficiency Progress */}
+              <div className="card wideCard">
+                <div className="cardHeader">
+                  <div className="cardTitle">📈 Weekly Efficiency Progress</div>
+                  <div className="cardDescription">Efficiency Score Progression (Date Range View)</div>
+                </div>
+                <div className="cardContent">
+                  <div style={{height: '300px'}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={analyticsData.weeklyEfficiency}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis domain={[0, 100]} />
+                        <Tooltip 
+                          formatter={(value, name) => [
+                            name === 'efficiency' ? `${value}%` : value,
+                            name === 'efficiency' ? 'Efficiency Score' : 'Tasks Completed'
+                          ]}
+                        />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="efficiency" 
+                          stroke="#0284c7" 
+                          strokeWidth={3}
+                          dot={{ fill: '#0284c7', strokeWidth: 2, r: 6 }}
+                          name="Efficiency (%)"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
 
-        {/* Performance Insights Cards */}
-        <div className="cardGrid">
-          <div className="card">
-            <div className="cardHeader">
-              <div className="cardTitle">📊 Key Metrics</div>
-            </div>
-            <div className="cardContent">
-              <div className="flex flexCol gap4">
-                <div className="flex justifyBetween">
-                  <span>Average Efficiency:</span>
-                  <span className="fontWeightBold" style={{color: '#0284c7'}}>78.4%</span>
+              {/* Error Types Analysis - Updated with Dark Theme */}
+              <div className="card error-analysis-card">
+                <div className="cardHeader error-analysis-header">
+                  <div className="cardTitle error-analysis-title">
+                    🎯 Error Types Analysis
+                  </div>
+                  <div className="cardDescription">Error Distribution by Week</div>
                 </div>
-                <div className="flex justifyBetween">
-                  <span>Peak Performance Week:</span>
-                  <span className="fontWeightBold" style={{color: '#22c55e'}}>May 15 (84%)</span>
-                </div>
-                <div className="flex justifyBetween">
-                  <span>Improvement Needed:</span>
-                  <span className="fontWeightBold" style={{color: '#ef4444'}}>Chapters 2, 3, 9</span>
-                </div>
-                <div className="flex justifyBetween">
-                  <span>Strongest Areas:</span>
-                  <span className="fontWeightBold" style={{color: '#22c55e'}}>Chapters 1, 6</span>
+                <div className="cardContent error-analysis-content">
+                  <h4 className="error-analysis-subtitle">Error Distribution by Week</h4>
+                  <div style={{height: '400px', background: '#2d3748', borderRadius: '8px', padding: '20px'}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        data={analyticsData.errorTypesByWeek}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
+                        <XAxis 
+                          dataKey="week" 
+                          tick={{ fill: '#e2e8f0', fontSize: 12 }}
+                          axisLine={{ stroke: '#4a5568' }}
+                          tickLine={{ stroke: '#4a5568' }}
+                          angle={0}
+                          textAnchor="middle"
+                          height={60}
+                        />
+                        <YAxis 
+                          tick={{ fill: '#e2e8f0', fontSize: 12 }}
+                          axisLine={{ stroke: '#4a5568' }}
+                          tickLine={{ stroke: '#4a5568' }}
+                          label={{ 
+                            value: 'Percentage (%)', 
+                            angle: -90, 
+                            position: 'insideLeft',
+                            style: { textAnchor: 'middle', fill: '#e2e8f0' }
+                          }}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: '#2d3748',
+                            border: '1px solid #4a5568',
+                            borderRadius: '8px',
+                            color: '#e2e8f0'
+                          }}
+                          formatter={(value, name) => [`${value}%`, name]}
+                        />
+                        <Legend 
+                          wrapperStyle={{
+                            paddingTop: '20px',
+                            color: '#e2e8f0'
+                          }}
+                          iconType="rect"
+                        />
+                        <Bar 
+                          dataKey="Conceptual" 
+                          fill="#ef4444" 
+                          name="Conceptual"
+                          radius={[0, 0, 0, 0]}
+                        />
+                        <Bar 
+                          dataKey="No Error" 
+                          fill="#22c55e" 
+                          name="No"
+                          radius={[0, 0, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  {/* Error Type Legend */}
+                  <div className="error-legend">
+                    <div className="error-legend-item">
+                      <div className="error-legend-color conceptual"></div>
+                      <span>Conceptual</span>
+                    </div>
+                    <div className="error-legend-item">
+                      <div className="error-legend-color no-error"></div>
+                      <span>No</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="card">
-            <div className="cardHeader">
-              <div className="cardTitle">🎯 Error Analysis Summary</div>
-            </div>
-            <div className="cardContent">
-              <div className="flex flexCol gap4">
-                <div className="flex justifyBetween">
-                  <span>Conceptual Errors:</span>
-                  <span className="fontWeightBold" style={{color: ERROR_COLORS.Conceptual}}>72.0%</span>
-                </div>
-                <div className="flex justifyBetween">
-                  <span>No Errors:</span>
-                  <span className="fontWeightBold" style={{color: ERROR_COLORS['No Error']}}>28.0%</span>
-                </div>
-                <div className="flex justifyBetween">
-                  <span>Primary Focus:</span>
-                  <span className="fontWeightBold">Concept Understanding</span>
-                </div>
-                <div className="flex justifyBetween">
-                  <span>Success Rate:</span>
-                  <span className="fontWeightBold" style={{color: '#22c55e'}}>Good Progress</span>
+            {/* Chapter-wise Performance Over Time */}
+            <div className="card">
+              <div className="cardHeader">
+                <div className="cardTitle">📚 Chapter-wise Performance Over Time</div>
+                <div className="cardDescription">Chapter Performance Over Time (Date Range View)</div>
+              </div>
+              <div className="cardContent">
+                <div style={{height: '400px'}}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={analyticsData.chapterPerformanceOverTime}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="Chapter1" stroke="#0088FE" strokeWidth={2} name="Chapter 1" />
+                      <Line type="monotone" dataKey="Chapter2" stroke="#00C49F" strokeWidth={2} name="Chapter 2" />
+                      <Line type="monotone" dataKey="Chapter3" stroke="#FFBB28" strokeWidth={2} name="Chapter 3" />
+                      <Line type="monotone" dataKey="Chapter4" stroke="#FF8042" strokeWidth={2} name="Chapter 4" />
+                      <Line type="monotone" dataKey="Chapter5" stroke="#8884D8" strokeWidth={2} name="Chapter 5" />
+                      <Line type="monotone" dataKey="Chapter6" stroke="#82ca9d" strokeWidth={2} name="Chapter 6" />
+                      <Line type="monotone" dataKey="Chapter7" stroke="#ffc658" strokeWidth={2} name="Chapter 7" />
+                      <Line type="monotone" dataKey="Chapter8" stroke="#ff7c7c" strokeWidth={2} name="Chapter 8" />
+                      <Line type="monotone" dataKey="Chapter9" stroke="#8dd1e1" strokeWidth={2} name="Chapter 9" />
+                      <Line 
+                        type="monotone" 
+                        dataKey="overallAverage" 
+                        stroke="#000000" 
+                        strokeWidth={3} 
+                        strokeDasharray="5 5"
+                        name="Overall Efficiency Average"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
+
+            {/* Performance Insights Cards */}
+            <div className="cardGrid">
+              <div className="card">
+                <div className="cardHeader">
+                  <div className="cardTitle">📊 Key Metrics</div>
+                </div>
+                <div className="cardContent">
+                  <div className="flex flexCol gap4">
+                    <div className="flex justifyBetween">
+                      <span>Average Efficiency:</span>
+                      <span className="fontWeightBold" style={{color: '#0284c7'}}>78.4%</span>
+                    </div>
+                    <div className="flex justifyBetween">
+                      <span>Peak Performance Week:</span>
+                      <span className="fontWeightBold" style={{color: '#22c55e'}}>May 15 (84%)</span>
+                    </div>
+                    <div className="flex justifyBetween">
+                      <span>Improvement Needed:</span>
+                      <span className="fontWeightBold" style={{color: '#ef4444'}}>Chapters 2, 3, 9</span>
+                    </div>
+                    <div className="flex justifyBetween">
+                      <span>Strongest Areas:</span>
+                      <span className="fontWeightBold" style={{color: '#22c55e'}}>Chapters 1, 6</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="cardHeader">
+                  <div className="cardTitle">🎯 Error Analysis Summary</div>
+                </div>
+                <div className="cardContent">
+                  <div className="flex flexCol gap4">
+                    <div className="flex justifyBetween">
+                      <span>Conceptual Errors:</span>
+                      <span className="fontWeightBold" style={{color: ERROR_COLORS.Conceptual}}>72.0%</span>
+                    </div>
+                    <div className="flex justifyBetween">
+                      <span>No Errors:</span>
+                      <span className="fontWeightBold" style={{color: ERROR_COLORS['No Error']}}>28.0%</span>
+                    </div>
+                    <div className="flex justifyBetween">
+                      <span>Primary Focus:</span>
+                      <span className="fontWeightBold">Concept Understanding</span>
+                    </div>
+                    <div className="flex justifyBetween">
+                      <span>Success Rate:</span>
+                      <span className="fontWeightBold" style={{color: '#22c55e'}}>Good Progress</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : activeTab === 'student' ? (
+          <div className="student-analysis-container">
+            <div className="student-sidebar">
+              {renderStudentList()}
+            </div>
+            <div className="student-main-content">
+              {renderStudentAnalysis()}
+            </div>
           </div>
-        </div>
+        ) : (
+          <TeacherDashboard 
+            user={selectedClass}
+            assignments={assignments}
+            submissions={submissions}
+            onAssignmentSubmit={handleAssignmentSubmit}
+          />
+        )}
       </div>
     </div>
   );

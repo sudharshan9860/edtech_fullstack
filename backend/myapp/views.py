@@ -1274,7 +1274,7 @@ class UserAverageScoreAPIView(APIView):
 
         if not chapter_numbers:
             return Response({"error": "No gap analysis data found for the user."}, status=status.HTTP_404_NOT_FOUND)
-
+        
         average_scores = {}
         for chapter_number in chapter_numbers:
             # Filter GapAnalysis objects for the current user and chapter
@@ -1286,12 +1286,13 @@ class UserAverageScoreAPIView(APIView):
             if gap_analysis_objects.exists():
                 # Calculate the average score for the chapter
                 # print(total_score)
-                total_score = sum(obj.student_score for obj in gap_analysis_objects)
+                total_score = sum(getattr(obj, 'student_score', 0) or 0 for obj in gap_analysis_objects)
+                # print(total_score)     
                 average_score = total_score / gap_analysis_objects.count()
                 average_scores[chapter_number] = average_score
             else:
                 average_scores[chapter_number] = 0  # Or handle the case where there's no data for the chapter
-
+        print(average_scores)
         return Response(average_scores, status=status.HTTP_200_OK)
     
     
@@ -1335,6 +1336,52 @@ class AllStudentGapAnalysisAPIView(APIView):
             return Response({
                 "status": "success",
                 "data": gap_analysis_data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+class LeaderboardApiView(APIView):
+    
+    def get(self, request, *args, **kwargs):
+        """
+        API endpoint to retrieve the leaderboard data for all students.
+        Returns a list of students with their average scores, sorted by score in descending order.
+        """
+        try:
+            # Get all students
+            students = Student.objects.filter(is_student=True).order_by('username')
+            
+            # Prepare the leaderboard data
+            leaderboard_data = []
+
+            for student in students:
+                # Calculate the average score for each student
+                gap_analysis_records = GapAnalysis.objects.filter(student=student)
+                if gap_analysis_records.exists():
+                    total_score = sum(getattr(record, 'student_score', 0) or 0 for record in gap_analysis_records)
+                    average_score = total_score / gap_analysis_records.count()
+                else:
+                    average_score = 0
+                
+                leaderboard_data.append({
+                    'student_id': student.id,
+                    'username': student.username,
+                    'average_score': average_score
+                })
+
+            # Sort the leaderboard data by average score in descending order
+            leaderboard_data.sort(key=lambda x: x['average_score'], reverse=True)
+
+            return Response({
+                "status": "success",
+                "data": leaderboard_data
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

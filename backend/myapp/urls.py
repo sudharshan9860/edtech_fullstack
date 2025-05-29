@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from .views import ChapterListCreateView, ClassListView, SubjectListView, TopicListView, SubTopicListView, QuestionAPIView, AnswerSubmit, StudentSubmitAPIView, QuestionWithImageUploadView, ChatbotAPIView, QuestionImageview,SimilarQuestionsAPIView,GapAnalysisAPIView,Questionupdateview,HistoryAPIView,UserGapAnalysisDataView
-from .views import UserAverageScoreAPIView,AllStudentGapAnalysisAPIView
+from .views import UserAverageScoreAPIView,AllStudentGapAnalysisAPIView,LeaderboardApiView      
 urlpatterns = [
         # path('chapters/', ChapterListCreateView.as_view(), name='chapter-list-create'),
         path('classes/', ClassListView.as_view(), name='class-list'),
@@ -23,4 +23,5 @@ urlpatterns = [
         path('usergapanalysis/', UserGapAnalysisDataView.as_view(), name='user-gap-analysis'),   
         path('average-score/', UserAverageScoreAPIView.as_view(), name='average-score'), 
         path('allstudentgapanalysis/', AllStudentGapAnalysisAPIView.as_view(), name='all-student-gap-analysis'),  
+        path('leaderboard/', LeaderboardApiView.as_view(), name='leaderboard'),
 ] 
