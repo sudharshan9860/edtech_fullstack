@@ -3,6 +3,7 @@ import './TeacherDashboard.css';
 import axiosInstance from '../api/axiosInstance';
 
 const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }) => {
+  const [homework_code, setHomeworkCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -37,17 +38,18 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
         });
         imageUrl = imageResponse.data.imageUrl;
       }
-
+      console.log("User_details:", user);
       const assignment = {
+        homework_code: homework_code.trim(),
         title: title.trim(),
         description: submissionType === "text" ? description : undefined,
         imageUrl: imageUrl,
-        teacherId: user.id,
+        teacherId: user.username,
         classId: user.id,
         dueDate: new Date(dueDate).toISOString(),
         createdAt: new Date().toISOString(),
       };
-
+      console.log("Creating assignment:", assignment);
       await onAssignmentSubmit(assignment);
 
       // Reset form
@@ -56,6 +58,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       setImageFile(null);
       setDueDate("");
       setSubmissionType("text");
+      setHomeworkCode("");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create assignment");
       console.error("Error creating assignment:", error);
@@ -63,11 +66,21 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       setIsSubmitting(false);
     }
   };
-
+ 
   const getSubmissionCount = (assignmentId) => {
     return submissions.filter((s) => s.assignmentId === assignmentId).length;
   };
-
+  const mappedAssignments = assignments.map((a, idx) => {
+    const data = a.data || {};
+    return {
+      id: data.homework_code || idx, // fallback to idx if no code
+      title: data.title,
+      description: data.description,
+      imageUrl: data.attachment, // or null
+      createdAt: data.date_assigned ? new Date(data.date_assigned) : new Date(),
+      dueDate: data.due_date ? new Date(data.due_date) : new Date(),
+    };
+  });
   return (
     <div className="teacher-dashboard">
       {/* Assignment Creation Form */}
@@ -95,6 +108,18 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
             </div>
           )}
           <form onSubmit={handleSubmit} className="assignment-form">
+            <div className="form-group">
+              <label htmlFor="homework_code" className="form-label">Homework_code</label>
+              <input
+                id="homework_code"
+                type="text"
+                className="form-input"
+                value={homework_code}
+                onChange={(e) => setHomeworkCode(e.target.value)}
+                placeholder="enter homework code"
+                required
+              />
+            </div>          
             <div className="form-group">
               <label htmlFor="title" className="form-label">Assignment Title</label>
               <input
@@ -215,7 +240,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
         
         <div className="card-content">
           <div className="assignments-list">
-            {assignments.length === 0 ? (
+            {mappedAssignments.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -226,7 +251,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 <p>No assignments created yet</p>
               </div>
             ) : (
-              assignments.map((assignment) => (
+              mappedAssignments.map((assignment) => (
                 <div key={assignment.id} className="assignment-item">
                   <div className="assignment-header">
                     <h3 className="assignment-title">{assignment.title}</h3>
@@ -240,11 +265,9 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                       {getSubmissionCount(assignment.id)} submissions
                     </div>
                   </div>
-
                   {assignment.description && (
                     <p className="assignment-description">{assignment.description}</p>
                   )}
-
                   {assignment.imageUrl && (
                     <img
                       src={assignment.imageUrl}
@@ -252,7 +275,6 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                       className="assignment-image"
                     />
                   )}
-
                   <div className="assignment-dates">
                     <span>Created: {assignment.createdAt.toLocaleDateString()}</span>
                     <span>Due: {assignment.dueDate.toLocaleDateString()}</span>

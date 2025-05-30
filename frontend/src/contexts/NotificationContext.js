@@ -1,97 +1,70 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { NotificationManager } from '../models/Notifications';
+import React, { createContext, useEffect, useState } from 'react';
+import axiosInstance from "../api/axiosInstance";
 
-export const NotificationContext = createContext({
-  notifications: [],
-  addAchievementNotification: () => {},
-  addProgressNotification: () => {},
-  addRecommendationNotification: () => {},
-  addReminderNotification: () => {},
-  markNotificationAsRead: () => {},
-  clearAllNotifications: () => {},
-  getUnreadCount: () => 0
-});
+export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-  const [username, setUsername] = useState(localStorage.getItem('username') || 'user');
-  const [notificationManager, setNotificationManager] = useState(
-    new NotificationManager(username)
-  );
-  const [notifications, setNotifications] = useState(
-    notificationManager.notifications || []
-  );
+  const [notifications, setNotifications] = useState([]);
 
-  // Update notifications when the state changes
-  const updateNotifications = () => {
-    setNotifications([...notificationManager.notifications]);
+  const fetchNotifications = async () => {
+    try {
+      const res = await axiosInstance.get('/studentnotifications/');
+      const item = res.data.homework;
+
+      if (!item) {
+        console.warn('No homework data received.');
+        return;
+      }
+
+      const notification = {
+        id: item.homework_code,
+        title: item.title || 'New Homework',
+        message: res.data.message || 'You have a new homework update.',
+        timestamp: item.date_assigned || new Date().toISOString(),
+        read: false,
+        type: 'reminder',
+        homework: item,
+      };
+
+      setNotifications((prev) => {
+        const exists = prev.some((n) => n.id === notification.id);
+        return exists ? prev : [notification, ...prev];
+      });
+
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
   };
 
-  // Methods to interact with notifications
-  const addAchievementNotification = (achievement) => {
-    const notification = notificationManager.addAchievementNotification(achievement);
-    updateNotifications();
-    return notification;
-  };
+  useEffect(() => {
+    fetchNotifications(); // Initial fetch
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval); // Cleanup
+  }, []);
 
-  const addProgressNotification = (progressType, details) => {
-    const notification = notificationManager.addProgressNotification(progressType, details);
-    updateNotifications();
-    return notification;
-  };
-
-  const addRecommendationNotification = (recommendation) => {
-    const notification = notificationManager.addRecommendationNotification(recommendation);
-    updateNotifications();
-    return notification;
-  };
-
-  const addReminderNotification = (reminderType, details) => {
-    const notification = notificationManager.addReminderNotification(reminderType, details);
-    updateNotifications();
-    return notification;
-  };
-
-  const markNotificationAsRead = (notificationId) => {
-    notificationManager.markAsRead(notificationId);
-    updateNotifications();
+  const markNotificationAsRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        notif.id === id ? { ...notif, read: true } : notif
+      )
+    );
   };
 
   const clearAllNotifications = () => {
-    notificationManager.clearNotifications();
-    updateNotifications();
+    console.log('Clearing all notifications');
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const getUnreadCount = () => {
-    return notificationManager.getUnreadCount();
-  };
-
-  // Update username if it changes in localStorage
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const storedUsername = localStorage.getItem('username');
-      if (storedUsername && storedUsername !== username) {
-        setUsername(storedUsername);
-        setNotificationManager(new NotificationManager(storedUsername));
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [username]);
+  const getUnreadCount = () =>
+    notifications.filter((notif) => !notif.read).length;
 
   return (
     <NotificationContext.Provider
       value={{
         notifications,
-        addAchievementNotification,
-        addProgressNotification,
-        addRecommendationNotification,
-        addReminderNotification,
         markNotificationAsRead,
         clearAllNotifications,
-        getUnreadCount
+        getUnreadCount,
       }}
     >
       {children}

@@ -204,7 +204,9 @@ const EnhancedTeacherDash = () => {
 
   const handleAssignmentSubmit = async (assignment) => {
     try {
-      const response = await axiosInstance.post('/assignments/', assignment);
+
+      const response = await axiosInstance.post('/add-homework/', assignment);
+      // console.log('Assignment created:', response.data);
       setAssignments(prev => [...prev, response.data]);
     } catch (error) {
       console.error('Error creating assignment:', error);
