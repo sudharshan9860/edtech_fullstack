@@ -207,7 +207,8 @@ from rest_framework.authtoken.models import Token
 def logout_view(request):
     try:
         # Backup session data before logout
-        backup_session_data(request)
+        if request.user=="student":
+            backup_session_data(request)
 
         if request.user.is_authenticated:
             logout(request)
@@ -314,7 +315,7 @@ class TeacherOnlyAPIView(APIView):
                 "message": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class BulkTeacherUploadAPIView(APIView):
+class TeacherUploadAPIView(APIView):
     """
     API endpoint to bulk upload teachers based on their school names.
     Expects a CSV file with columns: Teacher_Name, Phone_Number, Username, Password, School_Name, School_Code, Class_Name, Email
