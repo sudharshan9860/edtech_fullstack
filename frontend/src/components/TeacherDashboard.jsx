@@ -46,8 +46,8 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
         imageUrl: imageUrl,
         teacherId: user.username,
         classId: user.id,
-        dueDate: new Date(dueDate).toISOString(),
-        createdAt: new Date().toISOString(),
+        due_date: new Date(dueDate).toISOString(),
+        date_assigned: new Date().toISOString(),
       };
       console.log("Creating assignment:", assignment);
       await onAssignmentSubmit(assignment);

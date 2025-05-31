@@ -16,10 +16,11 @@ import NotificationDropdown from './NotificationDropdown';
 import SoundConfigModal from './SoundConfigModal';
 import { soundManager } from '../utils/SoundManager';
 
+
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const currentLocation = useLocation();
-  const { username, logout } = useContext(AuthContext);
+  const { username, logout,role } = useContext(AuthContext);
   
   // Sound configuration state
   const [showSoundConfig, setShowSoundConfig] = useState(false);
@@ -31,7 +32,7 @@ const Layout = ({ children }) => {
     navigate('/');
   };
 
-  const navigationLinks = [
+  const navigationLinks =  [
     { path: '/student-dash', label: 'Student Dash' },
     { path: '/teacher-dash', label: 'Teacher Dash' },
     { path: '/enhanced-analytics', label: 'Enhanced Analytics' }, // New
@@ -40,6 +41,14 @@ const Layout = ({ children }) => {
     { path: '/leaderboard', label: 'Leaderboard' },
     { path: '/quests', label: 'Quests', icon: faTrophy }
   ];
+
+  // ✅ Filter based on role
+  const filteredLinks = navigationLinks.filter(link => {
+    if (role === "student") {
+      return link.path !== "/teacher-dash"; // 👈 Exclude teacher-dash for students
+    }
+    return true; // Allow all links for teachers or others
+  });
 
   return (
     <div id="main-content" className="d-flex flex-column min-vh-100">
@@ -59,7 +68,7 @@ const Layout = ({ children }) => {
             </Offcanvas.Header>
             <Offcanvas.Body>
               <Nav className="ms-auto justify-content-end flex-grow-1 pe-3">
-                {navigationLinks.map((link) => (
+                {filteredLinks.map((link) => (
                   <Nav.Link
                     key={link.path}
                     className={`custom-nav-link mx-2 ${currentLocation.pathname === link.path ? 'active' : ''}`}
@@ -82,9 +91,9 @@ const Layout = ({ children }) => {
                 </Nav.Link>
 
                 {/* Added margin to create spacing */}
-                <div className=" ms-3">
+            { role=='student'  ? <div className=" ms-3">
                   <NotificationDropdown />
-                </div>
+                </div>: ""}
                 
                 {/* Admin section with spacing */}
                 <Nav.Item className="d-flex align-items-center ms-3">

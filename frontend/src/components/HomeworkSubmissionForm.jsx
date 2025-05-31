@@ -1,28 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
+import { AuthContext } from './AuthContext';
 import './HomeworkSubmissionForm.css';
 
-const HomeworkSubmissionForm = ({ assignment, student, onSubmit }) => {
+const HomeworkSubmissionForm = () => {
   const [submissionType, setSubmissionType] = useState("text");
   const [textResponse, setTextResponse] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [assignment, setAssignment] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { username } = useContext(AuthContext);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (submissionType === "text" && !textResponse.trim()) return;
-    if (submissionType === "image" && !imageFile) return;
-
-    const submission = {
-      assignmentId: assignment.id,
-      studentId: student.id,
-      textResponse: submissionType === "text" ? textResponse.trim() : undefined,
-      imageUrl: submissionType === "image" && imageFile ? URL.createObjectURL(imageFile) : undefined,
+  useEffect(() => {
+    const fetchAssignment = async () => {
+      try {
+        // Get homework details from location state (passed from notification)
+        const homeworkDetails = location.state?.homeworkDetails;
+        // Get homework code from either state or URL query parameters
+        const homeworkCode = location.state?.homeworkCode || new URLSearchParams(location.search).get('code');
+        console.log("Homework_Code",homeworkCode)
+        if (!homeworkCode) {
+          setError("No homework code provided");
+          return;
+        }
+        
+        // If homework details are passed directly, use them
+        if (homeworkDetails) {
+          console.log("Using homework details from navigation state:", homeworkDetails);
+          setAssignment(homeworkDetails);
+        } else {
+          // Otherwise fetch the details using the homework code
+          console.log("Fetching homework details for code:", homeworkCode);
+          const response = await axiosInstance.get(`/homework/${homeworkCode}/`);
+          setAssignment(response.data);
+        }
+      } catch (error) {
+        setError(error.response?.data?.message || "Failed to fetch assignment details");
+        console.error("Error fetching assignment:", error);
+      }
     };
+    
+    fetchAssignment();
+  }, [location]);
 
-    onSubmit(submission);
+  // Check if user is loaded
+  if (!username) {
+    return (
+      <div className="submission-form-container">
+        <div className="submission-card">
+          <div className="loading-state">
+            <div>Please log in to submit homework</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if assignment is loaded
+  if (!assignment) {
+    return (
+      <div className="submission-form-container">
+        <div className="submission-card">
+          <div className="loading-state">
+            {error ? (
+              <div className="error-message">{error}</div>
+            ) : (
+              <div>Loading assignment details...</div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setIsSubmitting(true);
+
+    if (submissionType === "text" && !textResponse.trim()) {
+      setError("Please provide a text response");
+      setIsSubmitting(false);
+      return;
+    }
+    if (submissionType === "image" && !imageFile) {
+      setError("Please upload an image");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('homework_code', assignment.homework_code);
+      formData.append('student_id', username);
+      formData.append('submission_type', submissionType);
+
+      if (submissionType === "text") {
+        formData.append('text_response', textResponse.trim());
+      } else if (imageFile) {
+        formData.append('image_response', imageFile);
+      }
+
+      // Submit the homework
+      console.log(formData)
+      await axiosInstance.post('/homework-submission/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setSuccess("Homework submitted successfully!");
+      setTextResponse("");
+      setImageFile(null);
+
+      // Redirect to student dashboard after submission
+      setTimeout(() => {
+        navigate('/student-dash', {
+          state: {
+            message: 'Homework submitted successfully!',
+            type: 'success'
+          }
+        });
+      }, 2000);
+
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to submit homework");
+      console.error("Error submitting homework:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const isOverdue = new Date() > assignment.dueDate;
+  // Check if assignment is overdue
+  const isOverdue = assignment.due_date ? (new Date() > new Date(assignment.due_date)) : false;
 
   return (
     <div className="submission-form-container">
@@ -45,12 +161,10 @@ const HomeworkSubmissionForm = ({ assignment, student, onSubmit }) => {
         <div className="card-content">
           {/* Assignment Details */}
           <div className="assignment-details">
-            <h3 className="assignment-title">{assignment.title}</h3>
-
+            <h3 className="assignment-title">{assignment.title || 'Untitled Homework'}</h3>
             {assignment.description && (
               <p className="assignment-description">{assignment.description}</p>
             )}
-
             {assignment.imageUrl && (
               <img
                 src={assignment.imageUrl}
@@ -58,7 +172,6 @@ const HomeworkSubmissionForm = ({ assignment, student, onSubmit }) => {
                 className="assignment-image"
               />
             )}
-
             <div className="assignment-meta">
               <div className="meta-item">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -67,17 +180,19 @@ const HomeworkSubmissionForm = ({ assignment, student, onSubmit }) => {
                   <line x1="8" y1="2" x2="8" y2="6"/>
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                Due: {assignment.dueDate.toLocaleDateString()} at {assignment.dueDate.toLocaleTimeString()}
+                Due: {assignment.due_date ? new Date(assignment.due_date).toLocaleDateString() : 'N/A'}
+                {assignment.due_date && (
+                  <> at {new Date(assignment.due_date).toLocaleTimeString()}</>
+                )}
               </div>
               <div className="meta-item">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                Student: {student.name}
+                Student: {username}
               </div>
             </div>
-
             {isOverdue && (
               <div className="overdue-warning">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -92,6 +207,16 @@ const HomeworkSubmissionForm = ({ assignment, student, onSubmit }) => {
 
           {/* Submission Form */}
           <form onSubmit={handleSubmit} className="submission-form">
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="success-message">
+                {success}
+              </div>
+            )}
             <div className="form-group">
               <label className="form-label">Response Type</label>
               <div className="type-buttons">
@@ -122,7 +247,6 @@ const HomeworkSubmissionForm = ({ assignment, student, onSubmit }) => {
                 </button>
               </div>
             </div>
-
             {submissionType === "text" ? (
               <div className="form-group">
                 <label htmlFor="text-response" className="form-label">Your Response</label>
@@ -159,10 +283,13 @@ const HomeworkSubmissionForm = ({ assignment, student, onSubmit }) => {
                 )}
               </div>
             )}
-
             <div className="form-actions">
-              <button type="submit" className="submit-btn">
-                Submit Homework
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Homework'}
               </button>
             </div>
           </form>

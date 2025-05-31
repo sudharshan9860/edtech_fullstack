@@ -14,7 +14,8 @@ import SimilarQuestions from '../components/SimilarQuestions';
 import LeaderboardPage from '../components/LeaderBoardPage';
 import ProgressDashboard from '../components/ProgressDashboard';
 import QuestsPage from '../components/QuestsPage';
-import TeacherDash from '../components/EnhancedTeacherDash';      
+import TeacherDash from '../components/EnhancedTeacherDash';   
+import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';   
 const AppRoutes = () => {
   return (
     <Routes>
@@ -114,6 +115,18 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+
+      <Route
+        path="/homework"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <HomeworkSubmissionForm />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
       <Route
         path="/leaderboard"
         element={

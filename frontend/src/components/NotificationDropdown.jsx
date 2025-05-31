@@ -3,6 +3,7 @@ import { Dropdown, Badge, Modal, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { NotificationContext } from '../contexts/NotificationContext';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationDropdown = () => {
   const {
@@ -14,6 +15,7 @@ const NotificationDropdown = () => {
 
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   const unreadCount = getUnreadCount();
 
@@ -23,14 +25,30 @@ const NotificationDropdown = () => {
       progress: '📈',
       recommendation: '💡',
       reminder: '⏰',
+      homework: '📚'
     };
     return iconMap[type] || '🔔';
   };
 
   const handleNotificationClick = (notification) => {
+    // Mark notification as read
     markNotificationAsRead(notification.id);
-    setSelectedNotification(notification);
-    setShowModal(true);
+    
+    // If it's a homework notification with homework details, redirect to submission page
+    if (notification.type === 'homework' && notification.homework) {
+      console.log("Navigating to homework submission with details:", notification.homework);
+      
+      navigate('/homework', {
+        state: {
+          homeworkCode: notification.homework.homework_code,
+          homeworkDetails: notification.homework
+        }
+      });
+    } else {
+      // For other notifications, show the modal
+      setSelectedNotification(notification);
+      setShowModal(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -59,10 +77,10 @@ const NotificationDropdown = () => {
           )}
         </Dropdown.Toggle>
 
-        <Dropdown.Menu className="notification-menu" style={{ minWidth: '300px' }}>
+        <Dropdown.Menu className="notification-menu" style={{ minWidth: '300px', maxHeight: '400px', overflow: 'auto' }}>
           <Dropdown.Header className="d-flex justify-content-between align-items-center">
             <span>Notifications</span>
-            {unreadCount > 0 && (
+            {notifications.length > 0 && (
               <button
                 type="button"
                 className="btn btn-link p-0 text-primary"
@@ -103,8 +121,8 @@ const NotificationDropdown = () => {
         </Dropdown.Menu>
       </Dropdown>
 
-      {/* Modal for showing notification details */}
-      <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
+      {/* Modal for showing non-homework notification details */}
+      <Modal show={showModal} onHide={handleCloseModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>
             {selectedNotification?.title || 'Notification Details'}
@@ -113,27 +131,11 @@ const NotificationDropdown = () => {
         <Modal.Body>
           <p><strong>Message:</strong> {selectedNotification?.message}</p>
           <p>
-            <strong>Date Assigned:</strong>{' '}
-            {selectedNotification?.homework?.date_assigned
-              ? new Date(selectedNotification.homework.date_assigned).toLocaleString()
+            <strong>Date:</strong>{' '}
+            {selectedNotification?.timestamp
+              ? new Date(selectedNotification.timestamp).toLocaleString()
               : 'N/A'}
           </p>
-          <p>
-            <strong>Homework Code:</strong> {selectedNotification?.homework?.homework_code || 'N/A'}
-          </p>
-          {/* You can add more homework details here */}
-          {selectedNotification?.homework && (
-            <div>
-              <h5>Homework Details:</h5>
-              <ul>
-                {Object.entries(selectedNotification.homework).map(([key, value]) => (
-                  <li key={key}>
-                    <strong>{key}:</strong> {String(value)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>

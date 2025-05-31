@@ -6,6 +6,8 @@ import {
 import './EnhancedTeacherDash.css';
 import axiosInstance from '../api/axiosInstance';
 import TeacherDashboard from './TeacherDashboard';
+import StudentDash from './StudentDash';
+import QuickExerciseComponent from './QuickExerciseComponent';
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
@@ -383,6 +385,12 @@ const EnhancedTeacherDash = () => {
           >
             Homework
           </button>
+          <button 
+            className={`tabButton ${activeTab === 'exercise' ? 'tabButtonActive' : ''}`}
+            onClick={() => setActiveTab('exercise')}
+          >
+            Quick Exercise
+          </button>
         </div>
         
 
@@ -612,14 +620,16 @@ const EnhancedTeacherDash = () => {
               {renderStudentAnalysis()}
             </div>
           </div>
-        ) : (
+        ) : activeTab==='homework'? (
           <TeacherDashboard 
             user={selectedClass}
             assignments={assignments}
             submissions={submissions}
             onAssignmentSubmit={handleAssignmentSubmit}
-          />
-        )}
+          />):("coming soon ....")}
+        {/* // ):(<QuickExerciseComponent onCreateHomework={handleAssignmentSubmit} />)} */}
+
+        
       </div>
     </div>
   );

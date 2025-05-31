@@ -1510,9 +1510,9 @@ class HomeworkSubmissionAPIView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
 
-
+        print(request.data)
         homework_code = data.get('homework_code')
-        submitted_file = data.get('submitted_file')
+        submitted_file = data.get('text_response')
         score = data.get('score')  # Optional
         feedback = data.get('feedback')  # Optional
 

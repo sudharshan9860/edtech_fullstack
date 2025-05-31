@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
-import axios from "axios"; 
 import axiosInstance from "../api/axiosInstance";
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -14,13 +14,19 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem("username") || "";
   });
 
-  // Effect to sync localStorage with state
+  const [role, setRole] = useState(() => {
+    return localStorage.getItem("role") || "";
+  });
+
+  // Sync state with localStorage changes
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "accessToken") {
         setIsAuthenticated(!!e.newValue);
       } else if (e.key === "username") {
         setUsername(e.newValue || "");
+      } else if (e.key === "role") {
+        setRole(e.newValue || "");
       }
     };
 
@@ -28,53 +34,54 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const login = (user, token) => {
+  const login = (user, token, userRole) => {
     try {
-      // Store both username and token
+      // Store in localStorage
       localStorage.setItem("username", user);
       localStorage.setItem("accessToken", token);
+      localStorage.setItem("role", userRole);
 
       // Update state
       setIsAuthenticated(true);
       setUsername(user);
+      setRole(userRole);
     } catch (error) {
       console.error("Error during login:", error);
-      // Handle storage errors (e.g., quota exceeded)
       throw new Error("Failed to store authentication data");
     }
   };
 
-// Ensure this is uncommented
-
   const logout = async () => {
     try {
-      console.log("Logging out from try block...");
-      const response = await axiosInstance.post('logout/', {}, {
+      console.log("Logging out...");
+      await axiosInstance.post('logout/', {}, {
         withCredentials: true
       });
-      console.log("Logout response:", response);
-  
+
       localStorage.removeItem("accessToken");
       localStorage.removeItem("username");
+      localStorage.removeItem("role");
       localStorage.removeItem("streakData");
       localStorage.removeItem("rewardData");
       localStorage.removeItem("completedChapters");
-  
+
       setIsAuthenticated(false);
       setUsername("");
-  
+      setRole("");
+
       window.location.href = "/login";
     } catch (error) {
       console.error("Error during logout:", error);
       localStorage.clear();
       setIsAuthenticated(false);
       setUsername("");
+      setRole("");
       window.location.href = "/login";
     }
   };
-  
-    return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, username, role, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

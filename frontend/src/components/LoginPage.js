@@ -57,6 +57,7 @@ function LoginPage() {
       );
       // console.log("Login response:", response.data);
       const { token } = response.data;
+      console.log("token_data", response.data)
       const role  =response.data.role;
       console.log("User role:", role);
       
@@ -66,7 +67,7 @@ function LoginPage() {
         localStorage.setItem("username", username);
         
         // Update auth context
-        login(username, token);
+        login(username, token, role);
         if (role === "teacher") {
           navigate("/teacher-dash");
         } else {

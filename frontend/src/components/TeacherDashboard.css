@@ -76,9 +76,10 @@
   letter-spacing: 0.025em;
 }
 
-.form-input,
+.int{.form-input,
 .form-textarea {
   padding: 0.875rem 1rem;
+  padding-left: 3vw;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 0.95rem;
@@ -86,7 +87,7 @@
   background: white;
   font-family: inherit;
 }
-
+}
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
