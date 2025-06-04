@@ -152,7 +152,7 @@ const QuickExerciseComponent = ({ onCreateHomework }) => {
         classid: Number(selectedClass),
         subjectid: Number(selectedSubject),
         topicid: selectedChapters,
-        external: true,
+        external: false,
         subtopic: questionLevel
       };
 

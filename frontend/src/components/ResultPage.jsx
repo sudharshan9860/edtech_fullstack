@@ -4,7 +4,7 @@ import { Button, Container, Row, Col, Accordion, Alert, Spinner } from 'react-bo
 import './ResultPage.css';
 import QuestionListModal from './QuestionListModal';
 import axiosInstance from '../api/axiosInstance';
-
+import MarkdownWithMath from './MarkdownWithMath';
 const ResultPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const ResultPage = () => {
     questionImage,
     questionNumber
   } = state || {};
-  
+ 
   const { 
     question, 
     ai_explaination, 
@@ -259,44 +259,42 @@ return (
   };
 
   // Function to render solution steps with proper formatting
-  const renderSolutionSteps = (steps) => {
-    if (!steps || !Array.isArray(steps) || steps.length === 0) {
-      return <p>No solution steps available.</p>;
-    }
-  
-    return (
-      <div className="solution-steps">
-        {steps.map((step, index) => {
-          // Check if the step contains a "Step X:" pattern
-          const stepMatch = step.match(/^Step\s+(\d+):\s+(.*)/i);
-          
-          if (stepMatch) {
-            const [_, stepNumber, stepContent] = stepMatch;
-            return (
-              <div key={index} className="solution-step-container">
-                <div className="step-title">Step {stepNumber}:</div>
-                <div className="step-description">{stepContent}</div>
-              </div>
-            );
-          } else {
-            step = step.replace(/["':,`\[\]]/g, "")                     // Remove unwanted characters
-             .replace(/step_by_step_solution/g, "")         // Remove specific word
-                                      // s
-                       // Remove empty lines
-                                               // Join back with single newline
+// Improved renderSolutionSteps function for ResultPage.jsx
+const renderSolutionSteps = (steps) => {
+  if (!steps || !Array.isArray(steps) || steps.length === 0) {
+    return <p>No solution steps available.</p>;
+  }
 
-            // For steps without explicit "Step X:" format
-            return (
-              <div key={index} className="solution-step-container">
-                {/* <div className="step-title">Step {index + 1}:</div> */}
-                <div className="step-description">{step}</div>
+  return (
+    <div className="solution-steps">
+      {steps.map((step, index) => {
+        // Check if the step contains a "Step X:" pattern
+        const stepMatch = step.match(/^Step\s+(\d+):\s+(.*)/i);
+        
+        if (stepMatch) {
+          const [_, stepNumber, stepContent] = stepMatch;
+          return (
+            <div key={index} className="solution-step-container">
+              <div className="step-title">Step {stepNumber}:</div>
+              <div className="step-description">
+                <MarkdownWithMath content={stepContent} />
               </div>
-            );
-          }
-        })}
-      </div>
-    );
-  };
+            </div>
+          );
+        } else {
+          // For steps without explicit "Step X:" format
+          return (
+            <div key={index} className="solution-step-container">
+              <div className="question-step">
+                <MarkdownWithMath content={step} />
+              </div>
+            </div>
+          );
+        }
+      })}
+    </div>
+  );
+};
 
   const formatExampleContent = (example) => {
     if (!example) return null;
@@ -306,11 +304,12 @@ return (
     
     return (
       <div className="example-content">
-        <p>{intro.trim()}</p>
+        <p>
+          <MarkdownWithMath content={intro.trim()} /></p>
         <div className="example-steps">
           {stepParts.map((step, index) => (
             <div key={index} className="example-step">
-              <strong>{`Step ${index + 1}:`}</strong>{step.trim()}
+              <strong>{`Step ${index + 1}:`}</strong> {step.trim()}
             </div>
           ))}
         </div>
@@ -328,7 +327,7 @@ return (
       case 'submit':
         return (
           <>
-            <div className="result-explanation">
+            <div className="result-question">
               <p><strong>Student Answer:</strong></p>
               <div className="student-answer-content">
                 {student_answer || "No answer submitted"}
@@ -336,12 +335,12 @@ return (
             </div>
             {renderScore()}
             {comment && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
             {formated_concepts_used && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
@@ -350,7 +349,7 @@ return (
       case 'solve':
         return (
           <>
-            <div className="result-explanation">
+            <div className="result-question">
               <p className="solution-header">AI Solution:</p>
               {question_image_base64 && (
                 <div className="solution-image-container">
@@ -364,12 +363,12 @@ return (
               {renderSolutionSteps(ai_explaination)}
             </div>
             {comment && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
             {formated_concepts_used && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
@@ -378,13 +377,13 @@ return (
       case 'correct':
         return (
           <>
-            <div className="result-explanation">
+            <div className="result-question">
               <p><strong>Student Answer:</strong></p>
               <div className="student-answer-content">
                 {student_answer || "No answer submitted"}
               </div>
             </div>
-            <div className="result-explanation">
+            <div className="result-question">
               <p className="solution-header">AI Solution:</p>
               {question_image_base64 && (
                 <div className="solution-image-container">
@@ -399,12 +398,12 @@ return (
             </div>
             {renderScore()}
             {comment && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
             {formated_concepts_used && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
@@ -427,19 +426,19 @@ return (
                         <p className="example-header"><strong>Example:</strong></p>
                         {formatExampleContent(conceptItem['example'])}
                       </div>
-                      <p className="explanation"><strong>Explanation:</strong> {conceptItem.explanation}</p>
+                      <p className="explanation"><strong>Explanation:</strong> <MarkdownWithMath content= {conceptItem.explanation} /></p>
                     </Accordion.Body>
                   </Accordion.Item>
                 ))}
               </Accordion>
             )}
             {comment && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Comments:</strong> {comment}</p>
               </div>
             )}
             {formated_concepts_used && (
-              <div className="result-explanation">
+              <div className="result-question">
                 <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
               </div>
             )}
@@ -463,7 +462,7 @@ return (
           )}
           
           <div className="result-question">
-            <p><strong>Question {questionNumber}:</strong> {question}</p>
+            <p><strong>Question {questionNumber}:</strong> <MarkdownWithMath content={question} /></p>
             {questionImage && (
               <div className="question-image-container">
                 <img 
@@ -480,6 +479,7 @@ return (
               </div>
             )}
           </div>
+          
           
           {renderContentBasedOnAction()}
           

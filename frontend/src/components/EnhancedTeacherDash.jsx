@@ -626,8 +626,8 @@ const EnhancedTeacherDash = () => {
             assignments={assignments}
             submissions={submissions}
             onAssignmentSubmit={handleAssignmentSubmit}
-          />):("coming soon ....")}
-        {/* // ):(<QuickExerciseComponent onCreateHomework={handleAssignmentSubmit} />)} */}
+          />):
+        (<QuickExerciseComponent onCreateHomework={handleAssignmentSubmit} />)} 
 
         
       </div>

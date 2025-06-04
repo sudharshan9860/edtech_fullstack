@@ -324,8 +324,8 @@ class AnswerSubmit(APIView):
             "student_level": 2
         }
         response = requests.post(url, json=data)
-        print(response)
-        print(response.text)
+        # print(response)
+        # print(response.text)
         if response.status_code == 200:
             if response.headers.get('Content-Type') == 'application/json':
                 
@@ -350,10 +350,33 @@ class AnswerSubmit(APIView):
                     
                     concepts.append(concept_dict)
                     # print(concept_dict['example'])
-                step_solution=[]
-                for step in step_by_step_solution:
-                    step_solution.append(step['step'])
+                # print(step_by_step_solution)
+                
+                new_stepss=[]
+            
+                if class_nums==11 or class_nums==12:
+                    new_string = json.loads(step_by_step_solution[0]['step'].replace('\\', '\\\\'))
+                    new_string_dict=new_string['step_by_step_solution']
+                    new_stepss=[]
+                    for ste in new_string_dict:
+                        new_stepss.append(ste['step'])  
+                    # print(new_stepss)
+                # print(type(new_string))
+                # print(new_string)
+                
+                # print(ai_explaination[0]['step']['step_by_step_solution'])
+                # print(ai_explaination)
+                else:
+                    new_stepss=[]
+                    for steps in step_by_step_solution:
+                        new_stepss.append(steps['step'])
+                    ai_explaination = new_stepss
+                # step_solution=[]
+                # for step in step_by_step_solution:
+                #     step_solution.append(step['step'])
                 # Construct the final output
+
+                # print(step_solution)
                 output = {
                     
                         "question": f"1. {question}",
@@ -363,9 +386,8 @@ class AnswerSubmit(APIView):
                         "total_marks": 30,
                         "concepts": concepts,
                         "key": "explain",
-                        "solution":step_solution
+                        "solution":new_stepss
                     }
-                
 
                 return output
                     
@@ -633,13 +655,26 @@ class AnswerSubmit(APIView):
         elif solve=='true':
            
             ai_explaination = self.Ai_Explaination_step_by_step([int(class_obj.class_name)], question)
-            print(ai_explaination)
-            new_steps=[]
-            for steps in ai_explaination:
-                new_steps.append(steps['step'])
-            ai_explaination = new_steps
+            new_stepss=[]
+            if class_id=="11" or class_id=="12":
+                new_string = json.loads(ai_explaination[0]['step'].replace('\\', '\\\\'))
+                new_string_dict=new_string['step_by_step_solution']
+                new_stepss=[]
+                for ste in new_string_dict:
+                    new_stepss.append(ste['step'])  
+                print(new_stepss)
+            # print(type(new_string))
+            # print(new_string)
+            
+            # print(ai_explaination[0]['step']['step_by_step_solution'])
+            # print(ai_explaination)
+            else:
+                new_stepss=[]
+                for steps in ai_explaination:
+                    new_stepss.append(steps['step'])
+            ai_explaination = new_stepss
             data['question'] = question
-            data['ai_explaination'] = ai_explaination
+            data['ai_explaination'] = new_stepss
             data['obtained_marks'] = 0
 
             data['question_marks'] = 10

@@ -17,6 +17,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import "./StudyTimer.css"; // Import timer styles
 import { useCurrentQuestion } from "../contexts/CurrentQuestionContext";
+import MarkdownWithMath from "./MarkdownWithMath";
 
 function SolveQuestion() {
   const location = useLocation();
@@ -316,6 +317,7 @@ function SolveQuestion() {
     formData.append("study_time_seconds", Math.floor(timeSpentMs / 1000));
     formData.append("study_time_minutes", timeSpentMinutes);
 
+    
     // Helper: finalize and send the form after appending everything
     const finalizeAndSendForm = async () => {
       // Add user's solution images
@@ -630,7 +632,7 @@ function SolveQuestion() {
               className="question-image"
             />
           )}
-          <p className="question-text">{currentQuestion.question}</p>
+          <div className="question-text"><MarkdownWithMath content={currentQuestion.question} /></div>
         </div>
 
         {/* Error Message */}

@@ -81,7 +81,7 @@
   visibility: hidden;
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out,
     visibility 0.3s ease-in-out;
-  overflow: hidden;
+  
 }
 
 /* Show chat window when open */

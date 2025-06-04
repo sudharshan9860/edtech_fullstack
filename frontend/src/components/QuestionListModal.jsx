@@ -3,7 +3,7 @@ import { Modal, Button } from "react-bootstrap";
 import "./QuestionListModal.css";
 import Tutorial from "./Tutorial";
 import { useTutorial } from "../contexts/TutorialContext";
-
+import MarkdownWithMath from "./MarkdownWithMath";
 const QuestionListModal = ({
   show,
   onHide,
@@ -141,7 +141,7 @@ const QuestionListModal = ({
                   <div className="question-number">{index + 1}</div>
                   <div className="question-content">
                     <div className="question-text">
-                      {questionData.question}
+                      <MarkdownWithMath content={questionData.question} />
                     </div>
                     {questionData.question_image && (
                       <div className="question-image-preview">
