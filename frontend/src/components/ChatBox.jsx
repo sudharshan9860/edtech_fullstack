@@ -11,6 +11,7 @@ import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
 import axiosInstance from "../api/axiosInstance";
 import { useCurrentQuestion } from "../contexts/CurrentQuestionContext";
+import MarkdownWithMath from "./MarkdownWithMath";
 import "./ChatBox.css";
 
 const formatMessage = (text) => {
@@ -24,7 +25,7 @@ const formatMessage = (text) => {
           // Remove ALL quotes, colons, commas, and square brackets from each paragraph
           let cleanedText = paragraph;
           if (typeof cleanedText === "string") {
-            cleanedText = cleanedText.replace(/["':,\[\]]/g, "");
+            cleanedText = cleanedText.trim()
           }
 
           return (
@@ -45,7 +46,7 @@ const formatMessageText = (text) => {
 
   // Remove ALL quotes, colons, commas, and square brackets from non-array text
   if (typeof text === "string") {
-    text = text.trim().replace(/["':,\[\]]/g, "");
+    text = text.trim()
   }
 
   // Split text into segments based on math delimiters
@@ -53,7 +54,7 @@ const formatMessageText = (text) => {
 
   return segments.map((segment, index) => {
     if (segment.startsWith("$$") && segment.endsWith("$$")) {
-      return <BlockMath key={index}>{segment.slice(2, -2)}</BlockMath>;
+      return <MarkdownWithMath content= {segment.slice(2, -2)} />;
     } else if (segment.startsWith("$") && segment.endsWith("$")) {
       return <InlineMath key={index}>{segment.slice(1, -1)}</InlineMath>;
     } else if (segment.startsWith("```") && segment.endsWith("```")) {
@@ -207,7 +208,7 @@ const ChatBox = () => {
       // If it's an array, clean each string element by removing ALL quotes
       if (Array.isArray(solutionData)) {
         solutionData = solutionData.map((item) =>
-          typeof item === "string" ? item.replace(/["':,\[\]]/g, "") : item
+          typeof item === "string" ? item.trim() : item
         );
       }
 

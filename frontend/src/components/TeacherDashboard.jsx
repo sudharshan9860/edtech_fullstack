@@ -31,7 +31,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
         formData.append('image', imageFile);
         
         // Upload image first
-        const imageResponse = await axiosInstance.post('/upload/', formData, {
+        const imageResponse = await axiosInstance.post('/add-homework/', assignment, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },

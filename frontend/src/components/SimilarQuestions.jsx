@@ -5,6 +5,7 @@ import { Container, Card, Button, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import './SimilarQuestions.css';
+import MarkdownWithMath from './MarkdownWithMath';
 
 const SimilarQuestions = () => {
   const [similarQuestions, setSimilarQuestions] = useState(null);
@@ -74,7 +75,7 @@ const SimilarQuestions = () => {
     }
     
     const fallbackData = {
-      similar_question: `Create a new problem scenario based on the concepts from the original problem: "${originalQuestion.substring(0, 100)}..."`,
+      similar_question: `"${originalQuestion.substring(0, 100)}..."`,
       theory_concepts: specificConcepts
     };
     
@@ -110,7 +111,7 @@ const SimilarQuestions = () => {
               if (trimmedPara.startsWith('-')) {
                 return (
                   <div key={index} className="concept-point">
-                    {trimmedPara.substring(1).trim()}
+                    <MarkdownWithMath content = {trimmedPara.substring(1).trim()} />
                   </div>
                 );
               }
@@ -165,7 +166,7 @@ const SimilarQuestions = () => {
           <Card className="question-card">
             <Card.Header className="question-header">Original Question</Card.Header>
             <Card.Body>
-              {location.state?.originalQuestion || "Consider a variation of the original problem with different values."}
+              <MarkdownWithMath content= {location.state?.originalQuestion || "Consider a variation of the original problem with different values."} />
               {location.state?.questionImage && (
                 <div className="question-image-wrapper">
                   <img 
@@ -186,7 +187,7 @@ const SimilarQuestions = () => {
             <Card className="question-card practice-card">
               <Card.Header className="question-header">Practice Question</Card.Header>
               <Card.Body>
-                <p>{similarQuestions.similar_question}</p>
+                <MarkdownWithMath content={similarQuestions.similar_question} />
                 <div className="button-container">
                   <Button 
                     variant="primary"

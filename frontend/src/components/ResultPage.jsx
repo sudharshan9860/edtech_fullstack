@@ -305,7 +305,7 @@ const renderSolutionSteps = (steps) => {
     return (
       <div className="example-content">
         <p>
-          <MarkdownWithMath content={intro.trim()} /></p>
+          <MarkdownWithMath content={example.trim()} /></p>
         <div className="example-steps">
           {stepParts.map((step, index) => (
             <div key={index} className="example-step">

@@ -57,9 +57,9 @@ function LoginPage() {
       );
       // console.log("Login response:", response.data);
       const { token } = response.data;
-      console.log("token_data", response.data)
+    
       const role  =response.data.role;
-      console.log("User role:", role);
+      
       
       if (token) {
         // Store token and username in localStorage

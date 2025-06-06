@@ -100,7 +100,7 @@ const AppRoutes = () => {
   element={
     <PrivateRoute>
       <Layout>
-        <TeacherDash />
+        <Analytics />
       </Layout>
     </PrivateRoute>
   }

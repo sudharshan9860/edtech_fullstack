@@ -35,7 +35,6 @@ const Layout = ({ children }) => {
   const navigationLinks =  [
     { path: '/student-dash', label: 'Student Dash' },
     { path: '/teacher-dash', label: 'Teacher Dash' },
-    { path: '/enhanced-analytics', label: 'Enhanced Analytics' }, // New
     { path: '/analytics', label: 'Analytics' },
     { path: '/progress-dashboard', label: 'Progress' },
     { path: '/leaderboard', label: 'Leaderboard' },
