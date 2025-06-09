@@ -24,33 +24,38 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
     }
 
     try {
-      let imageUrl = null;
+      let formData;
       if (submissionType === "image" && imageFile) {
-        // Create FormData for image upload
-        const formData = new FormData();
+        // Use FormData for image and other fields
+        formData = new FormData();
+        formData.append('homework_code', homework_code.trim());
+        formData.append('title', title.trim());
+        formData.append('teacherId', user.username);
+        formData.append('classId', user.id);
+        formData.append('due_date', new Date(dueDate).toISOString());
+        formData.append('date_assigned', new Date().toISOString());
         formData.append('image', imageFile);
-        
-        // Upload image first
-        const imageResponse = await axiosInstance.post('/add-homework/', assignment, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        imageUrl = imageResponse.data.imageUrl;
+        // Optionally add description if needed
+        if (description) formData.append('description', description);
+      } else {
+        // For text-only assignments, send JSON
+        formData = {
+          homework_code: homework_code.trim(),
+          title: title.trim(),
+          description: submissionType === "text" ? description : undefined,
+          teacherId: user.username,
+          classId: user.id,
+          due_date: new Date(dueDate).toISOString(),
+          date_assigned: new Date().toISOString(),
+        };
       }
-      console.log("User_details:", user);
-      const assignment = {
-        homework_code: homework_code.trim(),
-        title: title.trim(),
-        description: submissionType === "text" ? description : undefined,
-        imageUrl: imageUrl,
-        teacherId: user.username,
-        classId: user.id,
-        due_date: new Date(dueDate).toISOString(),
-        date_assigned: new Date().toISOString(),
-      };
-      console.log("Creating assignment:", assignment);
-      await onAssignmentSubmit(assignment);
+
+      // Send to backend
+      if (submissionType === "image" && imageFile) {
+        await onAssignmentSubmit(formData, true); // true = isFormData
+      } else {
+        await onAssignmentSubmit(formData, false);
+      }
 
       // Reset form
       setTitle("");
