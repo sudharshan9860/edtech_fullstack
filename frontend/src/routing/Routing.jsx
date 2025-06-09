@@ -15,7 +15,9 @@ import LeaderboardPage from '../components/LeaderBoardPage';
 import ProgressDashboard from '../components/ProgressDashboard';
 import QuestsPage from '../components/QuestsPage';
 import TeacherDash from '../components/EnhancedTeacherDash';   
-import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';   
+import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';
+import StudentGapAnalysisReport from '../components/StudentGapAnalysisReport';
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -137,7 +139,16 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-
+      <Route
+        path="/gap-analysis-report"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <StudentGapAnalysisReport />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
       {/* Add the new Quests route */}
       <Route
         path="/quests"

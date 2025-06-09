@@ -257,39 +257,55 @@ const RecentSessions = () => {
               No sessions found for this filter. Try another category.
             </div>
           ) : (
-            <Row className="session-grid">
-              {filteredSessions.map((session, index) => (
-                <Col key={index} md={4} sm={6} className="mb-3">
-                  <Card 
-                    className="session-card" 
-                    onClick={() => handleSessionClick(session)}
-                    style={{ borderColor: getSessionColor(session.subject, session.answering_type) }}
+            // ...existing code...
+        <Row className="session-grid">
+          {filteredSessions.map((session, index) => (
+            <Col key={index} md={4} sm={6} className="mb-3">
+              <Card 
+                className="session-card" 
+                onClick={() => handleSessionClick(session)}
+                style={{ borderColor: getSessionColor(session.subject, session.answering_type) }}
+              >
+                <Card.Body className="d-flex align-items-center">
+                  <div 
+                    className="session-icon-container"
+                    style={{ backgroundColor: getSessionColor(session.subject, session.answering_type) }}
                   >
-                    <Card.Body className="d-flex align-items-center">
-                      <div 
-                        className="session-icon-container"
-                        style={{ backgroundColor: getSessionColor(session.subject, session.answering_type) }}
-                      >
-                        <FontAwesomeIcon 
-                          icon={getSessionIcon(session.subject, session.answering_type)} 
-                          className="session-icon" 
-                        />
-                      </div>
-                      <div className="session-info flex-grow-1 ms-3">
-                        <h5 className="session-title">{getSessionTitle(session)}</h5>
-                        <div className="d-flex justify-content-between">
-                          <span className="session-time">{formatTimeAgo(session.date)}</span>
-                          <span className="session-score">
-                            Score: <strong>{session.student_score}</strong>
-                          </span>
-                        </div>
-                      </div>
-                      <FontAwesomeIcon icon={faChevronRight} className="session-arrow" />
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
+                    <FontAwesomeIcon 
+                      icon={getSessionIcon(session.subject, session.answering_type)} 
+                      className="session-icon" 
+                    />
+                  </div>
+                  <div className="session-info flex-grow-1 ms-3">
+                    <h5 className="session-title">{getSessionTitle(session)}</h5>
+                    <div className="d-flex justify-content-between">
+                      <span className="session-time">{formatTimeAgo(session.date)}</span>
+                      <span className="session-score">
+                        Score: <strong>{session.student_score}</strong>
+                      </span>
+                    </div>
+                    {/* Gap Analysis Button */}
+                    <Button
+                      variant="outline-info"
+                      size="sm"
+                      className="mt-2"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigate(
+                          `/gap-analysis-report`,
+                          { state: { session } } // Pass the session data here
+                        );
+                      }}
+                    >
+                      Gap Analysis
+                    </Button>
+                  </div>
+                  <FontAwesomeIcon icon={faChevronRight} className="session-arrow" />
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
           )}
         </>
       )}
