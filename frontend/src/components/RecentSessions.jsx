@@ -32,22 +32,32 @@ const RecentSessions = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get('/sessiondata/');
-      console.log("Recent sessions response:", response.data);
-      
-      // Process the data based on the actual structure
-      if (response.data && response.data.status === 'success' && response.data.session_data && response.data.session_data.gap_analysis_data) {
-        const sessionData = response.data.session_data.gap_analysis_data;
-        setSessions(sessionData);
-      } 
-      // else {
-      //   setError('Unexpected data format from server');
-      // }
+      console.log("All sessions response:", response.data);
+
+      if (response.data && response.data.status === 'success' && Array.isArray(response.data.sessions)) {
+        // Flatten all gap_analysis_data from each session into a single array
+        const allGapData = response.data.sessions.flatMap(session => {
+          try {
+            const parsed = typeof session.session_data === 'string' ? JSON.parse(session.session_data) : session.session_data;
+            return parsed.gap_analysis_data || [];
+          } catch (e) {
+            console.warn("Failed to parse session data:", session.session_data);
+            return [];
+          }
+        });
+
+        setSessions(allGapData);
+      } else {
+        setError('Unexpected response format');
+      }
     } catch (error) {
-      
+      console.error("Error fetching session data:", error);
+      setError('Failed to fetch session data');
     } finally {
       setLoading(false);
     }
   };
+
 
   // Get unique subjects from sessions
   const getUniqueSubjects = () => {
@@ -245,7 +255,7 @@ const RecentSessions = () => {
       
       {sessions.length === 0 ? (
         <div className="text-center py-4 text-muted">
-          You did not attempt any questions in the previous session.
+          You did not attempt any questions in the previous sessions.
         </div>
       ) : (
         <>
