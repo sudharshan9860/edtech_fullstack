@@ -5,7 +5,7 @@ import axiosInstance from '../api/axiosInstance';
 import QuestionListModal from './QuestionListModal';
 import './QuickExerciseComponent.css';
 
-const QuickExerciseComponent = ({ onCreateHomework }) => {
+const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
   // State for dropdown data
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -30,6 +30,16 @@ const QuickExerciseComponent = ({ onCreateHomework }) => {
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  // State for classwork PDF upload
+  const [classworkTitle, setClassworkTitle] = useState("");
+  const [classworkCode, setClassworkCode] = useState("");
+  const [classworkDescription, setClassworkDescription] = useState("");
+  const [classworkDueDate, setClassworkDueDate] = useState("");
+  const [classworkPDF, setClassworkPDF] = useState(null);
+  const [isClassworkSubmitting, setIsClassworkSubmitting] = useState(false);
+  const [classworkError, setClassworkError] = useState(null);
+  const [showClassworkForm, setShowClassworkForm] = useState(false);
 
   // Fetch classes on component mount
   useEffect(() => {
@@ -281,6 +291,52 @@ const QuickExerciseComponent = ({ onCreateHomework }) => {
     }
   };
 
+  // Classwork PDF upload handler (after questions are selected)
+  const handleClassworkSubmit = async (e) => {
+    e.preventDefault();
+    setClassworkError(null);
+    setIsClassworkSubmitting(true);
+    if (!classworkTitle.trim() || !classworkCode.trim() || !classworkDueDate || !classworkPDF) {
+      setClassworkError("Please fill in all required fields and upload a PDF file.");
+      setIsClassworkSubmitting(false);
+      return;
+    }
+    if (!selectedQuestions || selectedQuestions.length === 0) {
+      setClassworkError("Please select at least one question.");
+      setIsClassworkSubmitting(false);
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("classwork_code", classworkCode.trim());
+      formData.append("title", classworkTitle.trim());
+      formData.append("description", classworkDescription.trim());
+      formData.append("due_date", new Date(classworkDueDate).toISOString());
+      formData.append("date_assigned", new Date().toISOString());
+      formData.append("pdf_file", classworkPDF);
+      if (selectedClass) formData.append("classId", selectedClass);
+      if (selectedSubject) formData.append("subjectId", selectedSubject);
+      if (selectedChapters && selectedChapters.length > 0) formData.append("chapterIds", JSON.stringify(selectedChapters));
+      // Attach selected questions as JSON
+      formData.append("questions", JSON.stringify(selectedQuestions));
+      await onCreateHomework(formData, true); // true = isFormData
+      // Reset form and state
+      setClassworkTitle("");
+      setClassworkCode("");
+      setClassworkDescription("");
+      setClassworkDueDate("");
+      setClassworkPDF(null);
+      setSelectedQuestions([]);
+      setShowClassworkForm(false);
+      alert("Classwork PDF and questions uploaded successfully!");
+    } catch (error) {
+      setClassworkError(error.response?.data?.message || "Failed to upload classwork PDF");
+      console.error("Error uploading classwork PDF:", error);
+    } finally {
+      setIsClassworkSubmitting(false);
+    }
+  };
+
   // Render the homework form
   const renderHomeworkForm = () => {
     return (
@@ -377,6 +433,110 @@ const QuickExerciseComponent = ({ onCreateHomework }) => {
     );
   };
 
+  // Render classwork PDF upload form (after questions are selected)
+  const renderClassworkForm = () => (
+    <div className="homework-form-container">
+      <h3>Upload Classwork PDF & Submit Questions</h3>
+      {classworkError && <div className="error-message">{classworkError}</div>}
+      <Form onSubmit={handleClassworkSubmit}>
+        <Row className="mb-3">
+          <Col xs={12} md={6}>
+            <Form.Group controlId="classworkCode">
+              <Form.Label>Classwork Code</Form.Label>
+              <Form.Control
+                type="text"
+                value={classworkCode}
+                onChange={(e) => setClassworkCode(e.target.value)}
+                placeholder="Enter a unique code"
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col xs={12} md={6}>
+            <Form.Group controlId="classworkDueDate">
+              <Form.Label>Due Date</Form.Label>
+              <Form.Control
+                type="datetime-local"
+                value={classworkDueDate}
+                onChange={(e) => setClassworkDueDate(e.target.value)}
+                required
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Form.Group controlId="classworkTitle" className="mb-3">
+          <Form.Label>Classwork Title</Form.Label>
+          <Form.Control
+            type="text"
+            value={classworkTitle}
+            onChange={(e) => setClassworkTitle(e.target.value)}
+            placeholder="Enter classwork title"
+            required
+          />
+        </Form.Group>
+        <Form.Group controlId="classworkDescription" className="mb-3">
+          <Form.Label>Additional Instructions (Optional)</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={3}
+            value={classworkDescription}
+            onChange={(e) => setClassworkDescription(e.target.value)}
+            placeholder="Enter any additional instructions"
+          />
+        </Form.Group>
+        <Form.Group controlId="classworkPDF" className="mb-3">
+          <Form.Label>Upload PDF File</Form.Label>
+          <Form.Control
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setClassworkPDF(e.target.files[0])}
+            required
+          />
+          {classworkPDF && (
+            <div style={{ marginTop: 8 }}>
+              <span>Selected file: {classworkPDF.name}</span>
+            </div>
+          )}
+        </Form.Group>
+        {/* Preview selected questions */}
+        <div className="selected-questions-preview mb-3">
+          <h5>Selected Questions ({selectedQuestions.length})</h5>
+          <ul className="question-preview-list">
+            {selectedQuestions.map((q, idx) => (
+              <li key={idx} className="question-preview-item">
+                <span className="question-number">{idx + 1}.</span>
+                <span className="question-text">{q.question}</span>
+                {q.image && (
+                  <div className="question-image-small">
+                    <img src={q.image} alt={`Question ${idx + 1}`} />
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="d-flex justify-content-between">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowClassworkForm(false);
+              setShowQuestionList(true);
+            }}
+          >
+            Back to Questions
+          </Button>
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={isClassworkSubmitting}
+          >
+            {isClassworkSubmitting ? "Uploading..." : "Upload Classwork PDF & Questions"}
+          </Button>
+        </div>
+      </Form>
+    </div>
+  );
+
   // Format subtopic display names
   const getSubtopicDisplayName = (subtopic, index) => {
     return `Exercise ${index + 1}`;
@@ -384,125 +544,253 @@ const QuickExerciseComponent = ({ onCreateHomework }) => {
 
   return (
     <div className="quick-exercise-container">
-      {!showHomeworkForm ? (
-        <div className="question-selection-container">
-          <h3>Quick Exercise Generator</h3>
-          <p className="text-muted">Select class, subject, and chapter to generate questions for homework</p>
-          
-          <Form onSubmit={handleSubmit}>
-            <Row className="mb-3">
-              <Col xs={12} md={6}>
-                <Form.Group controlId="formClass">
-                  <Form.Label>Class</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={selectedClass}
-                    onChange={(e) => setSelectedClass(e.target.value)}
-                    className="form-control"
-                  >
-                    <option value="">Select Class</option>
-                    {classes.map((cls) => (
-                      <option key={cls.class_code} value={cls.class_code}>
-                        {cls.class_name}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-              <Col xs={12} md={6}>
-                <Form.Group controlId="formSubject">
-                  <Form.Label>Subject</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="form-control"
-                    disabled={!selectedClass}
-                  >
-                    <option value="">Select Subject</option>
-                    {subjects.map((subject) => (
-                      <option
-                        key={subject.subject_code}
-                        value={subject.subject_code}
+      {mode === "classwork"
+        ? (
+            !showClassworkForm ? (
+              <div className="question-selection-container">
+                <h3>Quick Classwork Generator</h3>
+                <p className="text-muted">Select class, subject, and chapter to generate questions for classwork</p>
+                <Form onSubmit={handleSubmit}>
+                  <Row className="mb-3">
+                    <Col xs={12} md={6}>
+                      <Form.Group controlId="formClass">
+                        <Form.Label>Class</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={selectedClass}
+                          onChange={(e) => setSelectedClass(e.target.value)}
+                          className="form-control"
+                        >
+                          <option value="">Select Class</option>
+                          {classes.map((cls) => (
+                            <option key={cls.class_code} value={cls.class_code}>
+                              {cls.class_name}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                    <Col xs={12} md={6}>
+                      <Form.Group controlId="formSubject">
+                        <Form.Label>Subject</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={selectedSubject}
+                          onChange={(e) => setSelectedSubject(e.target.value)}
+                          className="form-control"
+                          disabled={!selectedClass}
+                        >
+                          <option value="">Select Subject</option>
+                          {subjects.map((subject) => (
+                            <option
+                              key={subject.subject_code}
+                              value={subject.subject_code}
+                            >
+                              {subject.subject_name}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <Row className="mb-3">
+                    <Col className="select-chapters" xs={12} md={6}>
+                      <Form.Group controlId="formChapters">
+                        <Form.Label>Chapters</Form.Label>
+                        <Select
+                          isMulti
+                          options={chapters.map((chapter) => ({
+                            value: chapter.topic_code,
+                            label: chapter.name,
+                          }))}
+                          value={selectedChapters.map((code) => ({
+                            value: code,
+                            label: chapters.find(
+                              (chapter) => chapter.topic_code === code
+                            )?.name,
+                          }))}
+                          onChange={(selectedOptions) => {
+                            setSelectedChapters(
+                              selectedOptions.map((option) => option.value)
+                            );
+                          }}
+                          classNamePrefix="react-select"
+                          placeholder="Select Chapters"
+                          isDisabled={!selectedSubject}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col xs={12} md={6}>
+                      <Form.Group controlId="formQuestionLevel">
+                        <Form.Label>Select The Set</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={questionLevel}
+                          onChange={(e) => setQuestionLevel(e.target.value)}
+                          className="form-control"
+                          disabled={selectedChapters.length === 0}
+                        >
+                          <option value="">Select The Set</option>
+                          {subTopics.map((subTopic, index) => (
+                            <option key={subTopic} value={subTopic}>
+                              {getSubtopicDisplayName(subTopic, index)}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <div className="d-flex justify-content-end">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      className="btn-generate mt-3"
+                      disabled={!isGenerateButtonEnabled()}
+                    >
+                      {isLoading ? 'Loading...' : 'Generate Questions'}
+                    </Button>
+                  </div>
+                </Form>
+              </div>
+            ) : renderClassworkForm()
+          )
+        : (!showHomeworkForm ? (
+            <div className="question-selection-container">
+              <h3>Quick Exercise Generator</h3>
+              <p className="text-muted">Select class, subject, and chapter to generate questions for homework</p>
+              <Form onSubmit={handleSubmit}>
+                <Row className="mb-3">
+                  <Col xs={12} md={6}>
+                    <Form.Group controlId="formClass">
+                      <Form.Label>Class</Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                        className="form-control"
                       >
-                        {subject.subject_name}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row className="mb-3">
-              <Col className="select-chapters" xs={12} md={6}>
-                <Form.Group controlId="formChapters">
-                  <Form.Label>Chapters</Form.Label>
-                  <Select
-                    isMulti
-                    options={chapters.map((chapter) => ({
-                      value: chapter.topic_code,
-                      label: chapter.name,
-                    }))}
-                    value={selectedChapters.map((code) => ({
-                      value: code,
-                      label: chapters.find(
-                        (chapter) => chapter.topic_code === code
-                      )?.name,
-                    }))}
-                    onChange={(selectedOptions) => {
-                      setSelectedChapters(
-                        selectedOptions.map((option) => option.value)
-                      );
-                    }}
-                    classNamePrefix="react-select"
-                    placeholder="Select Chapters"
-                    isDisabled={!selectedSubject}
-                  />
-                </Form.Group>
-              </Col>
-              <Col xs={12} md={6}>
-                <Form.Group controlId="formQuestionLevel">
-                  <Form.Label>Select The Set</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={questionLevel}
-                    onChange={(e) => setQuestionLevel(e.target.value)}
-                    className="form-control"
-                    disabled={selectedChapters.length === 0}
+                        <option value="">Select Class</option>
+                        {classes.map((cls) => (
+                          <option key={cls.class_code} value={cls.class_code}>
+                            {cls.class_name}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group controlId="formSubject">
+                      <Form.Label>Subject</Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={selectedSubject}
+                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        className="form-control"
+                        disabled={!selectedClass}
+                      >
+                        <option value="">Select Subject</option>
+                        {subjects.map((subject) => (
+                          <option
+                            key={subject.subject_code}
+                            value={subject.subject_code}
+                          >
+                            {subject.subject_name}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row className="mb-3">
+                  <Col className="select-chapters" xs={12} md={6}>
+                    <Form.Group controlId="formChapters">
+                      <Form.Label>Chapters</Form.Label>
+                      <Select
+                        isMulti
+                        options={chapters.map((chapter) => ({
+                          value: chapter.topic_code,
+                          label: chapter.name,
+                        }))}
+                        value={selectedChapters.map((code) => ({
+                          value: code,
+                          label: chapters.find(
+                            (chapter) => chapter.topic_code === code
+                          )?.name,
+                        }))}
+                        onChange={(selectedOptions) => {
+                          setSelectedChapters(
+                            selectedOptions.map((option) => option.value)
+                          );
+                        }}
+                        classNamePrefix="react-select"
+                        placeholder="Select Chapters"
+                        isDisabled={!selectedSubject}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group controlId="formQuestionLevel">
+                      <Form.Label>Select The Set</Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={questionLevel}
+                        onChange={(e) => setQuestionLevel(e.target.value)}
+                        className="form-control"
+                        disabled={selectedChapters.length === 0}
+                      >
+                        <option value="">Select The Set</option>
+                        {subTopics.map((subTopic, index) => (
+                          <option key={subTopic} value={subTopic}>
+                            {getSubtopicDisplayName(subTopic, index)}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <div className="d-flex justify-content-end">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    className="btn-generate mt-3"
+                    disabled={!isGenerateButtonEnabled()}
                   >
-                    <option value="">Select The Set</option>
-                    {subTopics.map((subTopic, index) => (
-                      <option key={subTopic} value={subTopic}>
-                        {getSubtopicDisplayName(subTopic, index)}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <div className="d-flex justify-content-end">
-              <Button
-                variant="primary"
-                type="submit"
-                className="btn-generate mt-3"
-                disabled={!isGenerateButtonEnabled()}
-              >
-                {isLoading ? 'Loading...' : 'Generate Questions'}
-              </Button>
+                    {isLoading ? 'Loading...' : 'Generate Questions'}
+                  </Button>
+                </div>
+              </Form>
             </div>
-          </Form>
-        </div>
-      ) : renderHomeworkForm()}
-
+          ) : renderHomeworkForm())}
       {/* Question List Modal */}
-      {showQuestionList && (
+      {showQuestionList && mode !== "classwork" && (
         <QuestionListModal
           show={showQuestionList}
           onHide={() => setShowQuestionList(false)}
           questionList={questionList}
           isMultipleSelect={true}
           onMultipleSelectSubmit={handleMultipleSelectSubmit}
+        />
+      )}
+      {/* For classwork mode, show question list modal and then classwork form */}
+      {showQuestionList && mode === "classwork" && (
+        <QuestionListModal
+          show={showQuestionList}
+          onHide={() => setShowQuestionList(false)}
+          questionList={questionList}
+          isMultipleSelect={true}
+          onMultipleSelectSubmit={(selectedQuestionsData) => {
+            setSelectedQuestions(selectedQuestionsData);
+            setShowQuestionList(false);
+            setShowClassworkForm(true);
+            // Optionally, generate a default code/title
+            const timestamp = new Date().getTime().toString().slice(-6);
+            setClassworkCode(`CW-${timestamp}`);
+            const subjectName = subjects.find(s => s.subject_code === selectedSubject)?.subject_name || "Subject";
+            const chapterName = chapters.find(c => c.topic_code === selectedChapters[0])?.name || "Chapter";
+            const subtopicIndex = subTopics.findIndex(st => st === questionLevel);
+            const exerciseNumber = subtopicIndex !== -1 ? subtopicIndex + 1 : "";
+            setClassworkTitle(`${subjectName} - ${chapterName} Exercise ${exerciseNumber}`);
+          }}
         />
       )}
     </div>

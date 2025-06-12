@@ -317,6 +317,11 @@ const EnhancedTeacherDash = () => {
   const [assignments, setAssignments] = useState([]);
   const [submissions, setSubmissions] = useState([]);
 
+  // useEffect(async () => {
+  //   const response = await axiosInstance.get('/teacher-dashboard/');
+  //   console.log('teacher-data',response.data)
+  // }, []);
+
   // Get analytics data for selected class
   const getAnalyticsData = () => {
     return selectedClass.analytics;
@@ -329,16 +334,20 @@ const EnhancedTeacherDash = () => {
     setStudentData(data);
   };
 
-  const handleAssignmentSubmit = async (assignment) => {
+  const handleAssignmentSubmit = async (assignment, mode) => {
     try {
-
-      const response = await axiosInstance.post('/add-homework/', assignment);
+      // Choose endpoint based on mode
+      const endpoint = mode === "classwork" ? '/add-classwork/' : '/add-homework/';
+      
+      const response = await axiosInstance.post(endpoint, assignment);
       // console.log('Assignment created:', response.data);
+      
       setAssignments(prev => [...prev, response.data]);
     } catch (error) {
-      console.error('Error creating assignment:', error);
+      console.error(`Error creating ${mode || 'homework'}:`, error);
     }
   };
+  
 
   // Custom tooltip for student progress comparison
   const CustomTooltip = ({ active, payload, label }) => {
@@ -1383,6 +1392,23 @@ const EnhancedTeacherDash = () => {
             >
               Quick Exercise
             </button>
+            <button 
+              onClick={() => setActiveTab('classwork')}
+              style={{
+                padding: '16px 32px',
+                backgroundColor: activeTab === 'classwork' ? '#3b82f6' : 'transparent',
+                color: activeTab === 'classwork' ? 'white' : '#666',
+                border: 'none',
+                borderRadius: '0',
+                borderBottom: activeTab === 'classwork' ? '3px solid #3b82f6' : '3px solid transparent',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Classwork
+            </button>
           </div>
         </div>
 
@@ -1448,18 +1474,19 @@ const EnhancedTeacherDash = () => {
                 </div>
               </div>
             </div>
-          ):activeTab==='homework'? (
+          ):activeTab==='classwork'? (
+            <QuickExerciseComponent onCreateHomework={(assignment) => handleAssignmentSubmit(assignment, "classwork")}  mode="classwork" />):activeTab==='homework'? (
             <TeacherDashboard 
               user={selectedClass}
               assignments={assignments}
               submissions={submissions}
-              onAssignmentSubmit={handleAssignmentSubmit}
+              onAssignmentSubmit={(assignment) => handleAssignmentSubmit(assignment, "homework")}
             />):
-          (<QuickExerciseComponent onCreateHomework={handleAssignmentSubmit} />)} 
+          (<QuickExerciseComponent onCreateHomework={(assignment) => handleAssignmentSubmit(assignment, "quiz")} />)} 
         </div>
       </div>
     </div>
-  );
+  ); 
 };
 
 export default EnhancedTeacherDash;
