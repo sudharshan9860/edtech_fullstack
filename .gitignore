@@ -23,3 +23,5 @@ frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 backend/Users/urls.py
+backend/myapp/views.py
+backend/Users/views.py

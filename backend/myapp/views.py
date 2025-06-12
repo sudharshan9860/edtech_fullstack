@@ -1508,6 +1508,7 @@ class AddHomeworkAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         teacher = request.user
+        print(request.data)
         if not getattr(teacher, 'is_teacher', False):
             return Response({"error": "Only teachers can add homework."}, status=status.HTTP_403_FORBIDDEN)
         

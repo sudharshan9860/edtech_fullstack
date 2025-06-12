@@ -13,6 +13,12 @@ nav.custom-navbar.navbar.navbar-expand-lg.navbar-light {
   height: 56px;
 }
 
+.lo{
+  color: white;
+  display: flex;
+  align-items: center;
+
+}
 .custom-navbar .navbar-brand {
   
   color: white !important;

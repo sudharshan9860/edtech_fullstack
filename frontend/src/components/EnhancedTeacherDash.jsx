@@ -305,6 +305,7 @@ const generateStudentData = (studentName, classId) => {
 };
 
 const EnhancedTeacherDash = () => {
+  
   const [selectedClass, setSelectedClass] = useState(classesData[1]);
   const [activeTab, setActiveTab] = useState('class');
   const [showAIReport, setShowAIReport] = useState(false);
@@ -317,10 +318,34 @@ const EnhancedTeacherDash = () => {
   const [assignments, setAssignments] = useState([]);
   const [submissions, setSubmissions] = useState([]);
 
+
   // useEffect(async () => {
   //   const response = await axiosInstance.get('/teacher-dashboard/');
   //   console.log('teacher-data',response.data)
   // }, []);
+  useEffect(() => {
+    fetchTeacherData();
+  }, []);
+  const fetchTeacherData = async () => {
+    try {
+      const response = await axiosInstance.get('/teacher-dashboard/');
+      console.log('teacher-data', response.data);
+      setTeacherData(response.data);
+      
+      // Set initial selected class if data exists
+      if (response.data.students && response.data.students.length > 0) {
+        setSelectedClass({
+          id: 1,
+          name: "Class 12th", // You can modify this based on actual class data
+          students: response.data.students
+        });
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching teacher data:', error);
+      setLoading(false);
+    }
+  };
 
   // Get analytics data for selected class
   const getAnalyticsData = () => {

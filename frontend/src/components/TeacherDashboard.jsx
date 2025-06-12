@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './TeacherDashboard.css';
 import axiosInstance from '../api/axiosInstance';
+import CameraCapture from './CameraCapture';
 
 const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }) => {
   const [homework_code, setHomeworkCode] = useState("");
@@ -9,6 +10,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
   const [imageFile, setImageFile] = useState(null);
   const [dueDate, setDueDate] = useState("");
   const [submissionType, setSubmissionType] = useState("text");
+  const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -64,6 +66,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       setDueDate("");
       setSubmissionType("text");
       setHomeworkCode("");
+      setImageSourceType("upload");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create assignment");
       console.error("Error creating assignment:", error);
@@ -71,10 +74,17 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       setIsSubmitting(false);
     }
   };
- 
+
+  const handleCapturedImage = (capturedImageBlob) => {
+    // Convert blob to File object
+    const file = new File([capturedImageBlob], 'captured-image.jpg', { type: 'image/jpeg' });
+    setImageFile(file);
+  };
+
   const getSubmissionCount = (assignmentId) => {
     return submissions.filter((s) => s.assignmentId === assignmentId).length;
   };
+
   const mappedAssignments = assignments.map((a, idx) => {
     const data = a.data || {};
     return {
@@ -86,6 +96,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       dueDate: data.due_date ? new Date(data.due_date) : new Date(),
     };
   });
+
   return (
     <div className="teacher-dashboard">
       {/* Assignment Creation Form */}
@@ -172,11 +183,11 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                   onClick={() => setSubmissionType("image")}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17,8 12,3 7,8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="12" cy="8" r="3"/>
+                    <polyline points="16,21 16,14 8,14 8,21"/>
                   </svg>
-                  Upload Image
+                  Image Assignment
                 </button>
               </div>
             </div>
@@ -194,25 +205,108 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 />
               </div>
             ) : (
-              <div className="form-group">
-                <label htmlFor="image" className="form-label">Upload Assignment Image</label>
-                <input
-                  id="image"
-                  type="file"
-                  className="form-input file-input"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                />
-                {imageFile && (
-                  <div className="image-preview">
-                    <img
-                      src={URL.createObjectURL(imageFile)}
-                      alt="Assignment preview"
-                      className="preview-image"
+              <>
+                <div className="form-group">
+                  <label className="form-label">Image Source</label>
+                  <div className="type-buttons">
+                    <button
+                      type="button"
+                      className={`type-btn ${imageSourceType === "upload" ? 'active' : ''}`}
+                      onClick={() => setImageSourceType("upload")}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17,8 12,3 7,8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                      Upload Image
+                    </button>
+                    <button
+                      type="button"
+                      className={`type-btn ${imageSourceType === "camera" ? 'active' : ''}`}
+                      onClick={() => setImageSourceType("camera")}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                      Take Photo
+                    </button>
+                  </div>
+                </div>
+
+                {imageSourceType === "upload" ? (
+                  <div className="form-group">
+                    <label htmlFor="image" className="form-label">Upload Assignment Image</label>
+                    <input
+                      id="image"
+                      type="file"
+                      className="form-input file-input"
+                      accept="image/*"
+                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                     />
+                    {imageFile && (
+                      <div className="image-preview">
+                        <img
+                          src={URL.createObjectURL(imageFile)}
+                          alt="Assignment preview"
+                          className="preview-image"
+                        />
+                        <button
+                          type="button"
+                          className="remove-image-btn"
+                          onClick={() => setImageFile(null)}
+                          style={{
+                            marginTop: '10px',
+                            padding: '5px 10px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove Image
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="form-group">
+                    <label className="form-label">Capture Assignment Image</label>
+                    <div style={{
+                      border: '2px dashed #e5e7eb',
+                      borderRadius: '8px',
+                      padding: '20px',
+                      backgroundColor: '#f9fafb'
+                    }}>
+                      <CameraCapture onImageCapture={handleCapturedImage} />
+                      {imageFile && (
+                        <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                          <p style={{ color: '#10b981', fontWeight: '500' }}>
+                            ✓ Image captured successfully
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setImageFile(null)}
+                            style={{
+                              marginTop: '5px',
+                              padding: '5px 10px',
+                              backgroundColor: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Clear Captured Image
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
-              </div>
+              </>
             )}
 
             <button 

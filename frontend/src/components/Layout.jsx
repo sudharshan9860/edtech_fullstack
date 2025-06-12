@@ -101,12 +101,11 @@ const Layout = ({ children }) => {
                     className="text-white" 
                   />
                   <span className="ms-2 username-text admin-text">{username}</span>
-                  <FontAwesomeIcon 
-                    icon={faSignOutAlt} 
+                  <span
                     onClick={handleLogout}  
-                    className="logout-icon text-white ms-3" 
-                    style={{ cursor: 'pointer' }} 
-                  />
+                    className='custom-nav-link mx-2' 
+                    style={{ cursor: 'pointer' }} >logout
+                  </span>
                 </Nav.Item>
               </Nav>
             </Offcanvas.Body>

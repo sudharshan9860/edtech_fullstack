@@ -231,28 +231,38 @@ def logout_view(request):
         
 from .models import SessionSnapshot
 
+
 class SessionDataView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """
-        Retrieve session data for the authenticated user.
+        Retrieve all session snapshots for the authenticated user.
         """
         try:
-            # Get the latest session snapshot for the user
-            session_snapshot = SessionSnapshot.objects.filter(user=request.user).latest('timestamp')
+            # Get all session snapshots for the user, most recent first
+            sessions = SessionSnapshot.objects.filter(user=request.user).order_by('-timestamp')
 
-            # Return the session data
+            if not sessions.exists():
+                return Response({
+                    "status": "error",
+                    "message": "No session data found for this user."
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Convert to list of dictionaries
+            session_data = [
+                {
+                    "timestamp": session.timestamp,
+                    "session_data": session.session_data
+                }
+                for session in sessions
+            ]
+
             return Response({
                 "status": "success",
-                "session_data": session_snapshot.session_data
+                "sessions": session_data
             }, status=status.HTTP_200_OK)
 
-        except SessionSnapshot.DoesNotExist:
-            return Response({
-                "status": "error",
-                "message": "No session data found for this user."
-            }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({
                 "status": "error",
