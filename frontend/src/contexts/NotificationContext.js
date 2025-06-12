@@ -24,6 +24,7 @@ export const NotificationProvider = ({ children }) => {
       const notification = {
         id: item.homework_code,
         title: item.title || 'New Homework',
+        image: item.attachment || '/default-homework-image.jpeg',
         message: res.data.message || 'You have a new homework update.',
         timestamp: item.date_assigned || new Date().toISOString(),
         read: false,

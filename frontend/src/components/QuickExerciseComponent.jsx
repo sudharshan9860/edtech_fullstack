@@ -173,6 +173,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       
       // Process questions if they exist
       if (response.data && response.data.questions && Array.isArray(response.data.questions)) {
+        console.log("Questions found:", response.data);
         const questionsWithImages = response.data.questions.map((question) => ({
           ...question,
           question: question.question,

@@ -31,6 +31,8 @@ const NotificationDropdown = () => {
   };
 
   const handleNotificationClick = (notification) => {
+
+    console.log("Notification clicked:", notification);
     // Mark notification as read
     markNotificationAsRead(notification.id);
     
@@ -41,7 +43,8 @@ const NotificationDropdown = () => {
       navigate('/homework', {
         state: {
           homeworkCode: notification.homework.homework_code,
-          homeworkDetails: notification.homework
+          homeworkDetails: notification.homework,
+          homeworkImages: notification.homework.images || [],
         }
       });
     } else {
@@ -109,7 +112,10 @@ const NotificationDropdown = () => {
                     <div className="fw-bold">{notification.title}</div>
                     <div className="text-muted" style={{ fontSize: '0.85rem' }}>
                       {notification.message}
+                      
                     </div>
+
+                    
                     <small className="text-muted">
                       {new Date(notification.timestamp).toLocaleString()}
                     </small>

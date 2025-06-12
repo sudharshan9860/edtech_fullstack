@@ -165,12 +165,12 @@ const HomeworkSubmissionForm = () => {
             {assignment.description && (
               <p className="assignment-description">{assignment.description}</p>
             )}
-            {assignment.imageUrl && (
+            {assignment.attachment && (
               <img
-                src={assignment.imageUrl}
-                alt="Assignment"
-                className="assignment-image"
-              />
+    src={`data:image/jpeg;base64,${assignment.attachment}`}
+    alt="Assignment"
+    className="assignment-image"
+  />
             )}
             <div className="assignment-meta">
               <div className="meta-item">

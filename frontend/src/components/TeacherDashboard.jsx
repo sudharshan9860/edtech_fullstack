@@ -368,12 +368,13 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                     <p className="assignment-description">{assignment.description}</p>
                   )}
                   {assignment.imageUrl && (
-                    <img
-                      src={assignment.imageUrl}
-                      alt="Assignment"
-                      className="assignment-image"
-                    />
-                  )}
+  <img
+    src={`data:image/jpeg;base64,${assignment.imageUrl}`}
+    alt="Assignment"
+    className="assignment-image"
+  />
+)}
+
                   <div className="assignment-dates">
                     <span>Created: {assignment.createdAt.toLocaleDateString()}</span>
                     <span>Due: {assignment.dueDate.toLocaleDateString()}</span>
