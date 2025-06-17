@@ -7,7 +7,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
   const [homework_code, setHomeworkCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]); // Changed to array for multiple images
   const [dueDate, setDueDate] = useState("");
   const [submissionType, setSubmissionType] = useState("text");
   const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
@@ -27,8 +27,8 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
     try {
       let formData;
-      if (submissionType === "image" && imageFile) {
-        // Use FormData for image and other fields
+      if (submissionType === "image" && imageFiles.length > 0) {
+        // Use FormData for images and other fields
         formData = new FormData();
         formData.append('homework_code', homework_code.trim());
         formData.append('title', title.trim());
@@ -36,7 +36,12 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
         formData.append('classId', user.id);
         formData.append('due_date', new Date(dueDate).toISOString());
         formData.append('date_assigned', new Date().toISOString());
-        formData.append('image', imageFile);
+        
+        // Append multiple images
+        imageFiles.forEach((file, index) => {
+          formData.append('images', file); // Note: using 'images' (plural) as field name
+        });
+        
         // Optionally add description if needed
         if (description) formData.append('description', description);
       } else {
@@ -53,7 +58,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       }
 
       // Send to backend
-      if (submissionType === "image" && imageFile) {
+      if (submissionType === "image" && imageFiles.length > 0) {
         await onAssignmentSubmit(formData, true); // true = isFormData
       } else {
         await onAssignmentSubmit(formData, false);
@@ -62,7 +67,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       // Reset form
       setTitle("");
       setDescription("");
-      setImageFile(null);
+      setImageFiles([]);
       setDueDate("");
       setSubmissionType("text");
       setHomeworkCode("");
@@ -77,8 +82,17 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
   const handleCapturedImage = (capturedImageBlob) => {
     // Convert blob to File object
-    const file = new File([capturedImageBlob], 'captured-image.jpg', { type: 'image/jpeg' });
-    setImageFile(file);
+    const file = new File([capturedImageBlob], `captured-image-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    setImageFiles(prev => [...prev, file]);
+  };
+
+  const handleFileSelection = (e) => {
+    const files = Array.from(e.target.files || []);
+    setImageFiles(prev => [...prev, ...files]);
+  };
+
+  const removeImage = (index) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const getSubmissionCount = (assignmentId) => {
@@ -237,71 +251,161 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
                 {imageSourceType === "upload" ? (
                   <div className="form-group">
-                    <label htmlFor="image" className="form-label">Upload Assignment Image</label>
+                    <label htmlFor="image" className="form-label">
+                      Upload Assignment Images 
+                      <span style={{ fontSize: '0.875rem', color: '#6b7280', marginLeft: '8px' }}>
+                        ({imageFiles.length} selected)
+                      </span>
+                    </label>
                     <input
                       id="image"
                       type="file"
                       className="form-input file-input"
                       accept="image/*"
-                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                      multiple // Added multiple attribute
+                      onChange={handleFileSelection}
                     />
-                    {imageFile && (
-                      <div className="image-preview">
-                        <img
-                          src={URL.createObjectURL(imageFile)}
-                          alt="Assignment preview"
-                          className="preview-image"
-                        />
-                        <button
-                          type="button"
-                          className="remove-image-btn"
-                          onClick={() => setImageFile(null)}
-                          style={{
-                            marginTop: '10px',
-                            padding: '5px 10px',
-                            backgroundColor: '#ef4444',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Remove Image
-                        </button>
+                    {imageFiles.length > 0 && (
+                      <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                        gap: '12px',
+                        marginTop: '16px'
+                      }}>
+                        {imageFiles.map((file, index) => (
+                          <div key={index} className="image-preview" style={{ position: 'relative' }}>
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Assignment preview ${index + 1}`}
+                              className="preview-image"
+                              style={{
+                                width: '100%',
+                                height: '150px',
+                                objectFit: 'cover',
+                                borderRadius: '8px',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="remove-image-btn"
+                              onClick={() => removeImage(index)}
+                              style={{
+                                position: 'absolute',
+                                top: '8px',
+                                right: '8px',
+                                width: '24px',
+                                height: '24px',
+                                padding: '0',
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '50%',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="form-group">
-                    <label className="form-label">Capture Assignment Image</label>
+                    <label className="form-label">
+                      Capture Assignment Images
+                      <span style={{ fontSize: '0.875rem', color: '#6b7280', marginLeft: '8px' }}>
+                        ({imageFiles.length} captured)
+                      </span>
+                    </label>
                     <div style={{
                       border: '2px dashed #e5e7eb',
                       borderRadius: '8px',
                       padding: '20px',
                       backgroundColor: '#f9fafb'
                     }}>
-                      <CameraCapture onImageCapture={handleCapturedImage} />
-                      {imageFile && (
-                        <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                          <p style={{ color: '#10b981', fontWeight: '500' }}>
-                            ✓ Image captured successfully
-                          </p>
+                      <CameraCapture
+  onImageCapture={handleCapturedImage}
+  videoConstraints={{ 
+    facingMode: { ideal: "environment" },
+    // For text documents, use higher resolution
+    width: { ideal: 4096 },
+    height: { ideal: 3072 },
+    // Additional constraints for clarity
+    focusMode: { ideal: "continuous" },
+    exposureMode: { ideal: "continuous" }
+  }}
+/>
+                      {imageFiles.length > 0 && (
+                        <>
+                          <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                            <p style={{ color: '#10b981', fontWeight: '500' }}>
+                              ✓ {imageFiles.length} image(s) captured successfully
+                            </p>
+                          </div>
+                          <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                            gap: '8px',
+                            marginTop: '12px'
+                          }}>
+                            {imageFiles.map((file, index) => (
+                              <div key={index} style={{ position: 'relative' }}>
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={`Captured ${index + 1}`}
+                                  style={{
+                                    width: '100%',
+                                    height: '100px',
+                                    objectFit: 'cover',
+                                    borderRadius: '4px',
+                                    border: '1px solid #e5e7eb'
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  style={{
+                                    position: 'absolute',
+                                    top: '4px',
+                                    right: '4px',
+                                    width: '20px',
+                                    height: '20px',
+                                    padding: '0',
+                                    backgroundColor: '#ef4444',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    cursor: 'pointer',
+                                    fontSize: '12px'
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                           <button
                             type="button"
-                            onClick={() => setImageFile(null)}
+                            onClick={() => setImageFiles([])}
                             style={{
-                              marginTop: '5px',
+                              marginTop: '10px',
                               padding: '5px 10px',
                               backgroundColor: '#ef4444',
                               color: 'white',
                               border: 'none',
                               borderRadius: '4px',
-                              cursor: 'pointer'
+                              cursor: 'pointer',
+                              width: '100%'
                             }}
                           >
-                            Clear Captured Image
+                            Clear All Images
                           </button>
-                        </div>
+                        </>
                       )}
                     </div>
                   </div>
@@ -368,13 +472,12 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                     <p className="assignment-description">{assignment.description}</p>
                   )}
                   {assignment.imageUrl && (
-  <img
-    src={`data:image/jpeg;base64,${assignment.imageUrl}`}
-    alt="Assignment"
-    className="assignment-image"
-  />
-)}
-
+                    <img
+                      src={`data:image/jpeg;base64,${assignment.imageUrl}`}
+                      alt="Assignment"
+                      className="assignment-image"
+                    />
+                  )}
                   <div className="assignment-dates">
                     <span>Created: {assignment.createdAt.toLocaleDateString()}</span>
                     <span>Due: {assignment.dueDate.toLocaleDateString()}</span>

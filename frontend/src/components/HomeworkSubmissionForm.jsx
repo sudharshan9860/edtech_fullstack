@@ -2,12 +2,14 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { AuthContext } from './AuthContext';
+import CameraCapture from './CameraCapture';
 import './HomeworkSubmissionForm.css';
 
 const HomeworkSubmissionForm = () => {
   const [submissionType, setSubmissionType] = useState("text");
   const [textResponse, setTextResponse] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
   const [assignment, setAssignment] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -47,6 +49,13 @@ const HomeworkSubmissionForm = () => {
     
     fetchAssignment();
   }, [location]);
+
+  // Handle captured image from camera
+  const handleCapturedImage = (capturedImageBlob) => {
+    // Convert blob to File object
+    const file = new File([capturedImageBlob], `homework-response-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    setImageFile(file);
+  };
 
   // Check if user is loaded
   if (!username) {
@@ -90,7 +99,7 @@ const HomeworkSubmissionForm = () => {
       return;
     }
     if (submissionType === "image" && !imageFile) {
-      setError("Please upload an image");
+      setError("Please upload or capture an image");
       setIsSubmitting(false);
       return;
     }
@@ -167,10 +176,10 @@ const HomeworkSubmissionForm = () => {
             )}
             {assignment.attachment && (
               <img
-    src={`data:image/jpeg;base64,${assignment.attachment}`}
-    alt="Assignment"
-    className="assignment-image"
-  />
+                src={`data:image/jpeg;base64,${assignment.attachment}`}
+                alt="Assignment"
+                className="assignment-image"
+              />
             )}
             <div className="assignment-meta">
               <div className="meta-item">
@@ -223,7 +232,10 @@ const HomeworkSubmissionForm = () => {
                 <button
                   type="button"
                   className={`type-btn ${submissionType === "text" ? 'active' : ''}`}
-                  onClick={() => setSubmissionType("text")}
+                  onClick={() => {
+                    setSubmissionType("text");
+                    setImageFile(null); // Clear image when switching to text
+                  }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -236,17 +248,21 @@ const HomeworkSubmissionForm = () => {
                 <button
                   type="button"
                   className={`type-btn ${submissionType === "image" ? 'active' : ''}`}
-                  onClick={() => setSubmissionType("image")}
+                  onClick={() => {
+                    setSubmissionType("image");
+                    setTextResponse(""); // Clear text when switching to image
+                  }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17,8 12,3 7,8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="12" cy="8" r="3"/>
+                    <polyline points="16,21 16,14 8,14 8,21"/>
                   </svg>
-                  Upload Image
+                  Image Response
                 </button>
               </div>
             </div>
+
             {submissionType === "text" ? (
               <div className="form-group">
                 <label htmlFor="text-response" className="form-label">Your Response</label>
@@ -262,27 +278,108 @@ const HomeworkSubmissionForm = () => {
                 <p className="character-count">{textResponse.length} characters</p>
               </div>
             ) : (
-              <div className="form-group">
-                <label htmlFor="image-response" className="form-label">Upload Your Response</label>
-                <input
-                  id="image-response"
-                  type="file"
-                  className="form-input file-input"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                  required
-                />
-                {imageFile && (
-                  <div className="image-preview">
-                    <img
-                      src={URL.createObjectURL(imageFile)}
-                      alt="Response preview"
-                      className="preview-image"
+              <>
+                <div className="form-group">
+                  <label className="form-label">Image Source</label>
+                  <div className="type-buttons">
+                    <button
+                      type="button"
+                      className={`type-btn ${imageSourceType === "upload" ? 'active' : ''}`}
+                      onClick={() => setImageSourceType("upload")}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17,8 12,3 7,8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                      Upload Image
+                    </button>
+                    <button
+                      type="button"
+                      className={`type-btn ${imageSourceType === "camera" ? 'active' : ''}`}
+                      onClick={() => setImageSourceType("camera")}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                      Take Photo
+                    </button>
+                  </div>
+                </div>
+
+                {imageSourceType === "upload" ? (
+                  <div className="form-group">
+                    <label htmlFor="image-response" className="form-label">Upload Your Response</label>
+                    <input
+                      id="image-response"
+                      type="file"
+                      className="form-input file-input"
+                      accept="image/*"
+                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                      required={submissionType === "image" && !imageFile}
                     />
+                    {imageFile && (
+                      <div className="image-preview">
+                        <img
+                          src={URL.createObjectURL(imageFile)}
+                          alt="Response preview"
+                          className="preview-image"
+                        />
+                        <button
+                          type="button"
+                          className="remove-image-btn"
+                          onClick={() => setImageFile(null)}
+                        >
+                          Remove Image
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="form-group">
+                    <label className="form-label">Capture Your Response</label>
+                    <div className="camera-capture-container">
+                    <CameraCapture
+  onImageCapture={handleCapturedImage}
+  videoConstraints={{ 
+    facingMode: { ideal: "environment" },
+    // For text documents, use higher resolution
+    width: { ideal: 4096 },
+    height: { ideal: 3072 },
+    // Additional constraints for clarity
+    focusMode: { ideal: "continuous" },
+    exposureMode: { ideal: "continuous" }
+  }}
+/>
+                      {imageFile && (
+                        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                          <p style={{ color: '#10b981', fontWeight: '500', marginBottom: '0.5rem' }}>
+                            ✓ Image captured successfully
+                          </p>
+                          <div className="image-preview">
+                            <img
+                              src={URL.createObjectURL(imageFile)}
+                              alt="Captured response"
+                              className="preview-image"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setImageFile(null)}
+                            className="retake-photo-btn"
+                            style={{ marginTop: '1rem' }}
+                          >
+                            Retake Photo
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
-              </div>
+              </>
             )}
+
             <div className="form-actions">
               <button
                 type="submit"

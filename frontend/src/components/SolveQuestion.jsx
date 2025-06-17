@@ -9,15 +9,16 @@ import { NotificationContext } from "../contexts/NotificationContext";
 import { QuestContext } from "../contexts/QuestContext";
 import { QUEST_TYPES } from "../models/QuestSystem";
 import { useSoundFeedback } from "../hooks/useSoundFeedback";
-import { useTimer } from "../contexts/TimerContext"; // Import the Timer context
-import StudyTimer from "./StudyTimer"; // Import the StudyTimer component
+import { useTimer } from "../contexts/TimerContext";
+import StudyTimer from "./StudyTimer";
 import Tutorial from "./Tutorial";
 import { useTutorial } from "../contexts/TutorialContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
-import "./StudyTimer.css"; // Import timer styles
+import { faQuestionCircle, faCamera, faUpload } from "@fortawesome/free-solid-svg-icons";
+import "./StudyTimer.css";
 import { useCurrentQuestion } from "../contexts/CurrentQuestionContext";
 import MarkdownWithMath from "./MarkdownWithMath";
+import CameraCapture from "./CameraCapture";
 
 function SolveQuestion() {
   const location = useLocation();
@@ -53,6 +54,7 @@ function SolveQuestion() {
   const [processingButton, setProcessingButton] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState(null);
+  const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
 
   // Extract data from location state
   const {
@@ -107,9 +109,9 @@ function SolveQuestion() {
         "This is the question you need to solve. Read it carefully to understand what's being asked.",
     },
     {
-      target: "input[type='file']",
+      target: ".image-source-buttons",
       content:
-        "Upload images of your solution by clicking here. You can take photos of your work on paper or upload existing images.",
+        "Choose how you want to add your solution: upload existing images or take photos with your camera.",
     },
     {
       target: ".btn-submit",
@@ -244,9 +246,18 @@ function SolveQuestion() {
       return;
     }
 
-    setImages(files);
-    setIsSolveEnabled(files.length === 0);
+    setImages(prevImages => [...prevImages, ...files]);
+    setIsSolveEnabled(false);
     setError(null); // Clear previous errors
+  };
+
+  // Handle captured image from camera
+  const handleCapturedImage = (capturedImageBlob) => {
+    // Convert blob to File object
+    const file = new File([capturedImageBlob], `captured-solution-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    setImages(prevImages => [...prevImages, file]);
+    setIsSolveEnabled(false);
+    setError(null);
   };
 
   // Handle upload progress
@@ -645,17 +656,69 @@ function SolveQuestion() {
         {/* Image Upload Section */}
         <Form onSubmit={(e) => e.preventDefault()}>
           <Form.Group controlId="formImage">
-            <Form.Label>Upload Solution Images</Form.Label>
-            <Form.Control
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              disabled={isAnyButtonProcessing()}
-            />
-            <Form.Text className="text-muted">
-              Maximum file size: 5MB per image
-            </Form.Text>
+            <Form.Label>Add Solution Images</Form.Label>
+            
+            {/* Image Source Selection Buttons */}
+            <div className="image-source-buttons mb-3">
+              <Button
+                variant={imageSourceType === "upload" ? "primary" : "outline-primary"}
+                className="me-2"
+                onClick={() => setImageSourceType("upload")}
+                disabled={isAnyButtonProcessing()}
+              >
+                <FontAwesomeIcon icon={faUpload} className="me-2" />
+                Upload Images
+              </Button>
+              <Button
+                variant={imageSourceType === "camera" ? "primary" : "outline-primary"}
+                onClick={() => setImageSourceType("camera")}
+                disabled={isAnyButtonProcessing()}
+              >
+                <FontAwesomeIcon icon={faCamera} className="me-2" />
+                Take Photo
+              </Button>
+            </div>
+
+            {/* Conditional rendering based on image source type */}
+            {imageSourceType === "upload" ? (
+              <>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  disabled={isAnyButtonProcessing()}
+                />
+                <Form.Text className="text-muted">
+                  Maximum file size: 5MB per image. You can select multiple images.
+                </Form.Text>
+              </>
+            ) : (
+              <div style={{
+                border: '2px dashed #dee2e6',
+                borderRadius: '8px',
+                padding: '20px',
+                backgroundColor: '#f8f9fa',
+                marginTop: '10px'
+              }}>
+              
+              <CameraCapture
+  onImageCapture={handleCapturedImage}
+  videoConstraints={{ 
+    facingMode: { ideal: "environment" },
+    // For text documents, use higher resolution
+    width: { ideal: 4096 },
+    height: { ideal: 3072 },
+    // Additional constraints for clarity
+    focusMode: { ideal: "continuous" },
+    exposureMode: { ideal: "continuous" }
+  }}
+/>
+                <p className="text-muted mt-2 text-center">
+                  Click "Capture" to take a photo of your solution
+                </p>
+              </div>
+            )}
           </Form.Group>
         </Form>
 
@@ -681,25 +744,57 @@ function SolveQuestion() {
         )}
 
         {/* Image Previews */}
-        <div className="uploaded-images">
-          {images.map((image, index) => (
-            <div key={index} className="image-preview-container">
-              <img
-                src={URL.createObjectURL(image)}
-                alt={`Preview ${index}`}
-                className="image-preview"
-              />
+        {images.length > 0 && (
+          <div className="uploaded-images mt-3">
+            <h6>Solution Images ({images.length})</h6>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+              gap: '12px',
+              marginTop: '12px'
+            }}>
+              {images.map((image, index) => (
+                <div key={index} className="image-preview-container" style={{ position: 'relative' }}>
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={`Preview ${index + 1}`}
+                    className="image-preview"
+                    style={{
+                      width: '100%',
+                      height: '150px',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      border: '1px solid #dee2e6'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="image-remove-btn"
+                    onClick={() => handleCancelImage(index)}
+                    disabled={isAnyButtonProcessing()}
+                    aria-label="Remove image"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+            {images.length > 0 && (
               <Button
-                variant="danger"
-                className="btn-cancel"
-                onClick={() => handleCancelImage(index)}
+                variant="outline-danger"
+                size="sm"
+                className="mt-2"
+                onClick={() => {
+                  setImages([]);
+                  setIsSolveEnabled(true);
+                }}
                 disabled={isAnyButtonProcessing()}
               >
-                Cancel
+                Clear All Images
               </Button>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* New Button Layout */}
         <div className="button-grid mt-4">
