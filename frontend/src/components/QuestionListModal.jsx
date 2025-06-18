@@ -143,6 +143,15 @@ const QuestionListModal = ({
                     <div className="question-text">
                       <MarkdownWithMath content={questionData.question} />
                     </div>
+
+                    <div
+  className={`question-level ${
+    questionData.level?.toLowerCase() || ""
+  }`}
+>
+  {questionData.level}
+</div>
+
                     {questionData.question_image && (
                       <div className="question-image-preview">
                         <img

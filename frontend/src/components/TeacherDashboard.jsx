@@ -1,77 +1,210 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './TeacherDashboard.css';
 import axiosInstance from '../api/axiosInstance';
 import CameraCapture from './CameraCapture';
+import { AuthContext } from './AuthContext';
 
 const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }) => {
   const [homework_code, setHomeworkCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [imageFiles, setImageFiles] = useState([]); // Changed to array for multiple images
+  const [imageFile, setImageFile] = useState(null);
+  const [worksheetFile, setWorksheetFile] = useState(null);
   const [dueDate, setDueDate] = useState("");
   const [submissionType, setSubmissionType] = useState("text");
   const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState('');
+
+  // New fields for worksheet upload - matching backend API structure
+  const [classes, setClasses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [chapters, setChapters] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState('');
+  const [worksheetName, setWorksheetName] = useState('');
+
+  const { username } = useContext(AuthContext);
+
+  // Fetch classes on component mount
+  useEffect(() => {
+    async function fetchClasses() {
+      try {
+        const classResponse = await axiosInstance.get("/classes/");
+        const classesData = classResponse.data.data;
+        setClasses(classesData);
+      } catch (error) {
+        console.error("Error fetching classes", error);
+      }
+    }
+    fetchClasses();
+  }, []);
+
+  // Fetch subjects when class is selected
+  useEffect(() => {
+    async function fetchSubjects() {
+      if (selectedClass) {
+        try {
+          const subjectResponse = await axiosInstance.post("/subjects/", {
+            class_id: selectedClass,
+          });
+          setSubjects(subjectResponse.data.data);
+          // Reset dependent fields
+          setSelectedSubject("");
+          setChapters([]);
+          setSelectedChapter("");
+          setWorksheetName("");
+        } catch (error) {
+          console.error("Error fetching subjects:", error);
+          setSubjects([]);
+        }
+      }
+    }
+    fetchSubjects();
+  }, [selectedClass]);
+
+  // Fetch chapters when subject is selected
+  useEffect(() => {
+    async function fetchChapters() {
+      if (selectedSubject && selectedClass) {
+        try {
+          const chapterResponse = await axiosInstance.post("/chapters/", {
+            subject_id: selectedSubject,
+            class_id: selectedClass,
+          });
+          setChapters(chapterResponse.data.data);
+          // Reset dependent fields
+          setSelectedChapter("");
+          setWorksheetName("");
+        } catch (error) {
+          console.error("Error fetching chapters:", error);
+          setChapters([]);
+        }
+      }
+    }
+    fetchChapters();
+  }, [selectedSubject, selectedClass]);
+
+  // Auto-generate worksheet name when class, subject, and chapter are selected
+  useEffect(() => {
+    if (selectedClass && selectedSubject && selectedChapter && submissionType === 'worksheet') {
+      const classData = classes.find(cls => cls.class_code === selectedClass);
+      const subjectData = subjects.find(sub => sub.subject_code === selectedSubject);
+      const chapterData = chapters.find(chap => chap.topic_code === selectedChapter);
+      
+      if (classData && subjectData && chapterData) {
+        const generatedName = `${classData.class_name}_${subjectData.subject_name}_${chapterData.name}_Worksheet`;
+        setWorksheetName(generatedName);
+      }
+    }
+  }, [selectedClass, selectedSubject, selectedChapter, submissionType, classes, subjects, chapters]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setSuccess('');
     setIsSubmitting(true);
 
-    if (!title.trim() || !dueDate) {
+    // Validation for non-worksheet assignments
+    if (submissionType !== 'worksheet' && (!homework_code.trim() || !title.trim() || !dueDate)) {
       setError("Please fill in all required fields");
       setIsSubmitting(false);
       return;
     }
 
+    // Validation for image assignments
+    if (submissionType === 'image' && !imageFile) {
+      setError('Please upload an image for image assignments');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validation for worksheet assignments
+    if (submissionType === 'worksheet' && (!selectedClass || !selectedSubject || !selectedChapter || !worksheetName.trim() || !worksheetFile || !dueDate)) {
+      setError('Please fill in all worksheet fields and upload a worksheet file');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      let formData;
-      if (submissionType === "image" && imageFiles.length > 0) {
-        // Use FormData for images and other fields
-        formData = new FormData();
-        formData.append('homework_code', homework_code.trim());
-        formData.append('title', title.trim());
-        formData.append('teacherId', user.username);
-        formData.append('classId', user.id);
+      if (submissionType === 'worksheet') {
+        // Handle worksheet upload
+        const formData = new FormData();
+        formData.append('homework_code', `WS_${selectedClass}_${selectedSubject}_${selectedChapter}_${Date.now()}`);
+        formData.append('title', worksheetName.trim());
+        formData.append('description', `Worksheet for ${worksheetName}`);
         formData.append('due_date', new Date(dueDate).toISOString());
         formData.append('date_assigned', new Date().toISOString());
-        
-        // Append multiple images
-        imageFiles.forEach((file, index) => {
-          formData.append('images', file); // Note: using 'images' (plural) as field name
-        });
-        
-        // Optionally add description if needed
-        if (description) formData.append('description', description);
-      } else {
-        // For text-only assignments, send JSON
-        formData = {
-          homework_code: homework_code.trim(),
-          title: title.trim(),
-          description: submissionType === "text" ? description : undefined,
-          teacherId: user.username,
-          classId: user.id,
-          due_date: new Date(dueDate).toISOString(),
-          date_assigned: new Date().toISOString(),
-        };
-      }
+        formData.append('submission_type', 'worksheet');
+        formData.append('teacherId', user.username);
+        formData.append('classId', user.id);
+        formData.append('class_code', selectedClass);
+        formData.append('subject_code', selectedSubject);
+        formData.append('topic_code', selectedChapter);
+        formData.append('worksheet_name', worksheetName.trim());
+        formData.append('image', worksheetFile); // Using 'image' field name like other assignments
 
-      // Send to backend
-      if (submissionType === "image" && imageFiles.length > 0) {
         await onAssignmentSubmit(formData, true); // true = isFormData
+        setSuccess('Worksheet uploaded successfully!');
       } else {
-        await onAssignmentSubmit(formData, false);
+        // Handle regular assignment creation
+        let formData;
+        if (submissionType === "image" && imageFile) {
+          // Use FormData for image and other fields
+          formData = new FormData();
+          formData.append('homework_code', homework_code.trim());
+          formData.append('title', title.trim());
+          formData.append('teacherId', user.username);
+          formData.append('classId', user.id);
+          formData.append('due_date', new Date(dueDate).toISOString());
+          formData.append('date_assigned', new Date().toISOString());
+          formData.append('image', imageFile);
+          // Optionally add description if needed
+          if (description) formData.append('description', description);
+        } else {
+          // For text-only assignments, send JSON
+          formData = {
+            homework_code: homework_code.trim(),
+            title: title.trim(),
+            description: submissionType === "text" ? description : undefined,
+            teacherId: user.username,
+            classId: user.id,
+            due_date: new Date(dueDate).toISOString(),
+            date_assigned: new Date().toISOString(),
+          };
+        }
+
+        // Send to backend
+        if (submissionType === "image" && imageFile) {
+          await onAssignmentSubmit(formData, true); // true = isFormData
+        } else {
+          await onAssignmentSubmit(formData, false);
+        }
+        setSuccess('Assignment created successfully!');
       }
 
       // Reset form
       setTitle("");
       setDescription("");
-      setImageFiles([]);
+      setImageFile(null);
+      setWorksheetFile(null);
       setDueDate("");
       setSubmissionType("text");
       setHomeworkCode("");
       setImageSourceType("upload");
+      setSelectedClass('');
+      setSelectedSubject('');
+      setSelectedChapter('');
+      setWorksheetName('');
+
+      // Reset file inputs
+      const imageInput = document.getElementById('assignment-image');
+      const worksheetInput = document.getElementById('worksheet-file');
+      if (imageInput) imageInput.value = '';
+      if (worksheetInput) worksheetInput.value = '';
+
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create assignment");
       console.error("Error creating assignment:", error);
@@ -82,17 +215,15 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
   const handleCapturedImage = (capturedImageBlob) => {
     // Convert blob to File object
-    const file = new File([capturedImageBlob], `captured-image-${Date.now()}.jpg`, { type: 'image/jpeg' });
-    setImageFiles(prev => [...prev, file]);
+    const file = new File([capturedImageBlob], 'captured-image.jpg', { type: 'image/jpeg' });
+    setImageFile(file);
   };
 
-  const handleFileSelection = (e) => {
-    const files = Array.from(e.target.files || []);
-    setImageFiles(prev => [...prev, ...files]);
-  };
-
-  const removeImage = (index) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
+  const handleWorksheetFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setWorksheetFile(file);
+    }
   };
 
   const getSubmissionCount = (assignmentId) => {
@@ -137,44 +268,14 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
               {error}
             </div>
           )}
+          {success && (
+            <div className="success-message">
+              {success}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="assignment-form">
-            <div className="form-group">
-              <label htmlFor="homework_code" className="form-label">Homework_code</label>
-              <input
-                id="homework_code"
-                type="text"
-                className="form-input"
-                value={homework_code}
-                onChange={(e) => setHomeworkCode(e.target.value)}
-                placeholder="enter homework code"
-                required
-              />
-            </div>          
-            <div className="form-group">
-              <label htmlFor="title" className="form-label">Assignment Title</label>
-              <input
-                id="title"
-                type="text"
-                className="form-input"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter assignment title"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="due-date" className="form-label">Due Date</label>
-              <input
-                id="due-date"
-                type="datetime-local"
-                className="form-input"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                required
-              />
-            </div>
-
+            {/* Assignment Type Selection - Always show first */}
             <div className="form-group">
               <label className="form-label">Assignment Type</label>
               <div className="type-buttons">
@@ -203,10 +304,66 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                   </svg>
                   Image Assignment
                 </button>
+                <button
+                  type="button"
+                  className={`type-btn ${submissionType === "worksheet" ? 'active' : ''}`}
+                  onClick={() => setSubmissionType("worksheet")}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                  Upload Worksheet
+                </button>
               </div>
             </div>
 
-            {submissionType === "text" ? (
+            {/* Common fields for Text and Image assignment types only */}
+            {submissionType !== 'worksheet' && (
+              <>
+                <div className="form-group">
+                  <label htmlFor="homework_code" className="form-label">Homework Code</label>
+                  <input
+                    id="homework_code"
+                    type="text"
+                    className="form-input"
+                    value={homework_code}
+                    onChange={(e) => setHomeworkCode(e.target.value)}
+                    placeholder="Enter homework code"
+                    required
+                  />
+                </div>          
+                
+                <div className="form-group">
+                  <label htmlFor="title" className="form-label">Assignment Title</label>
+                  <input
+                    id="title"
+                    type="text"
+                    className="form-input"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter assignment title"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="due-date" className="form-label">Due Date</label>
+                  <input
+                    id="due-date"
+                    type="datetime-local"
+                    className="form-input"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {submissionType === "text" && (
               <div className="form-group">
                 <label htmlFor="description" className="form-label">Assignment Description</label>
                 <textarea
@@ -218,7 +375,9 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                   rows="4"
                 />
               </div>
-            ) : (
+            )}
+
+            {submissionType === "image" && (
               <>
                 <div className="form-group">
                   <label className="form-label">Image Source</label>
@@ -251,165 +410,186 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
                 {imageSourceType === "upload" ? (
                   <div className="form-group">
-                    <label htmlFor="image" className="form-label">
-                      Upload Assignment Images 
-                      <span style={{ fontSize: '0.875rem', color: '#6b7280', marginLeft: '8px' }}>
-                        ({imageFiles.length} selected)
-                      </span>
-                    </label>
+                    <label htmlFor="image" className="form-label">Upload Assignment Image</label>
                     <input
                       id="image"
                       type="file"
                       className="form-input file-input"
                       accept="image/*"
-                      multiple // Added multiple attribute
-                      onChange={handleFileSelection}
+                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                     />
-                    {imageFiles.length > 0 && (
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                        gap: '12px',
-                        marginTop: '16px'
-                      }}>
-                        {imageFiles.map((file, index) => (
-                          <div key={index} className="image-preview" style={{ position: 'relative' }}>
-                            <img
-                              src={URL.createObjectURL(file)}
-                              alt={`Assignment preview ${index + 1}`}
-                              className="preview-image"
-                              style={{
-                                width: '100%',
-                                height: '150px',
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                border: '1px solid #e5e7eb'
-                              }}
-                            />
-                            <button
-                              type="button"
-                              className="remove-image-btn"
-                              onClick={() => removeImage(index)}
-                              style={{
-                                position: 'absolute',
-                                top: '8px',
-                                right: '8px',
-                                width: '24px',
-                                height: '24px',
-                                padding: '0',
-                                backgroundColor: '#ef4444',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '50%',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
+                    {imageFile && (
+                      <div className="image-preview">
+                        <img
+                          src={URL.createObjectURL(imageFile)}
+                          alt="Assignment preview"
+                          className="preview-image"
+                        />
+                        <button
+                          type="button"
+                          className="remove-image-btn"
+                          onClick={() => setImageFile(null)}
+                          style={{
+                            marginTop: '10px',
+                            padding: '5px 10px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove Image
+                        </button>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="form-group">
-                    <label className="form-label">
-                      Capture Assignment Images
-                      <span style={{ fontSize: '0.875rem', color: '#6b7280', marginLeft: '8px' }}>
-                        ({imageFiles.length} captured)
-                      </span>
-                    </label>
+                    <label className="form-label">Capture Assignment Image</label>
                     <div style={{
                       border: '2px dashed #e5e7eb',
                       borderRadius: '8px',
                       padding: '20px',
                       backgroundColor: '#f9fafb'
                     }}>
-                      <CameraCapture
-  onImageCapture={handleCapturedImage}
-  videoConstraints={{ 
-    facingMode: { ideal: "environment" },
-    // For text documents, use higher resolution
-    width: { ideal: 4096 },
-    height: { ideal: 3072 },
-    // Additional constraints for clarity
-    focusMode: { ideal: "continuous" },
-    exposureMode: { ideal: "continuous" }
-  }}
-/>
-                      {imageFiles.length > 0 && (
-                        <>
-                          <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                            <p style={{ color: '#10b981', fontWeight: '500' }}>
-                              ✓ {imageFiles.length} image(s) captured successfully
-                            </p>
-                          </div>
-                          <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                            gap: '8px',
-                            marginTop: '12px'
-                          }}>
-                            {imageFiles.map((file, index) => (
-                              <div key={index} style={{ position: 'relative' }}>
-                                <img
-                                  src={URL.createObjectURL(file)}
-                                  alt={`Captured ${index + 1}`}
-                                  style={{
-                                    width: '100%',
-                                    height: '100px',
-                                    objectFit: 'cover',
-                                    borderRadius: '4px',
-                                    border: '1px solid #e5e7eb'
-                                  }}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  style={{
-                                    position: 'absolute',
-                                    top: '4px',
-                                    right: '4px',
-                                    width: '20px',
-                                    height: '20px',
-                                    padding: '0',
-                                    backgroundColor: '#ef4444',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                  }}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            ))}
-                          </div>
+                      <CameraCapture onImageCapture={handleCapturedImage} />
+                      {imageFile && (
+                        <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                          <p style={{ color: '#10b981', fontWeight: '500' }}>
+                            ✓ Image captured successfully
+                          </p>
                           <button
                             type="button"
-                            onClick={() => setImageFiles([])}
+                            onClick={() => setImageFile(null)}
                             style={{
-                              marginTop: '10px',
+                              marginTop: '5px',
                               padding: '5px 10px',
                               backgroundColor: '#ef4444',
                               color: 'white',
                               border: 'none',
                               borderRadius: '4px',
-                              cursor: 'pointer',
-                              width: '100%'
+                              cursor: 'pointer'
                             }}
                           >
-                            Clear All Images
+                            Clear Captured Image
                           </button>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
                 )}
+              </>
+            )}
+
+            {submissionType === "worksheet" && (
+              <>
+                <div className="form-group">
+                  <label htmlFor="due-date-worksheet" className="form-label">Due Date</label>
+                  <input
+                    id="due-date-worksheet"
+                    type="datetime-local"
+                    className="form-input"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="class-select" className="form-label">Class</label>
+                  <select
+                    id="class-select"
+                    className="form-input"
+                    value={selectedClass}
+                    onChange={(e) => setSelectedClass(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Class</option>
+                    {classes.map((cls) => (
+                      <option key={cls.class_code} value={cls.class_code}>
+                        {cls.class_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="subject-select" className="form-label">Subject</label>
+                  <select
+                    id="subject-select"
+                    className="form-input"
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    disabled={!selectedClass}
+                    required
+                  >
+                    <option value="">Select Subject</option>
+                    {subjects.map((subject) => (
+                      <option key={subject.subject_code} value={subject.subject_code}>
+                        {subject.subject_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="chapter-select" className="form-label">Topic/Chapter</label>
+                  <select
+                    id="chapter-select"
+                    className="form-input"
+                    value={selectedChapter}
+                    onChange={(e) => setSelectedChapter(e.target.value)}
+                    disabled={!selectedSubject}
+                    required
+                  >
+                    <option value="">Select Chapter</option>
+                    {chapters.map((chapter) => (
+                      <option key={chapter.topic_code} value={chapter.topic_code}>
+                        {chapter.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="worksheet-name" className="form-label">Worksheet Name</label>
+                  <input
+                    id="worksheet-name"
+                    type="text"
+                    className="form-input"
+                    value={worksheetName}
+                    onChange={(e) => setWorksheetName(e.target.value)}
+                    placeholder="Worksheet name will be auto-generated"
+                    required
+                  />
+                  <div className="form-help">
+                    Auto-generated format: ClassName_SubjectName_ChapterName_Worksheet
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="worksheet-file" className="form-label">Upload Worksheet File</label>
+                  <input
+                    id="worksheet-file"
+                    type="file"
+                    className="form-input"
+                    accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
+                    onChange={handleWorksheetFileChange}
+                    required
+                  />
+                  {worksheetFile && (
+                    <div className="file-preview">
+                      <div className="file-info">
+                        <span className="file-name">📄 {worksheetFile.name}</span>
+                        <span className="file-size">({(worksheetFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="form-help">
+                    Supported formats: Word documents (.doc, .docx) and PDF files
+                  </div>
+                </div>
               </>
             )}
 
@@ -418,7 +598,18 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
               className="submit-btn"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating...' : 'Create Assignment'}
+              {isSubmitting ? (
+                submissionType === 'worksheet' ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Uploading Worksheet...
+                  </>
+                ) : (
+                  "Creating..."
+                )
+              ) : (
+                submissionType === 'worksheet' ? "📤 Upload Worksheet & Create Assignment" : "Create Assignment"
+              )}
             </button>
           </form>
         </div>

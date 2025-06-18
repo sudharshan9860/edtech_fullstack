@@ -489,7 +489,7 @@ const renderSolutionSteps = (steps) => {
               onClick={handleShowQuestionList}
               className="next-question-btn"
             >
-              Next Questions
+              Back
             </Button>
             <Button 
               variant="outline-primary" 

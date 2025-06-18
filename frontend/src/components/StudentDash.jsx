@@ -27,6 +27,7 @@ function StudentDash() {
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [subTopics, setSubTopics] = useState([]); // Added for external questions
+  const [worksheets, setWorksheets] = useState([]); // Added for worksheets
 
   // State for selections
   const [selectedClass, setSelectedClass] = useState("");
@@ -34,6 +35,7 @@ function StudentDash() {
   const [selectedChapters, setSelectedChapters] = useState([]);
   const [questionType, setQuestionType] = useState("");
   const [questionLevel, setQuestionLevel] = useState("");
+  const [selectedWorksheet, setSelectedWorksheet] = useState(""); // Added for worksheet selection
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [questionList, setQuestionList] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
@@ -95,6 +97,17 @@ function StudentDash() {
       );
     }
 
+    // If worksheets question type is selected, also check selected worksheet
+    if (questionType === "worksheets") {
+      return (
+        selectedClass !== "" &&
+        selectedSubject !== "" &&
+        selectedChapters.length > 0 &&
+        questionType !== "" &&
+        selectedWorksheet !== ""
+      );
+    }
+
     // For other question types, just check the main 4 categories
     return (
       selectedClass !== "" &&
@@ -135,6 +148,7 @@ function StudentDash() {
           setSelectedChapters([]);
           setQuestionType("");
           setQuestionLevel("");
+          setSelectedWorksheet("");
         } catch (error) {
           console.error("Error fetching subjects:", error);
           setSubjects([]);
@@ -157,6 +171,7 @@ function StudentDash() {
           setSelectedChapters([]);
           setQuestionType("");
           setQuestionLevel("");
+          setSelectedWorksheet("");
         } catch (error) {
           console.error("Error fetching chapters:", error);
           setChapters([]);
@@ -166,7 +181,7 @@ function StudentDash() {
     fetchChapters();
   }, [selectedSubject, selectedClass]);
 
-  // New effect for fetching subtopics when External question type is selected
+  // Effect for fetching subtopics when External question type is selected
   useEffect(() => {
     async function fetchSubTopics() {
       if (
@@ -193,6 +208,33 @@ function StudentDash() {
     fetchSubTopics();
   }, [questionType, selectedClass, selectedSubject, selectedChapters]);
 
+  // Effect for fetching worksheets when Worksheets question type is selected
+  useEffect(() => {
+    async function fetchWorksheets() {
+      if (
+        questionType === "worksheets" &&
+        selectedClass &&
+        selectedSubject &&
+        selectedChapters.length > 0
+      ) {
+        try {
+          const response = await axiosInstance.post("/question-images/", {
+            classid: selectedClass,
+            subjectid: selectedSubject,
+            topicid: selectedChapters[0], // Assuming single chapter selection
+            worksheets: true,
+          });
+          console.log("the worksheets response data is : ", response);
+          setWorksheets(response.data.worksheets);
+        } catch (error) {
+          console.error("Error fetching worksheets:", error);
+          setWorksheets([]);
+        }
+      }
+    }
+    fetchWorksheets();
+  }, [questionType, selectedClass, selectedSubject, selectedChapters]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -207,16 +249,17 @@ function StudentDash() {
       topicid: selectedChapters,
       solved: questionType === "solved",
       exercise: questionType === "exercise",
+      // worksheets: questionType === "worksheets",
       subtopic: questionType === "external" ? questionLevel : null,
+      worksheet_name: questionType === "worksheets" ? selectedWorksheet : null,
     };
-
+    console.log("Request data for question generation:", requestData);
     try {
       const response = await axiosInstance.post(
         "/question-images/",
         requestData
       );
-
-      console.log("the response data is : ", response.data.questions);
+      console.log("the response data is : ", response.data);
       // Process questions with images
       const questionsWithImages = response.data.questions.map((question) => ({
         ...question,
@@ -250,6 +293,7 @@ function StudentDash() {
         subject_id: selectedSubject,
         topic_ids: selectedChapters,
         subtopic: questionType === "external" ? questionLevel : "",
+        worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
         image,
         selectedQuestions: selectedQuestions,
       },
@@ -271,16 +315,20 @@ function StudentDash() {
         subject_id: selectedSubject,
         topic_ids: selectedChapters,
         subtopic: questionType === "external" ? questionLevel : "",
+        worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
         image: firstQuestion.image,
         selectedQuestions: selectedQuestionsData,
       },
     });
   };
 
-  // Reset Question Level when Question Type changes
+  // Reset Question Level and Selected Worksheet when Question Type changes
   useEffect(() => {
     if (questionType !== "external") {
       setQuestionLevel("");
+    }
+    if (questionType !== "worksheets") {
+      setSelectedWorksheet("");
     }
   }, [questionType]);
 
@@ -407,6 +455,7 @@ function StudentDash() {
                       <option value="solved">Solved</option>
                       <option value="exercise">Exercise</option>
                       <option value="external">Set of Questions</option>
+                      <option value="worksheets">Worksheets</option>
                     </Form.Control>
                   </Form.Group>
                 </Col>
@@ -441,6 +490,35 @@ function StudentDash() {
                 </Row>
               )}
 
+              {questionType === "worksheets" && (
+                <Row className="mb-3">
+                  <Col xs={12} md={6}>
+                    <Form.Group controlId="formWorksheets">
+                      <Form.Label>
+                        <FontAwesomeIcon
+                          icon={faClipboardQuestion}
+                          className="me-2"
+                        />
+                        Select Worksheet
+                      </Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={selectedWorksheet}
+                        onChange={(e) => setSelectedWorksheet(e.target.value)}
+                        className="form-control"
+                      >
+                        <option value="">Select Worksheet</option>
+                        {worksheets.map((worksheet) => (
+                          <option key={worksheet.id} value={worksheet.worksheet_name}>
+                            {worksheet.worksheet_name}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              )}
+
               <div className="d-flex justify-content-end">
                 <Button
                   variant="primary"
@@ -455,8 +533,6 @@ function StudentDash() {
           </div>
 
           {/* Recent Sessions Section */}
-
-          
           <RecentSessions />
         </Container>
       </main>
