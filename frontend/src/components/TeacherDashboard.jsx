@@ -101,14 +101,87 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
     }
   }, [selectedClass, selectedSubject, selectedChapter, submissionType, classes, subjects, chapters]);
 
+  // Separate function to handle worksheet upload
+  const handleWorksheetUpload = async () => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      setSuccess('');
+
+      // Validation for worksheet assignments
+      if (!selectedClass || !selectedSubject || !selectedChapter || !worksheetName.trim() || !worksheetFile) {
+        setError('Please fill in all worksheet fields and upload a worksheet file');
+        return;
+      }
+
+      // Create FormData for worksheet upload to /worksheets/ endpoint
+      const formData = new FormData();
+      formData.append('file', worksheetFile); // Backend expects 'file' key
+      formData.append('class_code', selectedClass);
+      formData.append('subject_code', selectedSubject);
+      formData.append('topic_code', selectedChapter);
+      formData.append('worksheet_name', worksheetName.trim());
+      
+      // Add due_date if provided
+      if (dueDate) {
+        formData.append('due_date', new Date(dueDate).toISOString());
+      }
+
+      // Make API call to worksheets endpoint
+      // console.log('Uploading worksheet with data:', formData);
+      const response = await axiosInstance.post('/worksheets/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      // console.log('Worksheet upload response:', response.data);
+      if (response.data.success) {
+        setSuccess(`Successfully processed worksheet! Extracted ${response.data.total_questions} questions.`);
+        
+        // Reset worksheet form
+        setSelectedClass('');
+        setSelectedSubject('');
+        setSelectedChapter('');
+        setWorksheetName('');
+        setWorksheetFile(null);
+        setDueDate('');
+        
+        // Reset file input
+        const worksheetInput = document.getElementById('worksheet-file');
+        if (worksheetInput) worksheetInput.value = '';
+        
+        console.log('Worksheet processing response:', response.data);
+      } else {
+        setError(response.data.error || 'Failed to process worksheet');
+      }
+
+    } catch (error) {
+      console.error('Error uploading worksheet:', error);
+      setError(
+        error.response?.data?.error || 
+        error.response?.data?.message || 
+        'Failed to upload and process worksheet'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess('');
+
+    // Handle worksheet upload separately
+    if (submissionType === 'worksheet') {
+      await handleWorksheetUpload();
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Validation for non-worksheet assignments
-    if (submissionType !== 'worksheet' && (!homework_code.trim() || !title.trim() || !dueDate)) {
+    if (!homework_code.trim() || !title.trim() || !dueDate) {
       setError("Please fill in all required fields");
       setIsSubmitting(false);
       return;
@@ -121,89 +194,54 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       return;
     }
 
-    // Validation for worksheet assignments
-    if (submissionType === 'worksheet' && (!selectedClass || !selectedSubject || !selectedChapter || !worksheetName.trim() || !worksheetFile || !dueDate)) {
-      setError('Please fill in all worksheet fields and upload a worksheet file');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      if (submissionType === 'worksheet') {
-        // Handle worksheet upload
-        const formData = new FormData();
-        formData.append('homework_code', `WS_${selectedClass}_${selectedSubject}_${selectedChapter}_${Date.now()}`);
-        formData.append('title', worksheetName.trim());
-        formData.append('description', `Worksheet for ${worksheetName}`);
-        formData.append('due_date', new Date(dueDate).toISOString());
-        formData.append('date_assigned', new Date().toISOString());
-        formData.append('submission_type', 'worksheet');
+      // Handle regular assignment creation (homework/classwork)
+      let formData;
+      if (submissionType === "image" && imageFile) {
+        // Use FormData for image and other fields
+        formData = new FormData();
+        formData.append('homework_code', homework_code.trim());
+        formData.append('title', title.trim());
         formData.append('teacherId', user.username);
         formData.append('classId', user.id);
-        formData.append('class_code', selectedClass);
-        formData.append('subject_code', selectedSubject);
-        formData.append('topic_code', selectedChapter);
-        formData.append('worksheet_name', worksheetName.trim());
-        formData.append('image', worksheetFile); // Using 'image' field name like other assignments
-
-        await onAssignmentSubmit(formData, true); // true = isFormData
-        setSuccess('Worksheet uploaded successfully!');
+        formData.append('due_date', new Date(dueDate).toISOString());
+        formData.append('date_assigned', new Date().toISOString());
+        formData.append('image', imageFile);
+        // Optionally add description if needed
+        if (description) formData.append('description', description);
       } else {
-        // Handle regular assignment creation
-        let formData;
-        if (submissionType === "image" && imageFile) {
-          // Use FormData for image and other fields
-          formData = new FormData();
-          formData.append('homework_code', homework_code.trim());
-          formData.append('title', title.trim());
-          formData.append('teacherId', user.username);
-          formData.append('classId', user.id);
-          formData.append('due_date', new Date(dueDate).toISOString());
-          formData.append('date_assigned', new Date().toISOString());
-          formData.append('image', imageFile);
-          // Optionally add description if needed
-          if (description) formData.append('description', description);
-        } else {
-          // For text-only assignments, send JSON
-          formData = {
-            homework_code: homework_code.trim(),
-            title: title.trim(),
-            description: submissionType === "text" ? description : undefined,
-            teacherId: user.username,
-            classId: user.id,
-            due_date: new Date(dueDate).toISOString(),
-            date_assigned: new Date().toISOString(),
-          };
-        }
-
-        // Send to backend
-        if (submissionType === "image" && imageFile) {
-          await onAssignmentSubmit(formData, true); // true = isFormData
-        } else {
-          await onAssignmentSubmit(formData, false);
-        }
-        setSuccess('Assignment created successfully!');
+        // For text-only assignments, send JSON
+        formData = {
+          homework_code: homework_code.trim(),
+          title: title.trim(),
+          description: submissionType === "text" ? description : undefined,
+          teacherId: user.username,
+          classId: user.id,
+          due_date: new Date(dueDate).toISOString(),
+          date_assigned: new Date().toISOString(),
+        };
       }
+
+      // Send to backend through parent callback
+      if (submissionType === "image" && imageFile) {
+        await onAssignmentSubmit(formData, true); // true = isFormData
+      } else {
+        await onAssignmentSubmit(formData, false);
+      }
+      setSuccess('Assignment created successfully!');
 
       // Reset form
       setTitle("");
       setDescription("");
       setImageFile(null);
-      setWorksheetFile(null);
       setDueDate("");
       setSubmissionType("text");
       setHomeworkCode("");
       setImageSourceType("upload");
-      setSelectedClass('');
-      setSelectedSubject('');
-      setSelectedChapter('');
-      setWorksheetName('');
 
       // Reset file inputs
       const imageInput = document.getElementById('assignment-image');
-      const worksheetInput = document.getElementById('worksheet-file');
       if (imageInput) imageInput.value = '';
-      if (worksheetInput) worksheetInput.value = '';
 
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create assignment");
@@ -222,7 +260,29 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
   const handleWorksheetFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/msword', // .doc
+        'application/pdf' // .pdf
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        setError('Please upload a valid document file (.doc, .docx, or .pdf)');
+        e.target.value = ''; // Clear the input
+        return;
+      }
+      
+      // Check file size (e.g., max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+      if (file.size > maxSize) {
+        setError('File size must be less than 10MB');
+        e.target.value = ''; // Clear the input
+        return;
+      }
+      
       setWorksheetFile(file);
+      setError(null); // Clear any previous errors
     }
   };
 
@@ -410,9 +470,9 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
                 {imageSourceType === "upload" ? (
                   <div className="form-group">
-                    <label htmlFor="image" className="form-label">Upload Assignment Image</label>
+                    <label htmlFor="assignment-image" className="form-label">Upload Assignment Image</label>
                     <input
-                      id="image"
+                      id="assignment-image"
                       type="file"
                       className="form-input file-input"
                       accept="image/*"
@@ -485,19 +545,21 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
             {submissionType === "worksheet" && (
               <>
                 <div className="form-group">
-                  <label htmlFor="due-date-worksheet" className="form-label">Due Date</label>
+                  <label htmlFor="due-date-worksheet" className="form-label">Due Date (Optional)</label>
                   <input
                     id="due-date-worksheet"
                     type="datetime-local"
                     className="form-input"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    required
                   />
+                  <div className="form-help">
+                    Due date is optional for worksheet processing
+                  </div>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="class-select" className="form-label">Class</label>
+                  <label htmlFor="class-select" className="form-label">Class *</label>
                   <select
                     id="class-select"
                     className="form-input"
@@ -515,7 +577,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="subject-select" className="form-label">Subject</label>
+                  <label htmlFor="subject-select" className="form-label">Subject *</label>
                   <select
                     id="subject-select"
                     className="form-input"
@@ -534,7 +596,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="chapter-select" className="form-label">Topic/Chapter</label>
+                  <label htmlFor="chapter-select" className="form-label">Topic/Chapter *</label>
                   <select
                     id="chapter-select"
                     className="form-input"
@@ -553,7 +615,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="worksheet-name" className="form-label">Worksheet Name</label>
+                  <label htmlFor="worksheet-name" className="form-label">Worksheet Name *</label>
                   <input
                     id="worksheet-name"
                     type="text"
@@ -569,7 +631,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="worksheet-file" className="form-label">Upload Worksheet File</label>
+                  <label htmlFor="worksheet-file" className="form-label">Upload Worksheet File *</label>
                   <input
                     id="worksheet-file"
                     type="file"
@@ -584,10 +646,30 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                         <span className="file-name">📄 {worksheetFile.name}</span>
                         <span className="file-size">({(worksheetFile.size / 1024 / 1024).toFixed(2)} MB)</span>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWorksheetFile(null);
+                          const worksheetInput = document.getElementById('worksheet-file');
+                          if (worksheetInput) worksheetInput.value = '';
+                        }}
+                        style={{
+                          marginTop: '5px',
+                          padding: '5px 10px',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Remove File
+                      </button>
                     </div>
                   )}
                   <div className="form-help">
-                    Supported formats: Word documents (.doc, .docx) and PDF files
+                    Supported formats: Word documents (.doc, .docx) and PDF files (Max: 10MB)
                   </div>
                 </div>
               </>
@@ -602,13 +684,13 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 submissionType === 'worksheet' ? (
                   <>
                     <span className="loading-spinner"></span>
-                    Uploading Worksheet...
+                    Processing Worksheet...
                   </>
                 ) : (
                   "Creating..."
                 )
               ) : (
-                submissionType === 'worksheet' ? "📤 Upload Worksheet & Create Assignment" : "Create Assignment"
+                submissionType === 'worksheet' ? "📤 Process & Upload Worksheet" : "Create Assignment"
               )}
             </button>
           </form>
