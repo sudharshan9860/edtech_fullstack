@@ -1,320 +1,392 @@
-nav.custom-navbar.navbar.navbar-expand-lg.navbar-light {
-  position: sticky;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* Layout Wrapper */
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Navbar Styles */
+/* Top Navigation Bar */
 .custom-navbar {
-  color: white;
+  background: linear-gradient(135deg, #00c1d4, #001b6c) !important;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  right: 0;
   z-index: 1000;
-  height: 56px;
+  height: 60px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0;
 }
 
-.lo{
-  color: white;
+.navbar-brand-custom {
+  color: white !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: transform 0.3s ease;
+  margin-left: 1rem;
+}
+
+.navbar-brand-custom:hover {
+  transform: scale(1.05);
+  color: white !important;
+}
+
+/* Navigation Links */
+.navbar-nav-custom {
   display: flex;
   align-items: center;
-
-}
-.custom-navbar .navbar-brand {
-  
-  color: white !important;
+  gap: 0.5rem;
+  margin-left: auto;
+  padding-right: 1rem;
 }
 
-.custom-navbar .nav-link {
+.nav-link-custom {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   color: white !important;
   padding: 0.5rem 1rem;
+  border-radius: 6px;
   transition: all 0.3s ease;
+  text-decoration: none;
   font-weight: 500;
-  position: relative;
-  margin: 0 5px;
-  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.custom-nav-link {
-  position: relative;
-  overflow: hidden;
-}
-
-.custom-nav-link::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
+.nav-link-custom:hover {
   background: rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-  z-index: -1;
+  color: white !important;
+  transform: translateY(-1px);
 }
 
-.custom-nav-link:hover::before {
-  left: 0;
-}
-
-.custom-nav-link.active {
+.nav-link-custom.active {
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Username and Logout */
-.username-text {
-  color: white !important;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  position: relative;
+.nav-icon {
+  font-size: 0.9rem;
 }
 
-.username-text::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: white;
-  transition: width 0.3s ease;
+.nav-label {
+  font-size: 0.9rem;
 }
 
-.username-text:hover::after {
-  width: 100%;
+/* User Section */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.logout-icon {
-  color: white !important;
-  transition: all 0.3s ease;
-  padding: 5px;
-  border-radius: 50%;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
 }
 
-.logout-icon:hover {
+.user-icon {
+  font-size: 1rem;
+}
+
+.username-display {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.role-badge {
   background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
-}
-
-/* Admin text */
-.admin-text {
-  color: white !important;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
 }
 
-/* Spacing utilities */
-.nav-item-spacing {
-  margin-left: 20px;
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
 }
 
-.icon-text-spacing {
-  margin-left: 8px;
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Notification Wrapper */
+.notification-wrapper {
+  margin-left: 0.5rem;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-top: 60px; /* Account for fixed navbar */
+  min-height: calc(100vh - 120px); /* Account for navbar and footer */
+}
+
+/* Admin Layout (only for non-admin-dash routes) */
+.admin-layout {
+  display: flex;
+  height: calc(100vh - 120px); /* Full height minus navbar and footer */
+}
+
+/* Admin Sidebar (only for non-admin-dash routes) */
+.admin-sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #00c1d4, #001b6c);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.5rem;
+}
+
+.sidebar-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.sidebar-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+  padding: 1rem 0;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+  font-weight: 500;
+}
+
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-left-color: #00c1d4;
+}
+
+.sidebar-item.active {
+  background: rgba(0, 193, 212, 0.2);
+  border-left-color: #00c1d4;
+  color: #00c1d4;
+}
+
+.sidebar-item svg {
+  font-size: 1.1rem;
+  width: 20px;
+}
+
+/* Admin Main Content (only for non-admin-dash routes) */
+.admin-main-content {
+  flex: 1;
+  background: #f8fafc;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+/* Regular Content (for students, teachers, and admin dashboard) */
+.regular-content {
+  padding: 2rem 1rem;
+  min-height: calc(100vh - 120px);
+  background: #f8fafc;
 }
 
 /* Footer */
 .footer {
   background: linear-gradient(135deg, #00c1d4, #001b6c);
   color: white;
-  padding: 15px 20px;
+  padding: 1rem 0;
   text-align: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1000;
-  height: 60px;
+  margin-top: auto;
 }
 
-/* Login.css */
-.login-wrapper {
-  background: linear-gradient(135deg, #00c1d4 0%, #001b6c 100%);
+.footer p {
+  margin: 0;
+  font-size: 0.9rem;
 }
 
-.platform-name {
-  color: #00c1d4;
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 240px;
+  }
+  
+  .sidebar-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .sidebar-item {
+    padding: 0.875rem 1rem;
+  }
 }
 
-.platform-subtitle {
-  color: #001b6c;
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  
+  .sidebar-nav {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem;
+  }
+  
+  .sidebar-item {
+    white-space: nowrap;
+    min-width: 120px;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+  
+  .sidebar-item:hover,
+  .sidebar-item.active {
+    border-left: none;
+    border-bottom-color: #00c1d4;
+  }
+  
+  .navbar-nav-custom {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+  }
+  
+  .user-section {
+    flex-direction: column;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .admin-main-content {
+    padding: 1rem;
+  }
+  
+  .regular-content {
+    padding: 1rem 0.5rem;
+  }
 }
 
-.start-learning-btn {
-  background: linear-gradient(135deg, #00c1d4 0%, #001b6c 100%);
+@media (max-width: 480px) {
+  .navbar-brand-custom {
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+  }
+  
+  .nav-link-custom {
+    padding: 0.75rem;
+    justify-content: center;
+  }
+  
+  .nav-label {
+    display: none;
+  }
+  
+  .sidebar-header {
+    padding: 1rem;
+  }
+  
+  .sidebar-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .admin-main-content {
+    padding: 0.5rem;
+  }
+  
+  .regular-content {
+    padding: 0.5rem;
+  }
 }
 
-/* Analytics.css */
-.analytics-content {
-  border: 2px solid #00c1d4;
+/* Scrollbar Styling */
+.admin-sidebar::-webkit-scrollbar {
+  width: 6px;
 }
 
-.chart-wrapper {
-  border: 1px solid #00c1d4;
+.admin-sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-/* StudentDash.css */
-.form-container {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 193, 212, 0.1),
-    rgba(0, 27, 108, 0.05)
-  );
-  border: 1px solid #00c1d4;
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
 }
 
-.btn-generate {
-  background: linear-gradient(to right, #00c1d4, #001b6c) !important;
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
-.question-item {
-  border: 1px solid #00c1d4;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 193, 212, 0.1),
-    rgba(0, 27, 108, 0.05)
-  );
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-/* ProgressDashboard.css */
-.progress-card {
-  border: 1px solid #00c1d4;
-}
-
-.streak-progress .progress-bar {
-  background: linear-gradient(to right, #00c1d4, #001b6c);
-}
-
-/* LeaderboardPage.css */
-.leaderboard-container {
-  background: linear-gradient(
-    45deg,
-    rgba(0, 193, 212, 0.1),
-    rgba(0, 27, 108, 0.1),
-    rgba(0, 193, 212, 0.1)
-  );
-}
-
-.rank-badge {
-  background: linear-gradient(45deg, #00c1d4, #001b6c);
-}
-
-/* QuestsPage.css */
-.quest-card {
-  border: 1px solid #00c1d4;
-  background: white;
-  transition: transform 0.3s ease;
-  margin-bottom: 20px;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 193, 212, 0.1);
-}
-
-.quest-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 193, 212, 0.2);
-}
-
-.quest-progress .progress-bar {
-  background: linear-gradient(to right, #00c1d4, #001b6c);
-}
-
-.badge-primary {
-  background: #00c1d4;
-}
-
-/* SoundConfigModal.css */
-.modal-header {
-  background: linear-gradient(to right, #00c1d4, #001b6c);
-  color: white;
-}
-
-.sound-test-button {
-  border: 1px solid #00c1d4;
-  color: #001b6c;
-}
-
-.sound-test-button:hover {
-  background: linear-gradient(to right, #00c1d4, #001b6c);
-  color: white;
-}
-
-/* Common Button Styles */
-.btn-primary {
-  background: linear-gradient(to right, #00c1d4, #001b6c) !important;
-  border: none !important;
-  color: white !important;
-}
-
-.btn-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.btn-outline-primary {
-  border: 2px solid #00c1d4 !important;
-  color: #001b6c !important;
-  background: transparent !important;
-}
-
-.btn-outline-primary:hover {
-  background: linear-gradient(to right, #00c1d4, #001b6c) !important;
-  color: white !important;
-}
-
-/* Notifications */
-.notification-badge {
-  background: #00c1d4 !important;
-}
-
-/* Progress Bars */
-.progress-bar {
-  background: linear-gradient(to right, #00c1d4, #001b6c) !important;
-}
-
-/* Form Controls */
-.form-control:focus {
-  border-color: #00c1d4;
-  box-shadow: 0 0 0 0.2rem rgba(0, 193, 212, 0.25);
-}
-
-/* Select Dropdowns */
-.select-container {
-  border-color: #00c1d4;
-}
-
-.select-container:focus-within {
-  border-color: #001b6c;
-}
-
-/* Achievement Badges */
-.achievement-badge {
-  background: linear-gradient(to right, #00c1d4, #001b6c);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-/* Level Badges */
-.level-badge {
-  background: linear-gradient(to right, #00c1d4, #001b6c);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-weight: bold;
-}
-
-/* Navigation */
-.nav-tabs .nav-link.active {
-  color: #001b6c !important;
-  border-bottom: 2px solid #00c1d4;
-}
-
-/* Cards */
-.card {
-  border: 1px solid rgba(0, 193, 212, 0.2);
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  box-shadow: 0 5px 15px rgba(0, 193, 212, 0.1);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

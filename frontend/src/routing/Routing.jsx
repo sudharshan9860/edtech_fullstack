@@ -2,12 +2,14 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LoginPage from '../components/LoginPage';
-import StudentDash from '../components/StudentDash';
-import SolveQuestion from '../components/SolveQuestion';
-import ResultPage from '../components/ResultPage';
 import SignupPage from '../components/SignupPage';
 import PrivateRoute from '../components/PrivateRoute';
 import Layout from '../components/Layout';
+
+// Import existing components
+import StudentDash from '../components/StudentDash';
+import SolveQuestion from '../components/SolveQuestion';
+import ResultPage from '../components/ResultPage';
 import QuestionListModal from '../components/QuestionListModal';
 import Analytics from '../components/Analytics';
 import SimilarQuestions from '../components/SimilarQuestions';
@@ -17,6 +19,9 @@ import QuestsPage from '../components/QuestsPage';
 import TeacherDash from '../components/EnhancedTeacherDash';   
 import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';
 import StudentGapAnalysisReport from '../components/StudentGapAnalysisReport';
+
+// Import the EXISTING Admin Dashboard (use the fixed version you just updated)
+import AdminDashboard from '../components/AdminDash';
 
 const AppRoutes = () => {
   return (
@@ -47,6 +52,18 @@ const AppRoutes = () => {
         }
       />
 
+      {/* Use the existing AdminDash component */}
+     <Route 
+  path="/admin-dash" 
+  element={
+    <PrivateRoute>
+      <Layout>
+        <AdminDashboard />
+      </Layout>
+    </PrivateRoute>
+  } 
+/>
+
       <Route
         path="/solvequestion"
         element={
@@ -57,6 +74,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/progress-dashboard"
         element={
@@ -67,6 +85,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/questionlistmodal"
         element={
@@ -77,6 +96,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/resultpage"
         element={
@@ -87,6 +107,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/similar-questions"
         element={
@@ -97,16 +118,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-      <Route
-  path="/analytics"
-  element={
-    <PrivateRoute>
-      <Layout>
-        <Analytics />
-      </Layout>
-    </PrivateRoute>
-  }
-/>
+      
       <Route
         path="/analytics"
         element={
@@ -139,6 +151,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/gap-analysis-report"
         element={
@@ -149,7 +162,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-      {/* Add the new Quests route */}
+      
       <Route
         path="/quests"
         element={
@@ -161,7 +174,7 @@ const AppRoutes = () => {
         }
       />
       
-      {/* Fallback route for undefined paths */}
+      {/* Fallback route */}
       <Route path="*" element={<LoginPage />} />
     </Routes>
   );
