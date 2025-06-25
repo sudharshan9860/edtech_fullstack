@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import '../styles/Examinations.css';
+import '../styles/Examinations.css'; // Make sure this path is correct
 
 import {
   faClipboard,
@@ -223,14 +223,8 @@ const Examinations = () => {
     setShowEditModal(true);
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'in-progress': return 'bg-blue-100 text-blue-800';
-      case 'scheduled': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusClass = (status) => {
+    return `exam-status-badge ${status}`;
   };
 
   const getStatusIcon = (status) => {
@@ -243,14 +237,9 @@ const Examinations = () => {
     }
   };
 
-  const getExamTypeColor = (type) => {
-    switch (type) {
-      case 'Final': return 'bg-red-100 text-red-800';
-      case 'Half Yearly': return 'bg-orange-100 text-orange-800';
-      case 'Unit Test': return 'bg-blue-100 text-blue-800';
-      case 'Practical': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getExamTypeClass = (type) => {
+    const typeKey = type.toLowerCase().replace(' ', '-');
+    return `exam-type-badge ${typeKey}`;
   };
 
   // Summary Statistics
@@ -260,17 +249,17 @@ const Examinations = () => {
   const inProgressExams = examinations.filter(e => e.status === 'in-progress').length;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="examinations">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Examinations</h1>
-            <p className="text-gray-600">Schedule and manage school examinations</p>
+      <div className="exam-header">
+        <div className="exam-header-content">
+          <div className="exam-title-section">
+            <h1>Examinations</h1>
+            <p>Schedule and manage school examinations</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+            className="exam-schedule-btn"
           >
             <FontAwesomeIcon icon={faPlus} />
             <span>Schedule Exam</span>
@@ -279,63 +268,63 @@ const Examinations = () => {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Exams</p>
-              <p className="text-2xl font-bold text-gray-900">{totalExams}</p>
+      <div className="exam-stats-grid">
+        <div className="exam-stat-card">
+          <div className="exam-stat-content">
+            <div className="exam-stat-info">
+              <h3>Total Exams</h3>
+              <p className="exam-stat-value">{totalExams}</p>
             </div>
-            <FontAwesomeIcon icon={faClipboard} className="text-blue-500 text-xl" />
+            <FontAwesomeIcon icon={faClipboard} className="exam-stat-icon blue" />
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Scheduled</p>
-              <p className="text-2xl font-bold text-yellow-600">{scheduledExams}</p>
+        <div className="exam-stat-card">
+          <div className="exam-stat-content">
+            <div className="exam-stat-info">
+              <h3>Scheduled</h3>
+              <p className="exam-stat-value yellow">{scheduledExams}</p>
             </div>
-            <FontAwesomeIcon icon={faCalendar} className="text-yellow-500 text-xl" />
+            <FontAwesomeIcon icon={faCalendar} className="exam-stat-icon yellow" />
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{completedExams}</p>
+        <div className="exam-stat-card">
+          <div className="exam-stat-content">
+            <div className="exam-stat-info">
+              <h3>Completed</h3>
+              <p className="exam-stat-value green">{completedExams}</p>
             </div>
-            <FontAwesomeIcon icon={faCheck} className="text-green-500 text-xl" />
+            <FontAwesomeIcon icon={faCheck} className="exam-stat-icon green" />
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">{inProgressExams}</p>
+        <div className="exam-stat-card">
+          <div className="exam-stat-content">
+            <div className="exam-stat-info">
+              <h3>In Progress</h3>
+              <p className="exam-stat-value blue">{inProgressExams}</p>
             </div>
-            <FontAwesomeIcon icon={faClock} className="text-blue-500 text-xl" />
+            <FontAwesomeIcon icon={faClock} className="exam-stat-icon blue" />
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <div className="exam-search-filters">
+        <div className="exam-filters-container">
+          <div className="exam-search-wrapper">
+            <FontAwesomeIcon icon={faSearch} className="exam-search-icon" />
             <input
               type="text"
               placeholder="Search examinations..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="exam-search-input"
             />
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="exam-filter-controls">
             <select
               value={filterClass}
               onChange={(e) => setFilterClass(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="exam-filter-select"
             >
               <option value="">All Classes</option>
               {classes.map(cls => (
@@ -345,7 +334,7 @@ const Examinations = () => {
             <select
               value={filterSection}
               onChange={(e) => setFilterSection(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="exam-filter-select"
             >
               <option value="">All Sections</option>
               {sections.map(section => (
@@ -355,7 +344,7 @@ const Examinations = () => {
             <select
               value={filterSubject}
               onChange={(e) => setFilterSubject(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="exam-filter-select"
             >
               <option value="">All Subjects</option>
               {subjects.map(subject => (
@@ -365,7 +354,7 @@ const Examinations = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="exam-filter-select"
             >
               <option value="">All Status</option>
               <option value="draft">Draft</option>
@@ -379,95 +368,95 @@ const Examinations = () => {
       </div>
 
       {/* Examinations Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="examinations-grid">
         {filteredExaminations.map(exam => (
-          <div key={exam.id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{exam.examName}</h3>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getExamTypeColor(exam.examType)}`}>
+          <div key={exam.id} className="exam-card">
+            <div className="exam-card-content">
+              <div className="exam-card-header">
+                <div className="exam-basic-info">
+                  <h3 className="exam-name">{exam.examName}</h3>
+                  <div className="exam-type-subject">
+                    <span className={getExamTypeClass(exam.examType)}>
                       {exam.examType}
                     </span>
-                    <span className="text-sm text-gray-600">•</span>
-                    <span className="text-sm text-blue-600 font-medium">{exam.subject}</span>
+                    <span className="exam-subject">• {exam.subject}</span>
                   </div>
                 </div>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(exam.status)}`}>
-                  <FontAwesomeIcon icon={getStatusIcon(exam.status)} className="mr-1" />
+                <span className={getStatusClass(exam.status)}>
+                  <FontAwesomeIcon icon={getStatusIcon(exam.status)} />
                   {exam.status.toUpperCase()}
                 </span>
               </div>
 
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center text-sm text-gray-600">
-                  <FontAwesomeIcon icon={faCalendar} className="mr-2 text-blue-400" />
+              <div className="exam-details">
+                <div className="exam-detail-row">
+                  <FontAwesomeIcon icon={faCalendar} className="exam-detail-icon blue" />
                   <span>{new Date(exam.date).toLocaleDateString()} at {exam.time}</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <FontAwesomeIcon icon={faGraduationCap} className="mr-2 text-green-400" />
+                <div className="exam-detail-row">
+                  <FontAwesomeIcon icon={faGraduationCap} className="exam-detail-icon green" />
                   <span>Class {exam.class} • {exam.duration}</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-red-400" />
+                <div className="exam-detail-row">
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className="exam-detail-icon red" />
                   <span>{exam.venue}</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <FontAwesomeIcon icon={faChalkboardTeacher} className="mr-2 text-purple-400" />
+                <div className="exam-detail-row">
+                  <FontAwesomeIcon icon={faChalkboardTeacher} className="exam-detail-icon purple" />
                   <span>{exam.invigilator}</span>
                 </div>
               </div>
 
-              <div className="border-t pt-3 mb-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="text-center">
-                    <p className="text-gray-600">Total Marks</p>
-                    <p className="font-semibold text-gray-900">{exam.totalMarks}</p>
+              <div className="exam-marks-info">
+                <div className="exam-marks-grid">
+                  <div className="exam-marks-item">
+                    <p className="exam-marks-label">Total Marks</p>
+                    <p className="exam-marks-value">{exam.totalMarks}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-gray-600">Registered</p>
-                    <p className="font-semibold text-blue-600">{exam.studentsRegistered}</p>
+                  <div className="exam-marks-item">
+                    <p className="exam-marks-label">Registered</p>
+                    <p className="exam-marks-value" style={{color: '#3b82f6'}}>{exam.studentsRegistered}</p>
                   </div>
                 </div>
               </div>
 
               {exam.status === 'completed' && (
-                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="text-center">
-                      <p className="text-gray-600">Average</p>
-                      <p className="font-semibold text-green-600">{exam.averageScore}%</p>
+                <div className="exam-results-section">
+                  <h4 className="exam-results-title">Performance Statistics</h4>
+                  <div className="exam-results-grid">
+                    <div className="exam-result-item">
+                      <p className="exam-result-label">Average</p>
+                      <p className="exam-result-value green">{exam.averageScore}%</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-gray-600">Highest</p>
-                      <p className="font-semibold text-blue-600">{exam.highestScore}%</p>
+                    <div className="exam-result-item">
+                      <p className="exam-result-label">Highest</p>
+                      <p className="exam-result-value blue">{exam.highestScore}%</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-gray-600">Lowest</p>
-                      <p className="font-semibold text-red-600">{exam.lowestScore}%</p>
+                    <div className="exam-result-item">
+                      <p className="exam-result-label">Lowest</p>
+                      <p className="exam-result-value red">{exam.lowestScore}%</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="flex space-x-2">
+              <div className="exam-card-footer">
                 <button
                   onClick={() => handleViewExam(exam)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+                  className="exam-footer-btn primary"
                 >
                   <FontAwesomeIcon icon={faEye} />
                   <span>View Details</span>
                 </button>
                 <button
                   onClick={() => handleEditExamModal(exam)}
-                  className="p-2 text-yellow-600 hover:bg-yellow-100 rounded-lg transition-colors"
+                  className="exam-action-btn edit"
                 >
                   <FontAwesomeIcon icon={faEdit} />
                 </button>
                 <button
                   onClick={() => handleDeleteExam(exam.id)}
-                  className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                  className="exam-action-btn delete"
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
@@ -479,171 +468,172 @@ const Examinations = () => {
 
       {/* Add Exam Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Schedule New Exam</h2>
+        <div className="exam-modal-overlay">
+          <div className="exam-modal">
+            <div className="exam-modal-header">
+              <h2 className="exam-modal-title">Schedule New Exam</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="exam-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Name</label>
-                <input
-                  type="text"
-                  value={newExam.examName}
-                  onChange={(e) => setNewExam({...newExam, examName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Unit Test 1 - Mathematics"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
-                <select
-                  value={newExam.examType}
-                  onChange={(e) => setNewExam({...newExam, examType: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {examTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                <select
-                  value={newExam.subject}
-                  onChange={(e) => setNewExam({...newExam, subject: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Subject</option>
-                  {subjects.map(subject => (
-                    <option key={subject} value={subject}>{subject}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                <select
-                  value={newExam.class}
-                  onChange={(e) => setNewExam({...newExam, class: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Class</option>
-                  {classes.map(cls => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
-                <select
-                  value={newExam.section}
-                  onChange={(e) => setNewExam({...newExam, section: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Section</option>
-                  {sections.map(section => (
-                    <option key={section} value={section}>{section}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input
-                  type="date"
-                  value={newExam.date}
-                  onChange={(e) => setNewExam({...newExam, date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                <input
-                  type="time"
-                  value={newExam.time}
-                  onChange={(e) => setNewExam({...newExam, time: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-                <input
-                  type="text"
-                  value={newExam.duration}
-                  onChange={(e) => setNewExam({...newExam, duration: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., 2 hours"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Total Marks</label>
-                <input
-                  type="number"
-                  value={newExam.totalMarks}
-                  onChange={(e) => setNewExam({...newExam, totalMarks: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Passing Marks</label>
-                <input
-                  type="number"
-                  value={newExam.passingMarks}
-                  onChange={(e) => setNewExam({...newExam, passingMarks: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Venue</label>
-                <select
-                  value={newExam.venue}
-                  onChange={(e) => setNewExam({...newExam, venue: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Venue</option>
-                  {venues.map(venue => (
-                    <option key={venue} value={venue}>{venue}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Invigilator</label>
-                <input
-                  type="text"
-                  value={newExam.invigilator}
-                  onChange={(e) => setNewExam({...newExam, invigilator: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Teacher name"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
-                <textarea
-                  value={newExam.instructions}
-                  onChange={(e) => setNewExam({...newExam, instructions: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows="2"
-                  placeholder="Special instructions for students"
-                />
+            <div className="exam-modal-body">
+              <div className="exam-form-grid">
+                <div className="exam-form-group full-width">
+                  <label className="exam-form-label">Exam Name</label>
+                  <input
+                    type="text"
+                    value={newExam.examName}
+                    onChange={(e) => setNewExam({...newExam, examName: e.target.value})}
+                    className="exam-form-input"
+                    placeholder="e.g., Unit Test 1 - Mathematics"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Exam Type</label>
+                  <select
+                    value={newExam.examType}
+                    onChange={(e) => setNewExam({...newExam, examType: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    {examTypes.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Subject</label>
+                  <select
+                    value={newExam.subject}
+                    onChange={(e) => setNewExam({...newExam, subject: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    <option value="">Select Subject</option>
+                    {subjects.map(subject => (
+                      <option key={subject} value={subject}>{subject}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Class</label>
+                  <select
+                    value={newExam.class}
+                    onChange={(e) => setNewExam({...newExam, class: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    <option value="">Select Class</option>
+                    {classes.map(cls => (
+                      <option key={cls} value={cls}>{cls}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Section</label>
+                  <select
+                    value={newExam.section}
+                    onChange={(e) => setNewExam({...newExam, section: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    <option value="">Select Section</option>
+                    {sections.map(section => (
+                      <option key={section} value={section}>{section}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Date</label>
+                  <input
+                    type="date"
+                    value={newExam.date}
+                    onChange={(e) => setNewExam({...newExam, date: e.target.value})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Time</label>
+                  <input
+                    type="time"
+                    value={newExam.time}
+                    onChange={(e) => setNewExam({...newExam, time: e.target.value})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Duration</label>
+                  <input
+                    type="text"
+                    value={newExam.duration}
+                    onChange={(e) => setNewExam({...newExam, duration: e.target.value})}
+                    className="exam-form-input"
+                    placeholder="e.g., 2 hours"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Total Marks</label>
+                  <input
+                    type="number"
+                    value={newExam.totalMarks}
+                    onChange={(e) => setNewExam({...newExam, totalMarks: parseInt(e.target.value)})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Passing Marks</label>
+                  <input
+                    type="number"
+                    value={newExam.passingMarks}
+                    onChange={(e) => setNewExam({...newExam, passingMarks: parseInt(e.target.value)})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Venue</label>
+                  <select
+                    value={newExam.venue}
+                    onChange={(e) => setNewExam({...newExam, venue: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    <option value="">Select Venue</option>
+                    {venues.map(venue => (
+                      <option key={venue} value={venue}>{venue}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Invigilator</label>
+                  <input
+                    type="text"
+                    value={newExam.invigilator}
+                    onChange={(e) => setNewExam({...newExam, invigilator: e.target.value})}
+                    className="exam-form-input"
+                    placeholder="Teacher name"
+                  />
+                </div>
+                <div className="exam-form-group full-width">
+                  <label className="exam-form-label">Instructions</label>
+                  <textarea
+                    value={newExam.instructions}
+                    onChange={(e) => setNewExam({...newExam, instructions: e.target.value})}
+                    className="exam-form-textarea"
+                    placeholder="Special instructions for students"
+                  />
+                </div>
               </div>
             </div>
             
-            <div className="flex space-x-3 mt-6">
+            <div className="exam-modal-footer">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="exam-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddExam}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="exam-modal-btn submit"
               >
                 Schedule Exam
               </button>
@@ -654,117 +644,113 @@ const Examinations = () => {
 
       {/* View Exam Modal */}
       {showViewModal && selectedExam && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Exam Details</h2>
+        <div className="exam-modal-overlay">
+          <div className="exam-modal">
+            <div className="exam-modal-header">
+              <h2 className="exam-modal-title">Exam Details</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="exam-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="space-y-6">
+            <div className="exam-modal-body">
               {/* Header Info */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{selectedExam.examName}</h3>
-                <div className="flex items-center space-x-3">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getExamTypeColor(selectedExam.examType)}`}>
+              <div className="exam-view-header">
+                <h3>{selectedExam.examName}</h3>
+                <div className="exam-view-badges">
+                  <span className="exam-view-badge">
                     {selectedExam.examType}
                   </span>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedExam.status)}`}>
-                    <FontAwesomeIcon icon={getStatusIcon(selectedExam.status)} className="mr-1" />
+                  <span className="exam-view-badge">
+                    <FontAwesomeIcon icon={getStatusIcon(selectedExam.status)} />
                     {selectedExam.status.toUpperCase()}
                   </span>
                 </div>
               </div>
 
               {/* Exam Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 flex items-center">
-                    <FontAwesomeIcon icon={faClipboard} className="mr-2 text-blue-600" />
+              <div className="exam-info-grid">
+                <div className="exam-info-section">
+                  <h4 className="exam-section-title">
+                    <FontAwesomeIcon icon={faClipboard} className="exam-section-icon blue" />
                     Exam Information
                   </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Subject:</span>
-                      <span className="font-medium">{selectedExam.subject}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Class:</span>
-                      <span className="font-medium">{selectedExam.class}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Date & Time:</span>
-                      <span className="font-medium">{new Date(selectedExam.date).toLocaleDateString()} at {selectedExam.time}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Duration:</span>
-                      <span className="font-medium">{selectedExam.duration}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Venue:</span>
-                      <span className="font-medium">{selectedExam.venue}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Invigilator:</span>
-                      <span className="font-medium">{selectedExam.invigilator}</span>
-                    </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Subject:</span>
+                    <span className="exam-info-value">{selectedExam.subject}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Class:</span>
+                    <span className="exam-info-value">{selectedExam.class}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Date & Time:</span>
+                    <span className="exam-info-value">{new Date(selectedExam.date).toLocaleDateString()} at {selectedExam.time}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Duration:</span>
+                    <span className="exam-info-value">{selectedExam.duration}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Venue:</span>
+                    <span className="exam-info-value">{selectedExam.venue}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Invigilator:</span>
+                    <span className="exam-info-value">{selectedExam.invigilator}</span>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 flex items-center">
-                    <FontAwesomeIcon icon={faChartBar} className="mr-2 text-green-600" />
+                <div className="exam-info-section">
+                  <h4 className="exam-section-title">
+                    <FontAwesomeIcon icon={faChartBar} className="exam-section-icon green" />
                     Marking Scheme
                   </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Marks:</span>
-                      <span className="font-medium">{selectedExam.totalMarks}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Passing Marks:</span>
-                      <span className="font-medium">{selectedExam.passingMarks}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Pass Percentage:</span>
-                      <span className="font-medium">{((selectedExam.passingMarks / selectedExam.totalMarks) * 100).toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Registered Students:</span>
-                      <span className="font-medium text-blue-600">{selectedExam.studentsRegistered}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Students Appeared:</span>
-                      <span className="font-medium text-green-600">{selectedExam.studentsAppeared}</span>
-                    </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Total Marks:</span>
+                    <span className="exam-info-value">{selectedExam.totalMarks}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Passing Marks:</span>
+                    <span className="exam-info-value">{selectedExam.passingMarks}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Pass Percentage:</span>
+                    <span className="exam-info-value">{((selectedExam.passingMarks / selectedExam.totalMarks) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Registered Students:</span>
+                    <span className="exam-info-value" style={{color: '#3b82f6'}}>{selectedExam.studentsRegistered}</span>
+                  </div>
+                  <div className="exam-info-row">
+                    <span className="exam-info-label">Students Appeared:</span>
+                    <span className="exam-info-value" style={{color: '#10b981'}}>{selectedExam.studentsAppeared}</span>
                   </div>
                 </div>
               </div>
 
               {/* Performance Statistics */}
               {selectedExam.status === 'completed' && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                    <FontAwesomeIcon icon={faAward} className="mr-2 text-yellow-600" />
+                <div className="exam-performance-stats">
+                  <h4 className="exam-performance-title">
+                    <FontAwesomeIcon icon={faAward} className="exam-section-icon yellow" />
                     Performance Statistics
                   </h4>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-2xl font-bold text-green-600">{selectedExam.averageScore}%</p>
-                      <p className="text-sm text-gray-600">Average Score</p>
+                  <div className="exam-performance-grid">
+                    <div className="exam-performance-item">
+                      <p className="exam-performance-value green">{selectedExam.averageScore}%</p>
+                      <p className="exam-performance-label">Average Score</p>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-blue-600">{selectedExam.highestScore}%</p>
-                      <p className="text-sm text-gray-600">Highest Score</p>
+                    <div className="exam-performance-item">
+                      <p className="exam-performance-value blue">{selectedExam.highestScore}%</p>
+                      <p className="exam-performance-label">Highest Score</p>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-red-600">{selectedExam.lowestScore}%</p>
-                      <p className="text-sm text-gray-600">Lowest Score</p>
+                    <div className="exam-performance-item">
+                      <p className="exam-performance-value red">{selectedExam.lowestScore}%</p>
+                      <p className="exam-performance-label">Lowest Score</p>
                     </div>
                   </div>
                 </div>
@@ -772,22 +758,23 @@ const Examinations = () => {
 
               {/* Instructions */}
               {selectedExam.instructions && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
-                    <FontAwesomeIcon icon={faFileAlt} className="mr-2 text-purple-600" />
+                <div className="exam-instructions-section">
+                  <h4 className="exam-instructions-title">
+                    <FontAwesomeIcon icon={faFileAlt} className="exam-section-icon" style={{color: '#8b5cf6'}} />
                     Instructions
                   </h4>
-                  <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                  <p className="exam-instructions-content">
                     {selectedExam.instructions}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="mt-6">
+            <div className="exam-modal-footer">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="exam-modal-btn cancel"
+                style={{flex: 'none', width: '100%'}}
               >
                 Close
               </button>
@@ -796,116 +783,117 @@ const Examinations = () => {
         </div>
       )}
 
-      {/* Edit Exam Modal would be similar to Add Modal but with pre-filled data */}
+      {/* Edit Exam Modal */}
       {showEditModal && selectedExam && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Edit Exam</h2>
+        <div className="exam-modal-overlay">
+          <div className="exam-modal">
+            <div className="exam-modal-header">
+              <h2 className="exam-modal-title">Edit Exam</h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="exam-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Name</label>
-                <input
-                  type="text"
-                  value={selectedExam.examName}
-                  onChange={(e) => setSelectedExam({...selectedExam, examName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
-                <select
-                  value={selectedExam.examType}
-                  onChange={(e) => setSelectedExam({...selectedExam, examType: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {examTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={selectedExam.status}
-                  onChange={(e) => setSelectedExam({...selectedExam, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input
-                  type="date"
-                  value={selectedExam.date}
-                  onChange={(e) => setSelectedExam({...selectedExam, date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                <input
-                  type="time"
-                  value={selectedExam.time}
-                  onChange={(e) => setSelectedExam({...selectedExam, time: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Venue</label>
-                <select
-                  value={selectedExam.venue}
-                  onChange={(e) => setSelectedExam({...selectedExam, venue: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {venues.map(venue => (
-                    <option key={venue} value={venue}>{venue}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Invigilator</label>
-                <input
-                  type="text"
-                  value={selectedExam.invigilator}
-                  onChange={(e) => setSelectedExam({...selectedExam, invigilator: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
-                <textarea
-                  value={selectedExam.instructions}
-                  onChange={(e) => setSelectedExam({...selectedExam, instructions: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows="2"
-                />
+            <div className="exam-modal-body">
+              <div className="exam-form-grid">
+                <div className="exam-form-group full-width">
+                  <label className="exam-form-label">Exam Name</label>
+                  <input
+                    type="text"
+                    value={selectedExam.examName}
+                    onChange={(e) => setSelectedExam({...selectedExam, examName: e.target.value})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Exam Type</label>
+                  <select
+                    value={selectedExam.examType}
+                    onChange={(e) => setSelectedExam({...selectedExam, examType: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    {examTypes.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Status</label>
+                  <select
+                    value={selectedExam.status}
+                    onChange={(e) => setSelectedExam({...selectedExam, status: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Date</label>
+                  <input
+                    type="date"
+                    value={selectedExam.date}
+                    onChange={(e) => setSelectedExam({...selectedExam, date: e.target.value})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Time</label>
+                  <input
+                    type="time"
+                    value={selectedExam.time}
+                    onChange={(e) => setSelectedExam({...selectedExam, time: e.target.value})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Venue</label>
+                  <select
+                    value={selectedExam.venue}
+                    onChange={(e) => setSelectedExam({...selectedExam, venue: e.target.value})}
+                    className="exam-form-select"
+                  >
+                    {venues.map(venue => (
+                      <option key={venue} value={venue}>{venue}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="exam-form-group">
+                  <label className="exam-form-label">Invigilator</label>
+                  <input
+                    type="text"
+                    value={selectedExam.invigilator}
+                    onChange={(e) => setSelectedExam({...selectedExam, invigilator: e.target.value})}
+                    className="exam-form-input"
+                  />
+                </div>
+                <div className="exam-form-group full-width">
+                  <label className="exam-form-label">Instructions</label>
+                  <textarea
+                    value={selectedExam.instructions}
+                    onChange={(e) => setSelectedExam({...selectedExam, instructions: e.target.value})}
+                    className="exam-form-textarea"
+                  />
+                </div>
               </div>
             </div>
             
-            <div className="flex space-x-3 mt-6">
+            <div className="exam-modal-footer">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="exam-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditExam}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="exam-modal-btn submit"
               >
                 Save Changes
               </button>

@@ -232,44 +232,44 @@ const StudentManagement = () => {
     }
   };
 
-  const getGradeColor = (grade) => {
+  const getGradeClass = (grade) => {
     switch (grade) {
-      case 'A+': return 'bg-green-100 text-green-800';
-      case 'A': return 'bg-green-100 text-green-700';
-      case 'A-': return 'bg-green-100 text-green-600';
-      case 'B+': return 'bg-blue-100 text-blue-800';
-      case 'B': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'A+': return 'student-grade-badge a-plus';
+      case 'A': return 'student-grade-badge a';
+      case 'A-': return 'student-grade-badge a-minus';
+      case 'B+': return 'student-grade-badge b-plus';
+      case 'B': return 'student-grade-badge b';
+      default: return 'student-grade-badge';
     }
   };
 
-  const getAttendanceColor = (attendance) => {
-    if (attendance >= 95) return 'text-green-600';
-    if (attendance >= 85) return 'text-blue-600';
-    if (attendance >= 75) return 'text-yellow-600';
-    return 'text-red-600';
+  const getAttendanceClass = (attendance) => {
+    if (attendance >= 95) return 'student-attendance excellent';
+    if (attendance >= 85) return 'student-attendance good';
+    if (attendance >= 75) return 'student-attendance average';
+    return 'student-attendance poor';
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="student-management">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Student Management</h1>
-            <p className="text-gray-600">Manage student records and academic information</p>
+      <div className="student-header">
+        <div className="student-header-content">
+          <div className="student-title-section">
+            <h1>Student Management</h1>
+            <p>Manage student records and academic information</p>
           </div>
-          <div className="flex space-x-3">
+          <div className="student-actions">
             <button
               onClick={() => setShowBulkModal(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="student-btn success"
             >
               <FontAwesomeIcon icon={faUpload} />
               <span>Bulk Add Students</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="student-btn primary"
             >
               <FontAwesomeIcon icon={faPlus} />
               <span>Add New Student</span>
@@ -279,23 +279,23 @@ const StudentManagement = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <div className="student-search-filters">
+        <div className="student-filters-container">
+          <div className="student-search-wrapper">
+            <FontAwesomeIcon icon={faSearch} className="student-search-icon" />
             <input
               type="text"
               placeholder="Search students..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="student-search-input"
             />
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="student-filter-controls">
             <select
               value={filterClass}
               onChange={(e) => setFilterClass(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="student-filter-select"
             >
               <option value="">All Classes</option>
               {classes.map(cls => (
@@ -305,7 +305,7 @@ const StudentManagement = () => {
             <select
               value={filterSection}
               onChange={(e) => setFilterSection(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="student-filter-select"
             >
               <option value="">All Sections</option>
               {sections.map(section => (
@@ -315,7 +315,7 @@ const StudentManagement = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="student-filter-select"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -327,79 +327,83 @@ const StudentManagement = () => {
       </div>
 
       {/* Students Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
+      <div className="students-table-container">
+        <div className="students-table-wrapper">
+          <table className="students-table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No.</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th>Student</th>
+                <th>Roll No.</th>
+                <th>Class</th>
+                <th>Performance</th>
+                <th>Attendance</th>
+                <th>Grade</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {filteredStudents.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                          {student.name.charAt(0)}
-                        </div>
+                <tr key={student.id}>
+                  <td>
+                    <div className="student-info">
+                      <div className="student-avatar">
+                        {student.name.charAt(0)}
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                        <div className="text-sm text-gray-500">{student.email}</div>
+                      <div className="student-details">
+                        <h4 className="student-name">{student.name}</h4>
+                        <p className="student-email">{student.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.rollNo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.class}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <FontAwesomeIcon icon={faChartLine} className="text-blue-400 mr-1" />
-                      <span className="text-sm text-gray-900">{student.performanceScore}%</span>
+                  <td>
+                    <span className="student-roll-no">{student.rollNo}</span>
+                  </td>
+                  <td>
+                    <span className="student-class">{student.class}</span>
+                  </td>
+                  <td>
+                    <div className="student-performance">
+                      <FontAwesomeIcon icon={faChartLine} className="student-performance-icon" />
+                      <span>{student.performanceScore}%</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm font-medium ${getAttendanceColor(student.attendance)}`}>
+                  <td>
+                    <span className={getAttendanceClass(student.attendance)}>
                       {student.attendance}%
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getGradeColor(student.overallGrade)}`}>
+                  <td>
+                    <span className={getGradeClass(student.overallGrade)}>
                       {student.overallGrade}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                  <td>
+                    <span className={`student-status-badge ${student.status}`}>
                       {student.status.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => handleViewStudent(student)}
-                      className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-100 rounded transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faEye} />
-                    </button>
-                    <button
-                      onClick={() => handleEditStudentModal(student)}
-                      className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-100 rounded transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteStudent(student.id)}
-                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-100 rounded transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                  <td className="student-actions-cell">
+                    <div className="student-action-buttons">
+                      <button
+                        onClick={() => handleViewStudent(student)}
+                        className="student-action-btn view"
+                      >
+                        <FontAwesomeIcon icon={faEye} />
+                      </button>
+                      <button
+                        onClick={() => handleEditStudentModal(student)}
+                        className="student-action-btn edit"
+                      >
+                        <FontAwesomeIcon icon={faEdit} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteStudent(student.id)}
+                        className="student-action-btn delete"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -410,47 +414,47 @@ const StudentManagement = () => {
 
       {/* Add Student Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add New Student</h2>
+        <div className="student-modal-overlay">
+          <div className="student-modal medium">
+            <div className="student-modal-header">
+              <h2 className="student-modal-title">Add New Student</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="student-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <div className="student-modal-body">
+              <div className="student-form-grid">
+                <div className="student-form-group">
+                  <label className="student-form-label">Full Name</label>
                   <input
                     type="text"
                     value={newStudent.name}
                     onChange={(e) => setNewStudent({...newStudent, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                     placeholder="Student name"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Roll Number</label>
                   <input
                     type="text"
                     value={newStudent.rollNo}
                     onChange={(e) => setNewStudent({...newStudent, rollNo: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                     placeholder="e.g., ST001"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+              <div className="student-form-grid three-cols">
+                <div className="student-form-group">
+                  <label className="student-form-label">Grade</label>
                   <select
                     value={newStudent.grade}
                     onChange={(e) => setNewStudent({...newStudent, grade: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-select"
                   >
                     <option value="">Select Grade</option>
                     {grades.map(grade => (
@@ -458,12 +462,12 @@ const StudentManagement = () => {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Section</label>
                   <select
                     value={newStudent.section}
                     onChange={(e) => setNewStudent({...newStudent, section: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-select"
                   >
                     <option value="">Select Section</option>
                     {sections.map(section => (
@@ -471,12 +475,12 @@ const StudentManagement = () => {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Class</label>
                   <select
                     value={newStudent.class}
                     onChange={(e) => setNewStudent({...newStudent, class: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-select"
                   >
                     <option value="">Select Class</option>
                     {classes.map(cls => (
@@ -485,89 +489,88 @@ const StudentManagement = () => {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <div className="student-form-grid">
+                <div className="student-form-group">
+                  <label className="student-form-label">Email</label>
                   <input
                     type="email"
                     value={newStudent.email}
                     onChange={(e) => setNewStudent({...newStudent, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                     placeholder="student@email.com"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Phone</label>
                   <input
                     type="tel"
                     value={newStudent.phone}
                     onChange={(e) => setNewStudent({...newStudent, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                     placeholder="+91 9876543210"
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+              <div className="student-form-group full-width">
+                <label className="student-form-label">Date of Birth</label>
                 <input
                   type="date"
                   value={newStudent.dateOfBirth}
                   onChange={(e) => setNewStudent({...newStudent, dateOfBirth: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="student-form-input"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <div className="student-form-group full-width">
+                <label className="student-form-label">Address</label>
                 <textarea
                   value={newStudent.address}
                   onChange={(e) => setNewStudent({...newStudent, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows="2"
+                  className="student-form-textarea"
                   placeholder="Student address"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Name</label>
+              <div className="student-form-grid">
+                <div className="student-form-group">
+                  <label className="student-form-label">Parent Name</label>
                   <input
                     type="text"
                     value={newStudent.parentName}
                     onChange={(e) => setNewStudent({...newStudent, parentName: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                     placeholder="Parent/Guardian name"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Phone</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Parent Phone</label>
                   <input
                     type="tel"
                     value={newStudent.parentPhone}
                     onChange={(e) => setNewStudent({...newStudent, parentPhone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                     placeholder="+91 9876543211"
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Admission Date</label>
+              <div className="student-form-group full-width">
+                <label className="student-form-label">Admission Date</label>
                 <input
                   type="date"
                   value={newStudent.admissionDate}
                   onChange={(e) => setNewStudent({...newStudent, admissionDate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="student-form-input"
                 />
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="student-modal-footer">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="student-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddStudent}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="student-modal-btn submit"
               >
                 Add Student
               </button>
@@ -578,42 +581,42 @@ const StudentManagement = () => {
 
       {/* Bulk Upload Modal */}
       {showBulkModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Bulk Add Students</h2>
+        <div className="student-modal-overlay">
+          <div className="student-modal medium">
+            <div className="student-modal-header">
+              <h2 className="student-modal-title">Bulk Add Students</h2>
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="student-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+            <div className="student-modal-body">
+              <div className="student-form-group full-width">
+                <label className="student-form-label">Upload CSV File</label>
                 <input
                   type="file"
                   accept=".csv"
                   onChange={(e) => setBulkFile(e.target.files[0])}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="student-form-input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="bulk-upload-description">
                   Upload a CSV file with columns: name, rollNo, class, section, grade, email, phone, dateOfBirth, address, parentName, parentPhone, admissionDate
                 </p>
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="student-modal-footer">
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="student-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBulkUpload}
                 disabled={!bulkFile}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="student-modal-btn submit"
               >
                 Upload
               </button>
@@ -624,126 +627,120 @@ const StudentManagement = () => {
 
       {/* View Student Modal */}
       {showViewModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Student Details</h2>
+        <div className="student-modal-overlay">
+          <div className="student-modal">
+            <div className="student-modal-header">
+              <h2 className="student-modal-title">Student Details</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="student-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            
-            <div className="flex items-center mb-6">
-              <div className="h-16 w-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl mr-4">
-                {selectedStudent.name.charAt(0)}
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900">{selectedStudent.name}</h3>
-                <p className="text-gray-600">{selectedStudent.rollNo} • {selectedStudent.class}</p>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getGradeColor(selectedStudent.overallGrade)} mt-1`}>
-                  Grade: {selectedStudent.overallGrade}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Personal Information */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faUserGraduate} className="mr-2 text-blue-600" />
-                  Personal Information
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm">
-                    <FontAwesomeIcon icon={faEnvelope} className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-gray-600">Email:</span>
-                    <span className="ml-2 text-gray-900">{selectedStudent.email}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FontAwesomeIcon icon={faPhone} className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-gray-600">Phone:</span>
-                    <span className="ml-2 text-gray-900">{selectedStudent.phone}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-gray-600">DOB:</span>
-                    <span className="ml-2 text-gray-900">{new Date(selectedStudent.dateOfBirth).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-start text-sm">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4 text-gray-400 mr-2 mt-0.5" />
-                    <div>
-                      <span className="text-gray-600">Address:</span>
-                      <p className="text-gray-900 mt-1">{selectedStudent.address}</p>
-                    </div>
+            <div className="student-modal-body">
+              <div className="student-profile-header">
+                <div className="student-profile-avatar">
+                  {selectedStudent.name.charAt(0)}
+                </div>
+                <div className="student-profile-info">
+                  <h3>{selectedStudent.name}</h3>
+                  <p className="student-profile-meta">{selectedStudent.rollNo} • {selectedStudent.class}</p>
+                  <div className="student-profile-badges">
+                    <span className={getGradeClass(selectedStudent.overallGrade)}>
+                      Grade: {selectedStudent.overallGrade}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Academic Information */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faGraduationCap} className="mr-2 text-green-600" />
-                  Academic Information
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Class:</span>
-                    <span className="font-medium text-gray-900">{selectedStudent.class}</span>
+              <div className="student-info-grid">
+                {/* Personal Information */}
+                <div className="student-info-section">
+                  <h4 className="student-section-title">
+                    <FontAwesomeIcon icon={faUserGraduate} className="student-section-icon blue" />
+                    Personal Information
+                  </h4>
+                  <div className="student-info-row">
+                    <FontAwesomeIcon icon={faEnvelope} className="student-info-icon" />
+                    <span className="student-info-label">Email:</span>
+                    <span className="student-info-value">{selectedStudent.email}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Performance:</span>
-                    <span className="font-medium text-blue-600">{selectedStudent.performanceScore}%</span>
+                  <div className="student-info-row">
+                    <FontAwesomeIcon icon={faPhone} className="student-info-icon" />
+                    <span className="student-info-label">Phone:</span>
+                    <span className="student-info-value">{selectedStudent.phone}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Attendance:</span>
-                    <span className={`font-medium ${getAttendanceColor(selectedStudent.attendance)}`}>
-                      {selectedStudent.attendance}%
-                    </span>
+                  <div className="student-info-row">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="student-info-icon" />
+                    <span className="student-info-label">DOB:</span>
+                    <span className="student-info-value">{new Date(selectedStudent.dateOfBirth).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Admission Date:</span>
-                    <span className="font-medium text-gray-900">{new Date(selectedStudent.admissionDate).toLocaleDateString()}</span>
+                  <div className="student-info-row">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="student-info-icon" />
+                    <span className="student-info-label">Address:</span>
+                    <span className="student-info-value">{selectedStudent.address}</span>
                   </div>
-                  <div className="mt-3">
-                    <span className="text-gray-600 text-sm">Subjects:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                </div>
+
+                {/* Academic Information */}
+                <div className="student-info-section">
+                  <h4 className="student-section-title">
+                    <FontAwesomeIcon icon={faGraduationCap} className="student-section-icon green" />
+                    Academic Information
+                  </h4>
+                  <div className="student-info-row">
+                    <span className="student-info-label">Class:</span>
+                    <span className="student-info-value">{selectedStudent.class}</span>
+                  </div>
+                  <div className="student-info-row">
+                    <span className="student-info-label">Performance:</span>
+                    <span className="student-info-value">{selectedStudent.performanceScore}%</span>
+                  </div>
+                  <div className="student-info-row">
+                    <span className="student-info-label">Attendance:</span>
+                    <span className="student-info-value">{selectedStudent.attendance}%</span>
+                  </div>
+                  <div className="student-info-row">
+                    <span className="student-info-label">Admission Date:</span>
+                    <span className="student-info-value">{new Date(selectedStudent.admissionDate).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span className="student-info-label">Subjects:</span>
+                    <div className="student-subjects-list">
                       {selectedStudent.subjects.map(subject => (
-                        <span key={subject} className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                        <span key={subject} className="student-subject-tag">
                           {subject}
                         </span>
                       ))}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Parent Information */}
-              <div className="bg-gray-50 rounded-lg p-4 md:col-span-2">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faUsers} className="mr-2 text-purple-600" />
-                  Parent/Guardian Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center text-sm">
-                    <span className="text-gray-600">Name:</span>
-                    <span className="ml-2 text-gray-900 font-medium">{selectedStudent.parentName}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FontAwesomeIcon icon={faPhone} className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-gray-600">Phone:</span>
-                    <span className="ml-2 text-gray-900">{selectedStudent.parentPhone}</span>
+                {/* Parent Information */}
+                <div className="student-info-section full-width">
+                  <h4 className="student-section-title">
+                    <FontAwesomeIcon icon={faUsers} className="student-section-icon purple" />
+                    Parent/Guardian Information
+                  </h4>
+                  <div className="student-form-grid">
+                    <div className="student-info-row">
+                      <span className="student-info-label">Name:</span>
+                      <span className="student-info-value">{selectedStudent.parentName}</span>
+                    </div>
+                    <div className="student-info-row">
+                      <FontAwesomeIcon icon={faPhone} className="student-info-icon" />
+                      <span className="student-info-label">Phone:</span>
+                      <span className="student-info-value">{selectedStudent.parentPhone}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="mt-6">
+            <div className="student-modal-footer">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="student-modal-btn cancel"
               >
                 Close
               </button>
@@ -754,69 +751,69 @@ const StudentManagement = () => {
 
       {/* Edit Student Modal */}
       {showEditModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Edit Student</h2>
+        <div className="student-modal-overlay">
+          <div className="student-modal medium">
+            <div className="student-modal-header">
+              <h2 className="student-modal-title">Edit Student</h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="student-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <div className="student-modal-body">
+              <div className="student-form-grid">
+                <div className="student-form-group">
+                  <label className="student-form-label">Full Name</label>
                   <input
                     type="text"
                     value={selectedStudent.name}
                     onChange={(e) => setSelectedStudent({...selectedStudent, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Roll Number</label>
                   <input
                     type="text"
                     value={selectedStudent.rollNo}
                     onChange={(e) => setSelectedStudent({...selectedStudent, rollNo: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+              <div className="student-form-grid three-cols">
+                <div className="student-form-group">
+                  <label className="student-form-label">Grade</label>
                   <select
                     value={selectedStudent.grade}
                     onChange={(e) => setSelectedStudent({...selectedStudent, grade: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-select"
                   >
                     {grades.map(grade => (
                       <option key={grade} value={grade}>{grade}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Section</label>
                   <select
                     value={selectedStudent.section}
                     onChange={(e) => setSelectedStudent({...selectedStudent, section: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-select"
                   >
                     {sections.map(section => (
                       <option key={section} value={section}>{section}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Class</label>
                   <select
                     value={selectedStudent.class}
                     onChange={(e) => setSelectedStudent({...selectedStudent, class: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-select"
                   >
                     {classes.map(cls => (
                       <option key={cls} value={cls}>{cls}</option>
@@ -824,66 +821,65 @@ const StudentManagement = () => {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <div className="student-form-grid">
+                <div className="student-form-group">
+                  <label className="student-form-label">Email</label>
                   <input
                     type="email"
                     value={selectedStudent.email}
                     onChange={(e) => setSelectedStudent({...selectedStudent, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Phone</label>
                   <input
                     type="tel"
                     value={selectedStudent.phone}
                     onChange={(e) => setSelectedStudent({...selectedStudent, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <div className="student-form-group full-width">
+                <label className="student-form-label">Address</label>
                 <textarea
                   value={selectedStudent.address}
                   onChange={(e) => setSelectedStudent({...selectedStudent, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows="2"
+                  className="student-form-textarea"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Name</label>
+              <div className="student-form-grid">
+                <div className="student-form-group">
+                  <label className="student-form-label">Parent Name</label>
                   <input
                     type="text"
                     value={selectedStudent.parentName}
                     onChange={(e) => setSelectedStudent({...selectedStudent, parentName: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Phone</label>
+                <div className="student-form-group">
+                  <label className="student-form-label">Parent Phone</label>
                   <input
                     type="tel"
                     value={selectedStudent.parentPhone}
                     onChange={(e) => setSelectedStudent({...selectedStudent, parentPhone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="student-form-input"
                   />
                 </div>
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="student-modal-footer">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="student-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditStudent}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="student-modal-btn submit"
               >
                 Save Changes
               </button>

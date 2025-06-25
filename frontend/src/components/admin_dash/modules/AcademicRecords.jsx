@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import '../styles/AcademicRecords.css';
+import '../styles/AcademicRecords.css'; 
 
 import {
   faClipboardList,
@@ -236,22 +236,23 @@ const AcademicRecords = () => {
     return 'C';
   };
 
-  const getGradeColor = (grade) => {
-    switch (grade) {
-      case 'A+': return 'bg-green-100 text-green-800';
-      case 'A': return 'bg-green-100 text-green-700';
-      case 'A-': return 'bg-green-100 text-green-600';
-      case 'B+': return 'bg-blue-100 text-blue-800';
-      case 'B': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getGradeClass = (grade) => {
+    const gradeKey = grade.toLowerCase().replace('+', '-plus').replace('-', '-minus');
+    return `academic-grade-badge ${gradeKey}`;
   };
 
-  const getRankColor = (rank) => {
-    if (rank === 1) return 'text-yellow-600';
-    if (rank <= 3) return 'text-gray-500';
-    if (rank <= 10) return 'text-blue-600';
-    return 'text-gray-400';
+  const getRankClass = (rank) => {
+    if (rank === 1) return 'academic-rank gold';
+    if (rank <= 3) return 'academic-rank silver';
+    if (rank <= 10) return 'academic-rank bronze';
+    return 'academic-rank default';
+  };
+
+  const getAttendanceClass = (attendance) => {
+    if (attendance >= 95) return 'academic-attendance excellent';
+    if (attendance >= 85) return 'academic-attendance good';
+    if (attendance >= 75) return 'academic-attendance average';
+    return 'academic-attendance poor';
   };
 
   const updateSubjectScore = (subject, test, value, isNewRecord = true) => {
@@ -278,25 +279,25 @@ const AcademicRecords = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="academic-records">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Academic Records</h1>
-            <p className="text-gray-600">Track student performance and academic progress</p>
+      <div className="academic-header">
+        <div className="academic-header-content">
+          <div className="academic-title-section">
+            <h1>Academic Records</h1>
+            <p>Track student performance and academic progress</p>
           </div>
-          <div className="flex space-x-3">
+          <div className="academic-actions">
             <button
               onClick={() => setShowBulkModal(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="academic-btn success"
             >
               <FontAwesomeIcon icon={faUpload} />
               <span>Bulk Add Records</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="academic-btn primary"
             >
               <FontAwesomeIcon icon={faPlus} />
               <span>Add New Record</span>
@@ -306,23 +307,23 @@ const AcademicRecords = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <div className="academic-search-filters">
+        <div className="academic-filters-container">
+          <div className="academic-search-wrapper">
+            <FontAwesomeIcon icon={faSearch} className="academic-search-icon" />
             <input
               type="text"
               placeholder="Search students..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="academic-search-input"
             />
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="academic-filter-controls">
             <select
               value={filterClass}
               onChange={(e) => setFilterClass(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="academic-filter-select"
             >
               <option value="">All Classes</option>
               {classes.map(cls => (
@@ -332,7 +333,7 @@ const AcademicRecords = () => {
             <select
               value={filterSection}
               onChange={(e) => setFilterSection(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="academic-filter-select"
             >
               <option value="">All Sections</option>
               {sections.map(section => (
@@ -342,7 +343,7 @@ const AcademicRecords = () => {
             <select
               value={filterSubject}
               onChange={(e) => setFilterSubject(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="academic-filter-select"
             >
               <option value="">All Subjects</option>
               {allSubjects.map(subject => (
@@ -354,81 +355,83 @@ const AcademicRecords = () => {
       </div>
 
       {/* Academic Records Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
+      <div className="academic-table-container">
+        <div className="academic-table-wrapper">
+          <table className="academic-table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Overall Grade</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GPA</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Overall Grade</th>
+                <th>GPA</th>
+                <th>Rank</th>
+                <th>Attendance</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {filteredRecords.map((record) => (
-                <tr key={record.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">
-                          {record.studentName.charAt(0)}
-                        </div>
+                <tr key={record.id}>
+                  <td>
+                    <div className="student-info">
+                      <div className="student-avatar">
+                        {record.studentName.charAt(0)}
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{record.studentName}</div>
-                        <div className="text-sm text-gray-500">{record.rollNo}</div>
+                      <div className="student-details">
+                        <div className="student-name">{record.studentName}</div>
+                        <div className="student-roll-number">{record.rollNo}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.class}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getGradeColor(record.overallGrade)}`}>
+                  <td>
+                    <span className="academic-class">{record.class}</span>
+                  </td>
+                  <td>
+                    <span className={getGradeClass(record.overallGrade)}>
                       {record.overallGrade}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <FontAwesomeIcon icon={faChartLine} className="text-blue-400 mr-1" />
-                      <span className="text-sm font-medium text-gray-900">{record.gpa}</span>
+                  <td>
+                    <div className="academic-gpa">
+                      <FontAwesomeIcon icon={faChartLine} className="academic-gpa-icon" />
+                      <span>{record.gpa}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
+                  <td>
+                    <div className={getRankClass(record.rank)}>
                       <FontAwesomeIcon 
                         icon={record.rank === 1 ? faTrophy : faAward} 
-                        className={`mr-2 ${getRankColor(record.rank)}`} 
+                        className="academic-rank-icon" 
                       />
-                      <span className={`text-sm font-medium ${getRankColor(record.rank)}`}>
-                        #{record.rank}
-                      </span>
+                      <span>#{record.rank}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-green-600">{record.attendance}%</span>
+                  <td>
+                    <span className={getAttendanceClass(record.attendance)}>
+                      {record.attendance}%
+                    </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => handleViewRecord(record)}
-                      className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-100 rounded transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faEye} />
-                    </button>
-                    <button
-                      onClick={() => handleEditRecordModal(record)}
-                      className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-100 rounded transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteRecord(record.id)}
-                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-100 rounded transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                  <td className="academic-actions-cell">
+                    <div className="academic-action-buttons">
+                      <button
+                        onClick={() => handleViewRecord(record)}
+                        className="academic-action-btn view"
+                      >
+                        <FontAwesomeIcon icon={faEye} />
+                      </button>
+                      <button
+                        onClick={() => handleEditRecordModal(record)}
+                        className="academic-action-btn edit"
+                      >
+                        <FontAwesomeIcon icon={faEdit} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRecord(record.id)}
+                        className="academic-action-btn delete"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -439,131 +442,133 @@ const AcademicRecords = () => {
 
       {/* Add Record Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add Academic Record</h2>
+        <div className="academic-modal-overlay">
+          <div className="academic-modal">
+            <div className="academic-modal-header">
+              <h2 className="academic-modal-title">Add Academic Record</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="academic-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
-                <input
-                  type="text"
-                  value={newRecord.studentName}
-                  onChange={(e) => setNewRecord({...newRecord, studentName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Student name"
-                />
+            <div className="academic-modal-body">
+              <div className="academic-form-grid">
+                <div className="academic-form-group">
+                  <label className="academic-form-label">Student Name</label>
+                  <input
+                    type="text"
+                    value={newRecord.studentName}
+                    onChange={(e) => setNewRecord({...newRecord, studentName: e.target.value})}
+                    className="academic-form-input"
+                    placeholder="Student name"
+                  />
+                </div>
+                <div className="academic-form-group">
+                  <label className="academic-form-label">Roll Number</label>
+                  <input
+                    type="text"
+                    value={newRecord.rollNo}
+                    onChange={(e) => setNewRecord({...newRecord, rollNo: e.target.value})}
+                    className="academic-form-input"
+                    placeholder="e.g., ST001"
+                  />
+                </div>
+                <div className="academic-form-group">
+                  <label className="academic-form-label">Class</label>
+                  <select
+                    value={newRecord.class}
+                    onChange={(e) => setNewRecord({...newRecord, class: e.target.value})}
+                    className="academic-form-select"
+                  >
+                    <option value="">Select Class</option>
+                    {classes.map(cls => (
+                      <option key={cls} value={cls}>{cls}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
-                <input
-                  type="text"
-                  value={newRecord.rollNo}
-                  onChange={(e) => setNewRecord({...newRecord, rollNo: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., ST001"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                <select
-                  value={newRecord.class}
-                  onChange={(e) => setNewRecord({...newRecord, class: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Class</option>
-                  {classes.map(cls => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Subject Scores</h3>
-              <div className="space-y-4">
-                {['mathematics', 'science', 'english', 'hindi', 'socialStudies'].map(subject => (
-                  <div key={subject} className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-3">{subjectNames[subject]}</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Unit Test 1</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={newRecord.subjects[subject]?.unitTest1 || ''}
-                          onChange={(e) => updateSubjectScore(subject, 'unitTest1', e.target.value, true)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0-100"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Unit Test 2</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={newRecord.subjects[subject]?.unitTest2 || ''}
-                          onChange={(e) => updateSubjectScore(subject, 'unitTest2', e.target.value, true)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0-100"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Half Yearly</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={newRecord.subjects[subject]?.halfYearly || ''}
-                          onChange={(e) => updateSubjectScore(subject, 'halfYearly', e.target.value, true)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0-100"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Final</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={newRecord.subjects[subject]?.final || ''}
-                          onChange={(e) => updateSubjectScore(subject, 'final', e.target.value, true)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0-100"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Overall</label>
-                        <div className="w-full px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-gray-600">
-                          {newRecord.subjects[subject]?.overall?.toFixed(1) || '0.0'}%
+              <div className="subjects-section">
+                <h3>Subject Scores</h3>
+                <div className="subjects-list">
+                  {['mathematics', 'science', 'english', 'hindi', 'socialStudies'].map(subject => (
+                    <div key={subject} className="subject-card">
+                      <h4 className="subject-header">{subjectNames[subject]}</h4>
+                      <div className="subject-scores-grid">
+                        <div className="score-input-group">
+                          <label className="score-label">Unit Test 1</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newRecord.subjects[subject]?.unitTest1 || ''}
+                            onChange={(e) => updateSubjectScore(subject, 'unitTest1', e.target.value, true)}
+                            className="score-input"
+                            placeholder="0-100"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Unit Test 2</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newRecord.subjects[subject]?.unitTest2 || ''}
+                            onChange={(e) => updateSubjectScore(subject, 'unitTest2', e.target.value, true)}
+                            className="score-input"
+                            placeholder="0-100"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Half Yearly</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newRecord.subjects[subject]?.halfYearly || ''}
+                            onChange={(e) => updateSubjectScore(subject, 'halfYearly', e.target.value, true)}
+                            className="score-input"
+                            placeholder="0-100"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Final</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newRecord.subjects[subject]?.final || ''}
+                            onChange={(e) => updateSubjectScore(subject, 'final', e.target.value, true)}
+                            className="score-input"
+                            placeholder="0-100"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Overall</label>
+                          <div className="score-display">
+                            {newRecord.subjects[subject]?.overall?.toFixed(1) || '0.0'}%
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="flex space-x-3 mt-6">
+            <div className="academic-modal-footer">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="academic-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddRecord}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="academic-modal-btn submit"
               >
                 Add Record
               </button>
@@ -574,42 +579,43 @@ const AcademicRecords = () => {
 
       {/* Bulk Upload Modal */}
       {showBulkModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Bulk Add Records</h2>
+        <div className="academic-modal-overlay">
+          <div className="academic-modal medium">
+            <div className="academic-modal-header">
+              <h2 className="academic-modal-title">Bulk Add Records</h2>
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="academic-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+            <div className="academic-modal-body">
+              <div className="academic-form-group">
+                <label className="academic-form-label">Upload CSV File</label>
                 <input
                   type="file"
                   accept=".csv"
                   onChange={(e) => setBulkFile(e.target.files[0])}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="academic-form-input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="bulk-upload-description">
                   Upload a CSV file with student academic records including all subject scores
                 </p>
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="academic-modal-footer">
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="academic-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBulkUpload}
                 disabled={!bulkFile}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="academic-modal-btn submit"
+                style={{opacity: bulkFile ? 1 : 0.5}}
               >
                 Upload
               </button>
@@ -620,135 +626,134 @@ const AcademicRecords = () => {
 
       {/* View Record Modal */}
       {showViewModal && selectedRecord && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Academic Details</h2>
+        <div className="academic-modal-overlay">
+          <div className="academic-modal">
+            <div className="academic-modal-header">
+              <h2 className="academic-modal-title">Academic Details</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="academic-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="flex items-center mb-6">
-              <div className="h-16 w-16 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-xl mr-4">
-                {selectedRecord.studentName.charAt(0)}
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900">{selectedRecord.studentName}</h3>
-                <p className="text-gray-600">{selectedRecord.rollNo} • {selectedRecord.class}</p>
-                <div className="flex space-x-2 mt-1">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getGradeColor(selectedRecord.overallGrade)}`}>
-                    Grade: {selectedRecord.overallGrade}
-                  </span>
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                    GPA: {selectedRecord.gpa}
-                  </span>
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    Rank: #{selectedRecord.rank}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Overall Performance */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faChartLine} className="mr-2 text-blue-600" />
-                  Overall Performance
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Overall Grade:</span>
-                    <span className={`font-medium px-2 py-1 rounded text-xs ${getGradeColor(selectedRecord.overallGrade).replace('bg-', 'bg-').replace('text-', 'text-')}`}>
-                      {selectedRecord.overallGrade}
-                    </span>
+            <div className="academic-modal-body">
+              <div className="academic-profile-header">
+                <div className="academic-profile-content">
+                  <div className="academic-profile-avatar">
+                    {selectedRecord.studentName.charAt(0)}
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">GPA:</span>
-                    <span className="font-medium text-blue-600">{selectedRecord.gpa}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Class Rank:</span>
-                    <span className={`font-medium ${getRankColor(selectedRecord.rank)}`}>#{selectedRecord.rank}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Attendance:</span>
-                    <span className="font-medium text-green-600">{selectedRecord.attendance}%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Academic Year */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faCalendarAlt} className="mr-2 text-green-600" />
-                  Academic Information
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Academic Year:</span>
-                    <span className="font-medium text-gray-900">{selectedRecord.academicYear}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Class:</span>
-                    <span className="font-medium text-gray-900">{selectedRecord.class}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Section:</span>
-                    <span className="font-medium text-gray-900">{selectedRecord.section}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Grade:</span>
-                    <span className="font-medium text-gray-900">{selectedRecord.grade}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Subject-wise Performance */}
-            <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <FontAwesomeIcon icon={faGraduationCap} className="mr-2 text-purple-600" />
-                Subject-wise Performance
-              </h4>
-              <div className="space-y-4">
-                {Object.entries(selectedRecord.subjects).map(([subject, scores]) => (
-                  <div key={subject} className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h5 className="font-medium text-gray-900">{subjectNames[subject]}</h5>
-                      <span className="text-lg font-bold text-blue-600">{scores.overall}%</span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">Unit Test 1</p>
-                        <p className="text-sm font-medium">{scores.unitTest1}%</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">Unit Test 2</p>
-                        <p className="text-sm font-medium">{scores.unitTest2}%</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">Half Yearly</p>
-                        <p className="text-sm font-medium">{scores.halfYearly}%</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">Final</p>
-                        <p className="text-sm font-medium">{scores.final}%</p>
-                      </div>
+                  <div className="academic-profile-info">
+                    <h3>{selectedRecord.studentName}</h3>
+                    <p className="academic-profile-meta">{selectedRecord.rollNo} • {selectedRecord.class}</p>
+                    <div className="academic-profile-badges">
+                      <span className="academic-profile-badge">
+                        Grade: {selectedRecord.overallGrade}
+                      </span>
+                      <span className="academic-profile-badge">
+                        GPA: {selectedRecord.gpa}
+                      </span>
+                      <span className="academic-profile-badge">
+                        Rank: #{selectedRecord.rank}
+                      </span>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+
+              <div className="academic-info-grid">
+                {/* Overall Performance */}
+                <div className="academic-info-section">
+                  <h4 className="academic-section-title">
+                    <FontAwesomeIcon icon={faChartLine} className="academic-section-icon blue" />
+                    Overall Performance
+                  </h4>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">Overall Grade:</span>
+                    <span className="academic-info-value blue">{selectedRecord.overallGrade}</span>
+                  </div>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">GPA:</span>
+                    <span className="academic-info-value blue">{selectedRecord.gpa}</span>
+                  </div>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">Class Rank:</span>
+                    <span className="academic-info-value yellow">#{selectedRecord.rank}</span>
+                  </div>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">Attendance:</span>
+                    <span className="academic-info-value green">{selectedRecord.attendance}%</span>
+                  </div>
+                </div>
+
+                {/* Academic Year */}
+                <div className="academic-info-section">
+                  <h4 className="academic-section-title">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="academic-section-icon green" />
+                    Academic Information
+                  </h4>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">Academic Year:</span>
+                    <span className="academic-info-value">{selectedRecord.academicYear}</span>
+                  </div>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">Class:</span>
+                    <span className="academic-info-value">{selectedRecord.class}</span>
+                  </div>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">Section:</span>
+                    <span className="academic-info-value">{selectedRecord.section}</span>
+                  </div>
+                  <div className="academic-info-row">
+                    <span className="academic-info-label">Grade:</span>
+                    <span className="academic-info-value">{selectedRecord.grade}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Subject-wise Performance */}
+              <div className="subject-performance-section">
+                <h4>
+                  <FontAwesomeIcon icon={faGraduationCap} className="academic-section-icon purple" />
+                  Subject-wise Performance
+                </h4>
+                <div className="subject-performance-list">
+                  {Object.entries(selectedRecord.subjects).map(([subject, scores]) => (
+                    <div key={subject} className="subject-performance-card">
+                      <div className="subject-performance-header">
+                        <h5 className="subject-name">{subjectNames[subject]}</h5>
+                        <span className="subject-overall-score">{scores.overall}%</span>
+                      </div>
+                      <div className="subject-scores-breakdown">
+                        <div className="score-breakdown-item">
+                          <p className="score-breakdown-label">Unit Test 1</p>
+                          <p className="score-breakdown-value">{scores.unitTest1}%</p>
+                        </div>
+                        <div className="score-breakdown-item">
+                          <p className="score-breakdown-label">Unit Test 2</p>
+                          <p className="score-breakdown-value">{scores.unitTest2}%</p>
+                        </div>
+                        <div className="score-breakdown-item">
+                          <p className="score-breakdown-label">Half Yearly</p>
+                          <p className="score-breakdown-value">{scores.halfYearly}%</p>
+                        </div>
+                        <div className="score-breakdown-item">
+                          <p className="score-breakdown-label">Final</p>
+                          <p className="score-breakdown-value">{scores.final}%</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="academic-modal-footer">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="academic-modal-btn cancel"
+                style={{flex: 'none', width: '100%'}}
               >
                 Close
               </button>
@@ -757,126 +762,128 @@ const AcademicRecords = () => {
         </div>
       )}
 
-      {/* Edit Record Modal would be similar to Add Modal but with pre-filled data */}
+      {/* Edit Record Modal */}
       {showEditModal && selectedRecord && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Edit Academic Record</h2>
+        <div className="academic-modal-overlay">
+          <div className="academic-modal">
+            <div className="academic-modal-header">
+              <h2 className="academic-modal-title">Edit Academic Record</h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="academic-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
-                <input
-                  type="text"
-                  value={selectedRecord.studentName}
-                  onChange={(e) => setSelectedRecord({...selectedRecord, studentName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            <div className="academic-modal-body">
+              <div className="academic-form-grid">
+                <div className="academic-form-group">
+                  <label className="academic-form-label">Student Name</label>
+                  <input
+                    type="text"
+                    value={selectedRecord.studentName}
+                    onChange={(e) => setSelectedRecord({...selectedRecord, studentName: e.target.value})}
+                    className="academic-form-input"
+                  />
+                </div>
+                <div className="academic-form-group">
+                  <label className="academic-form-label">Roll Number</label>
+                  <input
+                    type="text"
+                    value={selectedRecord.rollNo}
+                    onChange={(e) => setSelectedRecord({...selectedRecord, rollNo: e.target.value})}
+                    className="academic-form-input"
+                  />
+                </div>
+                <div className="academic-form-group">
+                  <label className="academic-form-label">Class</label>
+                  <select
+                    value={selectedRecord.class}
+                    onChange={(e) => setSelectedRecord({...selectedRecord, class: e.target.value})}
+                    className="academic-form-select"
+                  >
+                    {classes.map(cls => (
+                      <option key={cls} value={cls}>{cls}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
-                <input
-                  type="text"
-                  value={selectedRecord.rollNo}
-                  onChange={(e) => setSelectedRecord({...selectedRecord, rollNo: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                <select
-                  value={selectedRecord.class}
-                  onChange={(e) => setSelectedRecord({...selectedRecord, class: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {classes.map(cls => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Subject Scores</h3>
-              <div className="space-y-4">
-                {Object.entries(selectedRecord.subjects).map(([subject, scores]) => (
-                  <div key={subject} className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-3">{subjectNames[subject]}</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Unit Test 1</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={scores.unitTest1}
-                          onChange={(e) => updateSubjectScore(subject, 'unitTest1', e.target.value, false)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Unit Test 2</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={scores.unitTest2}
-                          onChange={(e) => updateSubjectScore(subject, 'unitTest2', e.target.value, false)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Half Yearly</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={scores.halfYearly}
-                          onChange={(e) => updateSubjectScore(subject, 'halfYearly', e.target.value, false)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Final</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={scores.final}
-                          onChange={(e) => updateSubjectScore(subject, 'final', e.target.value, false)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Overall</label>
-                        <div className="w-full px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-gray-600">
-                          {scores.overall}%
+              <div className="subjects-section">
+                <h3>Subject Scores</h3>
+                <div className="subjects-list">
+                  {Object.entries(selectedRecord.subjects).map(([subject, scores]) => (
+                    <div key={subject} className="subject-card">
+                      <h4 className="subject-header">{subjectNames[subject]}</h4>
+                      <div className="subject-scores-grid">
+                        <div className="score-input-group">
+                          <label className="score-label">Unit Test 1</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={scores.unitTest1}
+                            onChange={(e) => updateSubjectScore(subject, 'unitTest1', e.target.value, false)}
+                            className="score-input"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Unit Test 2</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={scores.unitTest2}
+                            onChange={(e) => updateSubjectScore(subject, 'unitTest2', e.target.value, false)}
+                            className="score-input"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Half Yearly</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={scores.halfYearly}
+                            onChange={(e) => updateSubjectScore(subject, 'halfYearly', e.target.value, false)}
+                            className="score-input"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Final</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={scores.final}
+                            onChange={(e) => updateSubjectScore(subject, 'final', e.target.value, false)}
+                            className="score-input"
+                          />
+                        </div>
+                        <div className="score-input-group">
+                          <label className="score-label">Overall</label>
+                          <div className="score-display">
+                            {scores.overall}%
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="flex space-x-3 mt-6">
+            <div className="academic-modal-footer">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="academic-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditRecord}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="academic-modal-btn submit"
               >
                 Save Changes
               </button>

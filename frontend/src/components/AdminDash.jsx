@@ -17,11 +17,14 @@ import {
 import Overview from './admin_dash/modules/Overview';
 import ClassManagement from './admin_dash/modules/ClassManagement';
 import Examinations from './admin_dash/modules/Examinations';
-import Reports from './admin_dash/modules/ReportsAnalytics';
+import ReportsAnalytics from './admin_dash/modules/ReportsAnalytics';
 import Settings from './admin_dash/modules/Settings';
 import StudentManagement from './admin_dash/modules/StudentManagement';
 import TeacherManagement from './admin_dash/modules/TeacherManagement';
 import AcademicRecords from './admin_dash/modules/AcademicRecords';
+
+import './admin_dash/styles/AdminDash.css';
+
 
 const AdminDash = () => {
   const [activeTab, setActiveTab] = useState('overview');

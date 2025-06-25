@@ -176,7 +176,7 @@ const TeacherManagement = () => {
         status: 'active',
         performance: 85.0,
         classesAssigned: newTeacher.classes.length,
-        studentsUnder: newTeacher.classes.length * 30 // Approximate calculation
+        studentsUnder: newTeacher.classes.length * 30
       }]);
       setNewTeacher({
         name: '',
@@ -236,28 +236,19 @@ const TeacherManagement = () => {
     }
   };
 
-  const getPerformanceColor = (performance) => {
-    if (performance >= 95) return 'text-green-600';
-    if (performance >= 90) return 'text-blue-600';
-    if (performance >= 85) return 'text-yellow-600';
-    return 'text-red-600';
+  const getPerformanceClass = (performance) => {
+    if (performance >= 95) return 'teacher-stat-value green';
+    if (performance >= 90) return 'teacher-stat-value blue';
+    if (performance >= 85) return 'teacher-stat-value yellow';
+    return 'teacher-stat-value red';
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'on-leave': return 'bg-yellow-100 text-yellow-800';
-      case 'inactive': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusClass = (status) => {
+    return `teacher-status-badge ${status}`;
   };
 
-  const getLevelColor = (level) => {
-    switch (level) {
-      case 'Senior': return 'bg-purple-100 text-purple-800';
-      case 'Experienced': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getLevelClass = (level) => {
+    return `teacher-level-badge ${level.toLowerCase()}`;
   };
 
   const handleSubjectToggle = (subject, isNewTeacher = true) => {
@@ -289,25 +280,25 @@ const TeacherManagement = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="teacher-management">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Teacher Management</h1>
-            <p className="text-gray-600">Manage teacher assignments and performance</p>
+      <div className="teacher-header">
+        <div className="teacher-header-content">
+          <div className="teacher-title-section">
+            <h1>Teacher Management</h1>
+            <p>Manage teacher assignments and performance</p>
           </div>
-          <div className="flex space-x-3">
+          <div className="teacher-actions">
             <button
               onClick={() => setShowBulkModal(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="teacher-btn success"
             >
               <FontAwesomeIcon icon={faUpload} />
               <span>Bulk Add Teachers</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="teacher-btn primary"
             >
               <FontAwesomeIcon icon={faPlus} />
               <span>Add New Teacher</span>
@@ -317,23 +308,23 @@ const TeacherManagement = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <div className="teacher-search-filters">
+        <div className="teacher-filters-container">
+          <div className="teacher-search-wrapper">
+            <FontAwesomeIcon icon={faSearch} className="teacher-search-icon" />
             <input
               type="text"
               placeholder="Search teachers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="teacher-search-input"
             />
           </div>
-          <div className="flex space-x-3">
+          <div className="teacher-filter-controls">
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="teacher-filter-select"
             >
               <option value="">All Departments</option>
               {departments.map(dept => (
@@ -343,7 +334,7 @@ const TeacherManagement = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="teacher-filter-select"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -355,83 +346,81 @@ const TeacherManagement = () => {
       </div>
 
       {/* Teachers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="teachers-grid">
         {filteredTeachers.map(teacher => (
-          <div key={teacher.id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mr-3">
+          <div key={teacher.id} className="teacher-card">
+            <div className="teacher-card-content">
+              <div className="teacher-card-header">
+                <div className="teacher-info-section">
+                  <div className="teacher-avatar">
                     {teacher.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{teacher.name}</h3>
-                    <p className="text-sm text-gray-600">{teacher.employeeId}</p>
-                    <p className="text-sm text-blue-600">{teacher.department}</p>
+                  <div className="teacher-basic-info">
+                    <h3>{teacher.name}</h3>
+                    <p className="teacher-employee-id">{teacher.employeeId}</p>
+                    <p className="teacher-department">{teacher.department}</p>
                   </div>
                 </div>
-                <div className="flex space-x-1">
+                <div className="teacher-card-actions">
                   <button
                     onClick={() => handleEditTeacherModal(teacher)}
-                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                    className="teacher-action-btn edit"
                   >
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
                   <button
                     onClick={() => handleDeleteTeacher(teacher.id)}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                    className="teacher-action-btn delete"
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Students</span>
-                  <span className="font-semibold text-blue-600">{teacher.studentsUnder}</span>
+              <div className="teacher-stats">
+                <div className="teacher-stat-item">
+                  <span className="teacher-stat-label">Students</span>
+                  <span className="teacher-stat-value blue">{teacher.studentsUnder}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Subjects</span>
-                  <span className="font-semibold text-gray-900">{teacher.subjects.length}</span>
+                <div className="teacher-stat-item">
+                  <span className="teacher-stat-label">Subjects</span>
+                  <span className="teacher-stat-value">{teacher.subjects.length}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Experience</span>
-                  <span className="font-semibold text-gray-900">{teacher.experience}y</span>
+                <div className="teacher-stat-item">
+                  <span className="teacher-stat-label">Experience</span>
+                  <span className="teacher-stat-value">{teacher.experience}y</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Performance</span>
-                  <span className={`font-semibold ${getPerformanceColor(teacher.performance)}`}>
+                <div className="teacher-stat-item">
+                  <span className="teacher-stat-label">Performance</span>
+                  <span className={getPerformanceClass(teacher.performance)}>
                     {teacher.performance}%
                   </span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center mb-4">
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getLevelColor(teacher.level)}`}>
+              <div className="teacher-badges">
+                <span className={getLevelClass(teacher.level)}>
                   {teacher.level}
                 </span>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(teacher.status)}`}>
+                <span className={getStatusClass(teacher.status)}>
                   {teacher.status.replace('-', ' ').toUpperCase()}
                 </span>
               </div>
 
-              <div className="space-y-2">
-                <div className="text-xs text-gray-500">
-                  <FontAwesomeIcon icon={faBook} className="mr-1" />
-                  {teacher.subjects.slice(0, 2).join(', ')}
-                  {teacher.subjects.length > 2 && ` +${teacher.subjects.length - 2} more`}
-                </div>
-                <div className="text-xs text-gray-500">
-                  <FontAwesomeIcon icon={faUsers} className="mr-1" />
-                  Classes: {teacher.classes.slice(0, 3).join(', ')}
-                  {teacher.classes.length > 3 && ` +${teacher.classes.length - 3}`}
-                </div>
+              <div className="teacher-subjects-info">
+                <FontAwesomeIcon icon={faBook} className="teacher-subjects-icon" />
+                {teacher.subjects.slice(0, 2).join(', ')}
+                {teacher.subjects.length > 2 && ` +${teacher.subjects.length - 2} more`}
+              </div>
+              <div className="teacher-classes-info">
+                <FontAwesomeIcon icon={faUsers} className="teacher-classes-icon" />
+                Classes: {teacher.classes.slice(0, 3).join(', ')}
+                {teacher.classes.length > 3 && ` +${teacher.classes.length - 3}`}
               </div>
 
               <button
                 onClick={() => handleViewTeacher(teacher)}
-                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+                className="teacher-view-btn"
               >
                 <FontAwesomeIcon icon={faEye} />
                 <span>View Details</span>
@@ -443,175 +432,176 @@ const TeacherManagement = () => {
 
       {/* Add Teacher Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add New Teacher</h2>
+        <div className="teacher-modal-overlay">
+          <div className="teacher-modal">
+            <div className="teacher-modal-header">
+              <h2 className="teacher-modal-title">Add New Teacher</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="teacher-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={newTeacher.name}
-                  onChange={(e) => setNewTeacher({...newTeacher, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Teacher name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
-                <input
-                  type="text"
-                  value={newTeacher.employeeId}
-                  onChange={(e) => setNewTeacher({...newTeacher, employeeId: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., T001"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={newTeacher.email}
-                  onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="teacher@school.edu"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input
-                  type="tel"
-                  value={newTeacher.phone}
-                  onChange={(e) => setNewTeacher({...newTeacher, phone: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="+91 9876543210"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <select
-                  value={newTeacher.department}
-                  onChange={(e) => setNewTeacher({...newTeacher, department: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Department</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
-                <select
-                  value={newTeacher.level}
-                  onChange={(e) => setNewTeacher({...newTeacher, level: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {levels.map(level => (
-                    <option key={level} value={level}>{level}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
-                <input
-                  type="text"
-                  value={newTeacher.qualification}
-                  onChange={(e) => setNewTeacher({...newTeacher, qualification: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., M.Sc, B.Ed"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Years)</label>
-                <input
-                  type="number"
-                  value={newTeacher.experience}
-                  onChange={(e) => setNewTeacher({...newTeacher, experience: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
-                <input
-                  type="date"
-                  value={newTeacher.joiningDate}
-                  onChange={(e) => setNewTeacher({...newTeacher, joiningDate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Salary</label>
-                <input
-                  type="number"
-                  value={newTeacher.salary}
-                  onChange={(e) => setNewTeacher({...newTeacher, salary: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="50000"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <textarea
-                  value={newTeacher.address}
-                  onChange={(e) => setNewTeacher({...newTeacher, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows="2"
-                  placeholder="Teacher address"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {allSubjects.map(subject => (
-                    <label key={subject} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={newTeacher.subjects.includes(subject)}
-                        onChange={() => handleSubjectToggle(subject, true)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{subject}</span>
-                    </label>
-                  ))}
+            <div className="teacher-modal-body">
+              <div className="teacher-form-grid">
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Full Name</label>
+                  <input
+                    type="text"
+                    value={newTeacher.name}
+                    onChange={(e) => setNewTeacher({...newTeacher, name: e.target.value})}
+                    className="teacher-form-input"
+                    placeholder="Teacher name"
+                  />
                 </div>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Classes</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {allClasses.map(cls => (
-                    <label key={cls} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={newTeacher.classes.includes(cls)}
-                        onChange={() => handleClassToggle(cls, true)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{cls}</span>
-                    </label>
-                  ))}
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Employee ID</label>
+                  <input
+                    type="text"
+                    value={newTeacher.employeeId}
+                    onChange={(e) => setNewTeacher({...newTeacher, employeeId: e.target.value})}
+                    className="teacher-form-input"
+                    placeholder="e.g., T001"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Email</label>
+                  <input
+                    type="email"
+                    value={newTeacher.email}
+                    onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})}
+                    className="teacher-form-input"
+                    placeholder="teacher@school.edu"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Phone</label>
+                  <input
+                    type="tel"
+                    value={newTeacher.phone}
+                    onChange={(e) => setNewTeacher({...newTeacher, phone: e.target.value})}
+                    className="teacher-form-input"
+                    placeholder="+91 9876543210"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Department</label>
+                  <select
+                    value={newTeacher.department}
+                    onChange={(e) => setNewTeacher({...newTeacher, department: e.target.value})}
+                    className="teacher-form-select"
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Level</label>
+                  <select
+                    value={newTeacher.level}
+                    onChange={(e) => setNewTeacher({...newTeacher, level: e.target.value})}
+                    className="teacher-form-select"
+                  >
+                    {levels.map(level => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Qualification</label>
+                  <input
+                    type="text"
+                    value={newTeacher.qualification}
+                    onChange={(e) => setNewTeacher({...newTeacher, qualification: e.target.value})}
+                    className="teacher-form-input"
+                    placeholder="e.g., M.Sc, B.Ed"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Experience (Years)</label>
+                  <input
+                    type="number"
+                    value={newTeacher.experience}
+                    onChange={(e) => setNewTeacher({...newTeacher, experience: parseInt(e.target.value)})}
+                    className="teacher-form-input"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Joining Date</label>
+                  <input
+                    type="date"
+                    value={newTeacher.joiningDate}
+                    onChange={(e) => setNewTeacher({...newTeacher, joiningDate: e.target.value})}
+                    className="teacher-form-input"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Salary</label>
+                  <input
+                    type="number"
+                    value={newTeacher.salary}
+                    onChange={(e) => setNewTeacher({...newTeacher, salary: parseInt(e.target.value)})}
+                    className="teacher-form-input"
+                    placeholder="50000"
+                  />
+                </div>
+                <div className="teacher-form-group full-width">
+                  <label className="teacher-form-label">Address</label>
+                  <textarea
+                    value={newTeacher.address}
+                    onChange={(e) => setNewTeacher({...newTeacher, address: e.target.value})}
+                    className="teacher-form-textarea"
+                    placeholder="Teacher address"
+                  />
+                </div>
+                <div className="teacher-form-group full-width">
+                  <label className="teacher-form-label">Subjects</label>
+                  <div className="teacher-checkbox-grid">
+                    {allSubjects.map(subject => (
+                      <div key={subject} className="teacher-checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={newTeacher.subjects.includes(subject)}
+                          onChange={() => handleSubjectToggle(subject, true)}
+                          className="teacher-checkbox"
+                        />
+                        <label className="teacher-checkbox-label">{subject}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="teacher-form-group full-width">
+                  <label className="teacher-form-label">Classes</label>
+                  <div className="teacher-checkbox-grid classes">
+                    {allClasses.map(cls => (
+                      <div key={cls} className="teacher-checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={newTeacher.classes.includes(cls)}
+                          onChange={() => handleClassToggle(cls, true)}
+                          className="teacher-checkbox"
+                        />
+                        <label className="teacher-checkbox-label">{cls}</label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="teacher-modal-footer">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="teacher-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddTeacher}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="teacher-modal-btn submit"
               >
                 Add Teacher
               </button>
@@ -622,42 +612,42 @@ const TeacherManagement = () => {
 
       {/* Bulk Upload Modal */}
       {showBulkModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Bulk Add Teachers</h2>
+        <div className="teacher-modal-overlay">
+          <div className="teacher-modal medium">
+            <div className="teacher-modal-header">
+              <h2 className="teacher-modal-title">Bulk Add Teachers</h2>
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="teacher-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+            <div className="teacher-modal-body">
+              <div className="teacher-form-group full-width">
+                <label className="teacher-form-label">Upload CSV File</label>
                 <input
                   type="file"
                   accept=".csv"
                   onChange={(e) => setBulkFile(e.target.files[0])}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="teacher-form-input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="bulk-upload-description">
                   Upload a CSV file with columns: name, employeeId, email, phone, department, subjects, classes, qualification, experience, joiningDate, address, salary, level
                 </p>
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="teacher-modal-footer">
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="teacher-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBulkUpload}
                 disabled={!bulkFile}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="teacher-modal-btn submit"
               >
                 Upload
               </button>
@@ -668,144 +658,140 @@ const TeacherManagement = () => {
 
       {/* View Teacher Modal */}
       {showViewModal && selectedTeacher && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Teacher Details</h2>
+        <div className="teacher-modal-overlay">
+          <div className="teacher-modal">
+            <div className="teacher-modal-header">
+              <h2 className="teacher-modal-title">Teacher Details</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="teacher-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            
-            <div className="flex items-center mb-6">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl mr-4">
-                {selectedTeacher.name.split(' ').map(n => n[0]).join('')}
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900">{selectedTeacher.name}</h3>
-                <p className="text-gray-600">{selectedTeacher.employeeId} • {selectedTeacher.department}</p>
-                <div className="flex space-x-2 mt-1">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getLevelColor(selectedTeacher.level)}`}>
-                    {selectedTeacher.level}
-                  </span>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedTeacher.status)}`}>
-                    {selectedTeacher.status.replace('-', ' ').toUpperCase()}
-                  </span>
+            <div className="teacher-modal-body">
+              <div className="teacher-profile-header">
+                <div className="teacher-profile-avatar">
+                  {selectedTeacher.name.split(' ').map(n => n[0]).join('')}
                 </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Personal Information */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faIdBadge} className="mr-2 text-blue-600" />
-                  Personal Information
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm">
-                    <FontAwesomeIcon icon={faEnvelope} className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-gray-600">Email:</span>
-                    <span className="ml-2 text-gray-900">{selectedTeacher.email}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FontAwesomeIcon icon={faPhone} className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-gray-600">Phone:</span>
-                    <span className="ml-2 text-gray-900">{selectedTeacher.phone}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FontAwesomeIcon icon={faCalendar} className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-gray-600">Joined:</span>
-                    <span className="ml-2 text-gray-900">{new Date(selectedTeacher.joiningDate).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-start text-sm">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4 text-gray-400 mr-2 mt-0.5" />
-                    <div>
-                      <span className="text-gray-600">Address:</span>
-                      <p className="text-gray-900 mt-1">{selectedTeacher.address}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Professional Information */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faGraduationCap} className="mr-2 text-green-600" />
-                  Professional Information
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Department:</span>
-                    <span className="font-medium text-gray-900">{selectedTeacher.department}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Qualification:</span>
-                    <span className="font-medium text-gray-900">{selectedTeacher.qualification}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Experience:</span>
-                    <span className="font-medium text-gray-900">{selectedTeacher.experience} years</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Performance:</span>
-                    <span className={`font-medium ${getPerformanceColor(selectedTeacher.performance)}`}>
-                      {selectedTeacher.performance}%
+                <div className="teacher-profile-info">
+                  <h3>{selectedTeacher.name}</h3>
+                  <p className="teacher-profile-meta">{selectedTeacher.employeeId} • {selectedTeacher.department}</p>
+                  <div className="teacher-profile-badges">
+                    <span className={getLevelClass(selectedTeacher.level)}>
+                      {selectedTeacher.level}
+                    </span>
+                    <span className={getStatusClass(selectedTeacher.status)}>
+                      {selectedTeacher.status.replace('-', ' ').toUpperCase()}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Salary:</span>
-                    <span className="font-medium text-gray-900">₹{selectedTeacher.salary.toLocaleString()}</span>
-                  </div>
                 </div>
               </div>
 
-              {/* Teaching Information */}
-              <div className="bg-gray-50 rounded-lg p-4 md:col-span-2">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <FontAwesomeIcon icon={faChalkboardTeacher} className="mr-2 text-purple-600" />
-                  Teaching Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-gray-600 text-sm">Subjects:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedTeacher.subjects.map(subject => (
-                        <span key={subject} className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                          {subject}
-                        </span>
-                      ))}
+              <div className="teacher-info-grid">
+                {/* Personal Information */}
+                <div className="teacher-info-section">
+                  <h4 className="teacher-section-title">
+                    <FontAwesomeIcon icon={faIdBadge} className="teacher-section-icon blue" />
+                    Personal Information
+                  </h4>
+                  <div className="teacher-info-row">
+                    <FontAwesomeIcon icon={faEnvelope} className="teacher-info-icon" />
+                    <span className="teacher-info-label">Email:</span>
+                    <span className="teacher-info-value">{selectedTeacher.email}</span>
+                  </div>
+                  <div className="teacher-info-row">
+                    <FontAwesomeIcon icon={faPhone} className="teacher-info-icon" />
+                    <span className="teacher-info-label">Phone:</span>
+                    <span className="teacher-info-value">{selectedTeacher.phone}</span>
+                  </div>
+                  <div className="teacher-info-row">
+                    <FontAwesomeIcon icon={faCalendar} className="teacher-info-icon" />
+                    <span className="teacher-info-label">Joined:</span>
+                    <span className="teacher-info-value">{new Date(selectedTeacher.joiningDate).toLocaleDateString()}</span>
+                  </div>
+                  <div className="teacher-info-row">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="teacher-info-icon" />
+                    <span className="teacher-info-label">Address:</span>
+                    <span className="teacher-info-value">{selectedTeacher.address}</span>
+                  </div>
+                </div>
+
+                {/* Professional Information */}
+                <div className="teacher-info-section">
+                  <h4 className="teacher-section-title">
+                    <FontAwesomeIcon icon={faGraduationCap} className="teacher-section-icon green" />
+                    Professional Information
+                  </h4>
+                  <div className="teacher-detail-grid">
+                    <div className="teacher-detail-item">
+                      <span className="teacher-detail-label">Department:</span>
+                      <span className="teacher-detail-value">{selectedTeacher.department}</span>
+                    </div>
+                    <div className="teacher-detail-item">
+                      <span className="teacher-detail-label">Qualification:</span>
+                      <span className="teacher-detail-value">{selectedTeacher.qualification}</span>
+                    </div>
+                    <div className="teacher-detail-item">
+                      <span className="teacher-detail-label">Experience:</span>
+                      <span className="teacher-detail-value">{selectedTeacher.experience} years</span>
+                    </div>
+                    <div className="teacher-detail-item">
+                      <span className="teacher-detail-label">Performance:</span>
+                      <span className="teacher-info-value performance excellent">
+                        {selectedTeacher.performance}%
+                      </span>
+                    </div>
+                    <div className="teacher-detail-item">
+                      <span className="teacher-detail-label">Salary:</span>
+                      <span className="teacher-detail-value">₹{selectedTeacher.salary.toLocaleString()}</span>
                     </div>
                   </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">Classes:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedTeacher.classes.map(cls => (
-                        <span key={cls} className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
-                          {cls}
-                        </span>
-                      ))}
+                </div>
+
+                {/* Teaching Information */}
+                <div className="teacher-info-section full-width">
+                  <h4 className="teacher-section-title">
+                    <FontAwesomeIcon icon={faChalkboardTeacher} className="teacher-section-icon purple" />
+                    Teaching Information
+                  </h4>
+                  <div className="teacher-detail-grid">
+                    <div>
+                      <span className="teacher-info-label">Subjects:</span>
+                      <div className="teacher-subjects-list">
+                        {selectedTeacher.subjects.map(subject => (
+                          <span key={subject} className="teacher-subject-tag">
+                            {subject}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Students Under:</span>
-                    <span className="font-medium text-gray-900">{selectedTeacher.studentsUnder}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Classes Assigned:</span>
-                    <span className="font-medium text-gray-900">{selectedTeacher.classesAssigned}</span>
+                    <div>
+                      <span className="teacher-info-label">Classes:</span>
+                      <div className="teacher-classes-list">
+                        {selectedTeacher.classes.map(cls => (
+                          <span key={cls} className="teacher-class-tag">
+                            {cls}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="teacher-detail-item">
+                      <span className="teacher-detail-label">Students Under:</span>
+                      <span className="teacher-detail-value">{selectedTeacher.studentsUnder}</span>
+                    </div>
+                    <div className="teacher-detail-item">
+                      <span className="teacher-detail-label">Classes Assigned:</span>
+                      <span className="teacher-detail-value">{selectedTeacher.classesAssigned}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="mt-6">
+            <div className="teacher-modal-footer">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="teacher-modal-btn cancel"
               >
                 Close
               </button>
@@ -816,169 +802,170 @@ const TeacherManagement = () => {
 
       {/* Edit Teacher Modal */}
       {showEditModal && selectedTeacher && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Edit Teacher</h2>
+        <div className="teacher-modal-overlay">
+          <div className="teacher-modal">
+            <div className="teacher-modal-header">
+              <h2 className="teacher-modal-title">Edit Teacher</h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="teacher-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={selectedTeacher.name}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
-                <input
-                  type="text"
-                  value={selectedTeacher.employeeId}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, employeeId: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={selectedTeacher.email}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input
-                  type="tel"
-                  value={selectedTeacher.phone}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, phone: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <select
-                  value={selectedTeacher.department}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, department: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
-                <select
-                  value={selectedTeacher.level}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, level: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {levels.map(level => (
-                    <option key={level} value={level}>{level}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={selectedTeacher.status}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="active">Active</option>
-                  <option value="on-leave">On Leave</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
-                <input
-                  type="text"
-                  value={selectedTeacher.qualification}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, qualification: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Years)</label>
-                <input
-                  type="number"
-                  value={selectedTeacher.experience}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, experience: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Salary</label>
-                <input
-                  type="number"
-                  value={selectedTeacher.salary}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, salary: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <textarea
-                  value={selectedTeacher.address}
-                  onChange={(e) => setSelectedTeacher({...selectedTeacher, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows="2"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {allSubjects.map(subject => (
-                    <label key={subject} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedTeacher.subjects.includes(subject)}
-                        onChange={() => handleSubjectToggle(subject, false)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{subject}</span>
-                    </label>
-                  ))}
+            <div className="teacher-modal-body">
+              <div className="teacher-form-grid">
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Full Name</label>
+                  <input
+                    type="text"
+                    value={selectedTeacher.name}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, name: e.target.value})}
+                    className="teacher-form-input"
+                  />
                 </div>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Classes</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {allClasses.map(cls => (
-                    <label key={cls} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedTeacher.classes.includes(cls)}
-                        onChange={() => handleClassToggle(cls, false)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{cls}</span>
-                    </label>
-                  ))}
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Employee ID</label>
+                  <input
+                    type="text"
+                    value={selectedTeacher.employeeId}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, employeeId: e.target.value})}
+                    className="teacher-form-input"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Email</label>
+                  <input
+                    type="email"
+                    value={selectedTeacher.email}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, email: e.target.value})}
+                    className="teacher-form-input"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Phone</label>
+                  <input
+                    type="tel"
+                    value={selectedTeacher.phone}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, phone: e.target.value})}
+                    className="teacher-form-input"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Department</label>
+                  <select
+                    value={selectedTeacher.department}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, department: e.target.value})}
+                    className="teacher-form-select"
+                  >
+                    {departments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Level</label>
+                  <select
+                    value={selectedTeacher.level}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, level: e.target.value})}
+                    className="teacher-form-select"
+                  >
+                    {levels.map(level => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Status</label>
+                  <select
+                    value={selectedTeacher.status}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, status: e.target.value})}
+                    className="teacher-form-select"
+                  >
+                    <option value="active">Active</option>
+                    <option value="on-leave">On Leave</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Qualification</label>
+                  <input
+                    type="text"
+                    value={selectedTeacher.qualification}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, qualification: e.target.value})}
+                    className="teacher-form-input"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Experience (Years)</label>
+                  <input
+                    type="number"
+                    value={selectedTeacher.experience}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, experience: parseInt(e.target.value)})}
+                    className="teacher-form-input"
+                  />
+                </div>
+                <div className="teacher-form-group">
+                  <label className="teacher-form-label">Salary</label>
+                  <input
+                    type="number"
+                    value={selectedTeacher.salary}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, salary: parseInt(e.target.value)})}
+                    className="teacher-form-input"
+                  />
+                </div>
+                <div className="teacher-form-group full-width">
+                  <label className="teacher-form-label">Address</label>
+                  <textarea
+                    value={selectedTeacher.address}
+                    onChange={(e) => setSelectedTeacher({...selectedTeacher, address: e.target.value})}
+                    className="teacher-form-textarea"
+                  />
+                </div>
+                <div className="teacher-form-group full-width">
+                  <label className="teacher-form-label">Subjects</label>
+                  <div className="teacher-checkbox-grid">
+                    {allSubjects.map(subject => (
+                      <div key={subject} className="teacher-checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={selectedTeacher.subjects.includes(subject)}
+                          onChange={() => handleSubjectToggle(subject, false)}
+                          className="teacher-checkbox"
+                        />
+                        <label className="teacher-checkbox-label">{subject}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="teacher-form-group full-width">
+                  <label className="teacher-form-label">Classes</label>
+                  <div className="teacher-checkbox-grid classes">
+                    {allClasses.map(cls => (
+                      <div key={cls} className="teacher-checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={selectedTeacher.classes.includes(cls)}
+                          onChange={() => handleClassToggle(cls, false)}
+                          className="teacher-checkbox"
+                        />
+                        <label className="teacher-checkbox-label">{cls}</label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="teacher-modal-footer">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="teacher-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditTeacher}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="teacher-modal-btn submit"
               >
                 Save Changes
               </button>

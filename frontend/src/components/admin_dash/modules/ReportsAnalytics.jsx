@@ -39,9 +39,8 @@ import {
   Area,
   AreaChart
 } from 'recharts';
-import './admin.css';
 
-const EnhancedReportsAnalytics = () => {
+const ReportsAnalytics = () => {
   const [selectedReport, setSelectedReport] = useState('overview');
   const [filters, setFilters] = useState({
     dateRange: 'monthly',
@@ -243,11 +242,11 @@ const EnhancedReportsAnalytics = () => {
       </div>
 
       <div className="filter-actions">
-        <button onClick={clearFilters} className="btn btn-outline">
+        <button onClick={clearFilters} className="filter-btn outline">
           <FontAwesomeIcon icon={faTimes} />
           Clear Filters
         </button>
-        <button onClick={refreshData} className="btn btn-primary">
+        <button onClick={refreshData} className="filter-btn primary">
           <FontAwesomeIcon icon={faRefresh} />
           Refresh Data
         </button>
@@ -490,33 +489,39 @@ const EnhancedReportsAnalytics = () => {
   return (
     <div className="reports-analytics">
       {/* Header with Filters */}
-      <div className="page-header">
-        <div className="header-content">
-          <h1>Reports & Analytics</h1>
-          <p>Comprehensive reporting and data analytics with advanced filtering</p>
-        </div>
-        <div className="header-actions">
-          <select 
-            value={filters.dateRange}
-            onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-            className="filter-select"
-          >
-            <option value="weekly">This Week</option>
-            <option value="monthly">This Month</option>
-            <option value="quarterly">This Quarter</option>
-            <option value="yearly">This Year</option>
-          </select>
-          <button 
-            className={`btn btn-outline ${showAdvancedFilters ? 'active' : ''}`}
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          >
-            <FontAwesomeIcon icon={faFilter} />
-            Advanced Filters
-          </button>
-          <button onClick={refreshData} className="btn btn-primary">
-            <FontAwesomeIcon icon={faRefresh} />
-            {isLoading ? 'Refreshing...' : 'Refresh'}
-          </button>
+      <div className="reports-header">
+        <div className="reports-header-content">
+          <div className="reports-title-section">
+            <h1>Reports & Analytics</h1>
+            <p>Comprehensive reporting and data analytics with advanced filtering</p>
+          </div>
+          <div className="reports-header-actions">
+            <select 
+              value={filters.dateRange}
+              onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+              className="reports-date-select"
+            >
+              <option value="weekly">This Week</option>
+              <option value="monthly">This Month</option>
+              <option value="quarterly">This Quarter</option>
+              <option value="yearly">This Year</option>
+            </select>
+            <button 
+              className={`reports-filter-btn ${showAdvancedFilters ? 'active' : ''}`}
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              <FontAwesomeIcon icon={faFilter} />
+              Advanced Filters
+            </button>
+            <button 
+              onClick={refreshData} 
+              className="reports-refresh-btn"
+              disabled={isLoading}
+            >
+              <FontAwesomeIcon icon={faRefresh} />
+              {isLoading ? 'Refreshing...' : 'Refresh'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -598,4 +603,4 @@ const EnhancedReportsAnalytics = () => {
   );
 };
 
-export default EnhancedReportsAnalytics;
+export default ReportsAnalytics;

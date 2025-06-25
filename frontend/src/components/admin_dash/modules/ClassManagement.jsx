@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import '../styles/ClassManagement.css'; // for ClassManagement.jsx
+import '../styles/ClassManagement.css';
 import {
   faSchool,
   faPlus,
@@ -154,7 +154,6 @@ const ClassManagement = () => {
 
   const handleBulkUpload = () => {
     if (bulkFile) {
-      // In a real application, you would process the CSV file here
       console.log('Processing bulk upload:', bulkFile.name);
       alert('Bulk upload functionality would process the CSV file and send data to backend');
       setBulkFile(null);
@@ -177,25 +176,25 @@ const ClassManagement = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="class-management">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Class Management</h1>
-            <p className="text-gray-600">Organize and manage school classes efficiently</p>
+      <div className="class-header">
+        <div className="class-header-content">
+          <div className="class-title-section">
+            <h1>Class Management</h1>
+            <p>Organize and manage school classes efficiently</p>
           </div>
-          <div className="flex space-x-3">
+          <div className="class-actions">
             <button
               onClick={() => setShowBulkModal(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="class-btn success"
             >
               <FontAwesomeIcon icon={faUpload} />
               <span>Bulk Add Classes</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+              className="class-btn primary"
             >
               <FontAwesomeIcon icon={faPlus} />
               <span>Add New Class</span>
@@ -205,23 +204,23 @@ const ClassManagement = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <div className="class-search-filters">
+        <div className="class-filters-container">
+          <div className="class-search-wrapper">
+            <FontAwesomeIcon icon={faSearch} className="class-search-icon" />
             <input
               type="text"
               placeholder="Search classes or teachers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="class-search-input"
             />
           </div>
-          <div className="flex space-x-3">
+          <div className="class-filter-controls">
             <select
               value={filterGrade}
               onChange={(e) => setFilterGrade(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="class-filter-select"
             >
               <option value="">All Grades</option>
               {grades.map(grade => (
@@ -231,7 +230,7 @@ const ClassManagement = () => {
             <select
               value={filterSection}
               onChange={(e) => setFilterSection(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="class-filter-select"
             >
               <option value="">All Sections</option>
               {sections.map(section => (
@@ -243,60 +242,60 @@ const ClassManagement = () => {
       </div>
 
       {/* Classes Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="classes-grid">
         {filteredClasses.map(cls => (
-          <div key={cls.id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{cls.className}</h3>
-                  <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full mt-1">
+          <div key={cls.id} className="class-card">
+            <div className="class-card-content">
+              <div className="class-card-header">
+                <div className="class-info">
+                  <h3>{cls.className}</h3>
+                  <span className={`class-status-badge ${cls.status}`}>
                     {cls.status.toUpperCase()}
                   </span>
                 </div>
-                <div className="flex space-x-1">
+                <div className="class-card-actions">
                   <button
                     onClick={() => handleEditClassModal(cls)}
-                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                    className="class-action-btn edit"
                   >
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
                   <button
                     onClick={() => handleDeleteClass(cls.id)}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                    className="class-action-btn delete"
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center text-blue-600">
-                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                  <span className="font-semibold">{cls.totalStudents}</span>
-                  <span className="text-gray-600 ml-1">Students</span>
+              <div className="class-details">
+                <div className="class-stat-row">
+                  <FontAwesomeIcon icon={faUsers} className="class-stat-icon blue" />
+                  <span className="class-stat-value">{cls.totalStudents}</span>
+                  <span className="class-stat-label">Students</span>
                 </div>
-                <div className="flex items-center text-gray-600">
-                  <FontAwesomeIcon icon={faChalkboardTeacher} className="mr-2" />
+                <div className="class-stat-row">
+                  <FontAwesomeIcon icon={faChalkboardTeacher} className="class-stat-icon gray" />
                   <span>{cls.classTeacher}</span>
                 </div>
-                <div className="text-gray-600">
-                  <FontAwesomeIcon icon={faBook} className="mr-2" />
-                  <span className="text-sm">{cls.subjects.length} Subjects</span>
+                <div className="class-stat-row">
+                  <FontAwesomeIcon icon={faBook} className="class-stat-icon gray" />
+                  <span className="class-stat-label">{cls.subjects.length} Subjects</span>
                 </div>
               </div>
 
-              <div className="flex space-x-2">
+              <div className="class-card-footer">
                 <button
                   onClick={() => handleViewClass(cls)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+                  className="class-footer-btn primary"
                 >
                   <FontAwesomeIcon icon={faEye} />
                   <span>View Details</span>
                 </button>
                 <button
                   onClick={() => alert(`Managing students for ${cls.className}`)}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+                  className="class-footer-btn secondary"
                 >
                   <FontAwesomeIcon icon={faUserFriends} />
                   <span>Manage Students</span>
@@ -309,35 +308,35 @@ const ClassManagement = () => {
 
       {/* Add Class Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add New Class</h2>
+        <div className="class-modal-overlay">
+          <div className="class-modal">
+            <div className="class-modal-header">
+              <h2 className="class-modal-title">Add New Class</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="class-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class Name</label>
+            <div className="class-modal-body">
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Class Name</label>
                 <input
                   type="text"
                   value={newClass.className}
                   onChange={(e) => setNewClass({...newClass, className: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="class-form-input"
                   placeholder="e.g., Class 10-A"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+              <div className="class-form-grid">
+                <div className="class-form-group">
+                  <label className="class-form-label">Grade</label>
                   <select
                     value={newClass.grade}
                     onChange={(e) => setNewClass({...newClass, grade: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="class-form-select"
                   >
                     <option value="">Select Grade</option>
                     {grades.map(grade => (
@@ -345,12 +344,12 @@ const ClassManagement = () => {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                <div className="class-form-group">
+                  <label className="class-form-label">Section</label>
                   <select
                     value={newClass.section}
                     onChange={(e) => setNewClass({...newClass, section: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="class-form-select"
                   >
                     <option value="">Select Section</option>
                     {sections.map(section => (
@@ -359,53 +358,53 @@ const ClassManagement = () => {
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class Teacher</label>
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Class Teacher</label>
                 <input
                   type="text"
                   value={newClass.classTeacher}
                   onChange={(e) => setNewClass({...newClass, classTeacher: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="class-form-input"
                   placeholder="Teacher name"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
-                <div className="grid grid-cols-2 gap-2">
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Subjects</label>
+                <div className="class-checkbox-grid">
                   {allSubjects.map(subject => (
-                    <label key={subject} className="flex items-center space-x-2">
+                    <div key={subject} className="class-checkbox-item">
                       <input
                         type="checkbox"
                         checked={newClass.subjects.includes(subject)}
                         onChange={() => handleSubjectToggle(subject, true)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="class-checkbox"
                       />
-                      <span className="text-sm text-gray-700">{subject}</span>
-                    </label>
+                      <label className="class-checkbox-label">{subject}</label>
+                    </div>
                   ))}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Schedule</label>
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Schedule</label>
                 <input
                   type="text"
                   value={newClass.schedule}
                   onChange={(e) => setNewClass({...newClass, schedule: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="class-form-input"
                   placeholder="e.g., Morning (8:00 AM - 2:00 PM)"
                 />
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="class-modal-footer">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="class-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddClass}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="class-modal-btn submit"
               >
                 Add Class
               </button>
@@ -416,42 +415,42 @@ const ClassManagement = () => {
 
       {/* Bulk Upload Modal */}
       {showBulkModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Bulk Add Classes</h2>
+        <div className="class-modal-overlay">
+          <div className="class-modal">
+            <div className="class-modal-header">
+              <h2 className="class-modal-title">Bulk Add Classes</h2>
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="class-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+            <div className="class-modal-body">
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Upload CSV File</label>
                 <input
                   type="file"
                   accept=".csv"
                   onChange={(e) => setBulkFile(e.target.files[0])}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="class-form-input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="bulk-upload-description">
                   Upload a CSV file with columns: className, grade, section, classTeacher, subjects, schedule
                 </p>
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="class-modal-footer">
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="class-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBulkUpload}
                 disabled={!bulkFile}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="class-modal-btn submit"
               >
                 Upload
               </button>
@@ -462,61 +461,61 @@ const ClassManagement = () => {
 
       {/* View Modal */}
       {showViewModal && selectedClass && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Class Details</h2>
+        <div className="class-modal-overlay">
+          <div className="class-modal large">
+            <div className="class-modal-header">
+              <h2 className="class-modal-title">Class Details</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="class-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Class Name</label>
-                  <p className="text-gray-900 font-medium">{selectedClass.className}</p>
+            <div className="class-modal-body">
+              <div className="class-view-grid">
+                <div className="class-view-item">
+                  <label className="class-view-label">Class Name</label>
+                  <p className="class-view-value">{selectedClass.className}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Grade & Section</label>
-                  <p className="text-gray-900 font-medium">Grade {selectedClass.grade} - Section {selectedClass.section}</p>
+                <div className="class-view-item">
+                  <label className="class-view-label">Grade & Section</label>
+                  <p className="class-view-value">Grade {selectedClass.grade} - Section {selectedClass.section}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Total Students</label>
-                  <p className="text-gray-900 font-medium">{selectedClass.totalStudents}</p>
+                <div className="class-view-item">
+                  <label className="class-view-label">Total Students</label>
+                  <p className="class-view-value">{selectedClass.totalStudents}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Status</label>
-                  <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                <div className="class-view-item">
+                  <label className="class-view-label">Status</label>
+                  <span className={`class-status-badge ${selectedClass.status}`}>
                     {selectedClass.status.toUpperCase()}
                   </span>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Class Teacher</label>
-                <p className="text-gray-900 font-medium">{selectedClass.classTeacher}</p>
+              <div className="class-view-item">
+                <label className="class-view-label">Class Teacher</label>
+                <p className="class-view-value">{selectedClass.classTeacher}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Schedule</label>
-                <p className="text-gray-900 font-medium">{selectedClass.schedule}</p>
+              <div className="class-view-item">
+                <label className="class-view-label">Schedule</label>
+                <p className="class-view-value">{selectedClass.schedule}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Subjects</label>
-                <div className="flex flex-wrap gap-2 mt-1">
+              <div className="class-view-item">
+                <label className="class-view-label">Subjects</label>
+                <div className="class-subjects-list">
                   {selectedClass.subjects.map(subject => (
-                    <span key={subject} className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                    <span key={subject} className="class-subject-tag">
                       {subject}
                     </span>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="mt-6">
+            <div className="class-modal-footer">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="class-modal-btn cancel"
               >
                 Close
               </button>
@@ -527,46 +526,46 @@ const ClassManagement = () => {
 
       {/* Edit Modal */}
       {showEditModal && selectedClass && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Edit Class</h2>
+        <div className="class-modal-overlay">
+          <div className="class-modal">
+            <div className="class-modal-header">
+              <h2 className="class-modal-title">Edit Class</h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="class-modal-close"
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class Name</label>
+            <div className="class-modal-body">
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Class Name</label>
                 <input
                   type="text"
                   value={selectedClass.className}
                   onChange={(e) => setSelectedClass({...selectedClass, className: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="class-form-input"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+              <div className="class-form-grid">
+                <div className="class-form-group">
+                  <label className="class-form-label">Grade</label>
                   <select
                     value={selectedClass.grade}
                     onChange={(e) => setSelectedClass({...selectedClass, grade: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="class-form-select"
                   >
                     {grades.map(grade => (
                       <option key={grade} value={grade}>{grade}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                <div className="class-form-group">
+                  <label className="class-form-label">Section</label>
                   <select
                     value={selectedClass.section}
                     onChange={(e) => setSelectedClass({...selectedClass, section: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="class-form-select"
                   >
                     {sections.map(section => (
                       <option key={section} value={section}>{section}</option>
@@ -574,51 +573,51 @@ const ClassManagement = () => {
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class Teacher</label>
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Class Teacher</label>
                 <input
                   type="text"
                   value={selectedClass.classTeacher}
                   onChange={(e) => setSelectedClass({...selectedClass, classTeacher: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="class-form-input"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
-                <div className="grid grid-cols-2 gap-2">
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Subjects</label>
+                <div className="class-checkbox-grid">
                   {allSubjects.map(subject => (
-                    <label key={subject} className="flex items-center space-x-2">
+                    <div key={subject} className="class-checkbox-item">
                       <input
                         type="checkbox"
                         checked={selectedClass.subjects.includes(subject)}
                         onChange={() => handleSubjectToggle(subject, false)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="class-checkbox"
                       />
-                      <span className="text-sm text-gray-700">{subject}</span>
-                    </label>
+                      <label className="class-checkbox-label">{subject}</label>
+                    </div>
                   ))}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Schedule</label>
+              <div className="class-form-group full-width">
+                <label className="class-form-label">Schedule</label>
                 <input
                   type="text"
                   value={selectedClass.schedule}
                   onChange={(e) => setSelectedClass({...selectedClass, schedule: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="class-form-input"
                 />
               </div>
             </div>
-            <div className="flex space-x-3 mt-6">
+            <div className="class-modal-footer">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="class-modal-btn cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditClass}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="class-modal-btn submit"
               >
                 Save Changes
               </button>
