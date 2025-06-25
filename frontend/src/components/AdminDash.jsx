@@ -14,16 +14,14 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 // Import admin components
-import Overview from './admin_dash/Overview';
-import ClassManagement from './admin_dash/ClassManagement';
-import StudentManagement from './admin_dash/StudentManagement';
-import TeacherManagement from './admin_dash/TeacherManagement';
-import AcademicRecords from './admin_dash/AcademicRecords';
-import Examinations from './admin_dash/Examinations';
-import ReportsAnalytics from './admin_dash/ReportsAnalytics';
-import Settings from './admin_dash/Settings';
-
-import './admin_dash/admin.css';
+import Overview from './admin_dash/modules/Overview';
+import ClassManagement from './admin_dash/modules/ClassManagement';
+import Examinations from './admin_dash/modules/Examinations';
+import Reports from './admin_dash/modules/ReportsAnalytics';
+import Settings from './admin_dash/modules/Settings';
+import StudentManagement from './admin_dash/modules/StudentManagement';
+import TeacherManagement from './admin_dash/modules/TeacherManagement';
+import AcademicRecords from './admin_dash/modules/AcademicRecords';
 
 const AdminDash = () => {
   const [activeTab, setActiveTab] = useState('overview');
