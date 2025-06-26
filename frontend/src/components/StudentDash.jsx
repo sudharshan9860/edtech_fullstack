@@ -1,140 +1,113 @@
-import React, { useState, useEffect } from "react";
-import { BlockMath } from 'react-katex';
-import 'katex/dist/katex.min.css';
+// Enhanced StudentDash.jsx - Sidebar Layout
+import React, { useState, useEffect, useContext } from "react";
 import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import "./StudentDash.css";
 import axiosInstance from "../api/axiosInstance";
 import QuestionListModal from "./QuestionListModal";
 import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Tutorial from "./Tutorial";
-import { useTutorial } from "../contexts/TutorialContext";
-import RecentSessions from "./RecentSessions"; // Import the new component
+import { AuthContext } from "./AuthContext";
+import GreetingHeader from "./GreetingHeader";
+import MotivationalQuote from "./MotivationalQuote";
+import StudyStreaks from "./StudyStreaks";
+import Achievements from "./Achievements";
+import ProgressCard from "./ProgressCard";
+import RecentSessions from "./RecentSessions";
+import "./StudentDash.css";
 import {
   faSchool,
   faBookOpen,
   faListAlt,
   faClipboardQuestion,
-  faQuestionCircle,
+  faMoon,
+  faSun,
+  faBars,
+  faTimes,
+  faChartLine,
+  faTrophy,
+  faFire,
+  faRocket,
 } from "@fortawesome/free-solid-svg-icons";
 
 function StudentDash() {
   const navigate = useNavigate();
+  const { username } = useContext(AuthContext);
+
+  // Theme and sidebar state
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true';
+  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // State for dropdown data
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
-  const [subTopics, setSubTopics] = useState([]); // Added for external questions
-  const [worksheets, setWorksheets] = useState([]); // Added for worksheets
+  const [subTopics, setSubTopics] = useState([]);
+  const [worksheets, setWorksheets] = useState([]);
 
-  // State for selections
+  // State for selections with smart defaults
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedChapters, setSelectedChapters] = useState([]);
   const [questionType, setQuestionType] = useState("");
   const [questionLevel, setQuestionLevel] = useState("");
-  const [selectedWorksheet, setSelectedWorksheet] = useState(""); // Added for worksheet selection
+  const [selectedWorksheet, setSelectedWorksheet] = useState("");
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [questionList, setQuestionList] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
 
-  // Enhanced tutorial usage
-  const {
-    shouldShowTutorialForPage,
-    markPageCompleted,
-    resetTutorial,
-    setCurrentPage,
-    continueTutorialFlow,
-    restartTutorialForPage,
-  } = useTutorial();
+  // Extract class from username (e.g., 10HPS24 -> 10)
+  const extractClassFromUsername = (username) => {
+    if (!username) return "";
+    const classNumber = username.substring(0, 2);
+    return isNaN(classNumber) ? "" : classNumber;
+  };
 
-  // Update current page when component mounts
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode.toString());
+    document.body.classList.toggle('dark-mode', newMode);
+  };
+
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  // Apply dark mode on component mount
   useEffect(() => {
-    setCurrentPage("studentDash");
-  }, [setCurrentPage]);
+    document.body.classList.toggle('dark-mode', isDarkMode);
+  }, [isDarkMode]);
 
-  const tutorialSteps = [
-    {
-      target: "#formClass",
-      content: "Start by selecting your class",
-      disableBeacon: true,
-    },
-    {
-      target: "#formSubject",
-      content: "Next, choose your subject",
-    },
-    {
-      target: ".select-chapters",
-      content: "Select one or more chapters to study",
-    },
-    {
-      target: "#formQuestionType",
-      content: "Choose the type of questions you want to practice",
-    },
-    {
-      target: ".btn-generate",
-      content:
-        "Click here to generate your questions. After this, we'll continue the tutorial on the question list.",
-    },
-    {
-      target: ".recent-sessions-container",
-      content: "Here you can see your recent study sessions and quickly resume where you left off.",
-    },
-  ];
-
-  // Determine if generate button should be enabled
-  const isGenerateButtonEnabled = () => {
-    // If external question type is selected, also check question level
-    if (questionType === "external") {
-      return (
-        selectedClass !== "" &&
-        selectedSubject !== "" &&
-        selectedChapters.length > 0 &&
-        questionType !== "" &&
-        questionLevel !== ""
-      );
-    }
-
-    // If worksheets question type is selected, also check selected worksheet
-    if (questionType === "worksheets") {
-      return (
-        selectedClass !== "" &&
-        selectedSubject !== "" &&
-        selectedChapters.length > 0 &&
-        questionType !== "" &&
-        selectedWorksheet !== ""
-      );
-    }
-
-    // For other question types, just check the main 4 categories
-    return (
-      selectedClass !== "" &&
-      selectedSubject !== "" &&
-      selectedChapters.length > 0 &&
-      questionType !== ""
-    );
-  };
-
-  // Handle tutorial completion for this component
-  const handleTutorialComplete = () => {
-    console.log("Tutorial steps in StudentDash completed");
-  };
-
+  // Fetch classes and set defaults
   useEffect(() => {
     async function fetchData() {
       try {
         const classResponse = await axiosInstance.get("/classes/");
         const classesData = classResponse.data.data;
         setClasses(classesData);
+
+        // Set default class based on username
+        const defaultClass = extractClassFromUsername(username);
+        if (defaultClass) {
+          const matchingClass = classesData.find(cls => 
+            cls.class_name.includes(defaultClass) || cls.class_code === defaultClass
+          );
+          if (matchingClass) {
+            setSelectedClass(matchingClass.class_code);
+          }
+        }
       } catch (error) {
         console.error("Error fetching classes", error);
       }
     }
     fetchData();
-  }, []);
+  }, [username]);
 
+  // Fetch subjects and set default
   useEffect(() => {
     async function fetchSubjects() {
       if (selectedClass) {
@@ -142,9 +115,18 @@ function StudentDash() {
           const subjectResponse = await axiosInstance.post("/subjects/", {
             class_id: selectedClass,
           });
-          setSubjects(subjectResponse.data.data);
-          // Reset dependent fields when class changes
-          setSelectedSubject("");
+          const subjectsData = subjectResponse.data.data;
+          setSubjects(subjectsData);
+
+          // Set default subject to Mathematics
+          const mathSubject = subjectsData.find(subject => 
+            subject.subject_name.toLowerCase().includes('math')
+          );
+          if (mathSubject) {
+            setSelectedSubject(mathSubject.subject_code);
+          }
+
+          // Reset dependent fields
           setSelectedChapters([]);
           setQuestionType("");
           setQuestionLevel("");
@@ -158,6 +140,7 @@ function StudentDash() {
     fetchSubjects();
   }, [selectedClass]);
 
+  // Fetch chapters
   useEffect(() => {
     async function fetchChapters() {
       if (selectedSubject && selectedClass) {
@@ -167,7 +150,6 @@ function StudentDash() {
             class_id: selectedClass,
           });
           setChapters(chapterResponse.data.data);
-          // Reset dependent fields when subject changes
           setSelectedChapters([]);
           setQuestionType("");
           setQuestionLevel("");
@@ -181,59 +163,35 @@ function StudentDash() {
     fetchChapters();
   }, [selectedSubject, selectedClass]);
 
-  // Effect for fetching subtopics when External question type is selected
-  useEffect(() => {
-    async function fetchSubTopics() {
-      if (
-        questionType === "external" &&
-        selectedClass &&
-        selectedSubject &&
-        selectedChapters.length > 0
-      ) {
-        try {
-          const response = await axiosInstance.post("/question-images/", {
-            classid: selectedClass,
-            subjectid: selectedSubject,
-            topicid: selectedChapters[0], // Assuming single chapter selection
-            external: true,
-          });
-          console.log("the response data is : ", response);
-          setSubTopics(response.data.subtopics);
-        } catch (error) {
-          console.error("Error fetching subtopics:", error);
-          setSubTopics([]);
-        }
-      }
+  // Determine if generate button should be enabled
+  const isGenerateButtonEnabled = () => {
+    if (questionType === "external") {
+      return (
+        selectedClass !== "" &&
+        selectedSubject !== "" &&
+        selectedChapters.length > 0 &&
+        questionType !== "" &&
+        questionLevel !== ""
+      );
     }
-    fetchSubTopics();
-  }, [questionType, selectedClass, selectedSubject, selectedChapters]);
 
-  // Effect for fetching worksheets when Worksheets question type is selected
-  useEffect(() => {
-    async function fetchWorksheets() {
-      if (
-        questionType === "worksheets" &&
-        selectedClass &&
-        selectedSubject &&
-        selectedChapters.length > 0
-      ) {
-        try {
-          const response = await axiosInstance.post("/question-images/", {
-            classid: selectedClass,
-            subjectid: selectedSubject,
-            topicid: selectedChapters[0], // Assuming single chapter selection
-            worksheets: true,
-          });
-          console.log("the worksheets response data is : ", response);
-          setWorksheets(response.data.worksheets);
-        } catch (error) {
-          console.error("Error fetching worksheets:", error);
-          setWorksheets([]);
-        }
-      }
+    if (questionType === "worksheets") {
+      return (
+        selectedClass !== "" &&
+        selectedSubject !== "" &&
+        selectedChapters.length > 0 &&
+        questionType !== "" &&
+        selectedWorksheet !== ""
+      );
     }
-    fetchWorksheets();
-  }, [questionType, selectedClass, selectedSubject, selectedChapters]);
+
+    return (
+      selectedClass !== "" &&
+      selectedSubject !== "" &&
+      selectedChapters.length > 0 &&
+      questionType !== ""
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -249,18 +207,13 @@ function StudentDash() {
       topicid: selectedChapters,
       solved: questionType === "solved",
       exercise: questionType === "exercise",
-      // worksheets: questionType === "worksheets",
       subtopic: questionType === "external" ? questionLevel : null,
       worksheet_name: questionType === "worksheets" ? selectedWorksheet : null,
     };
-    console.log("Request data for question generation:", requestData);
+
     try {
-      const response = await axiosInstance.post(
-        "/question-images/",
-        requestData
-      );
-      console.log("the response data is : ", response.data);
-      // Process questions with images
+      const response = await axiosInstance.post("/question-images/", requestData);
+      
       const questionsWithImages = response.data.questions.map((question) => ({
         ...question,
         question: question.question,
@@ -270,12 +223,7 @@ function StudentDash() {
       }));
 
       setQuestionList(questionsWithImages);
-      setSelectedQuestions([]); // Reset selected questions
-
-      // Continue tutorial flow to QuestionListModal before showing the modal
-      continueTutorialFlow("studentDash", "questionListModal");
-
-      // Show the modal after setting up tutorial flow
+      setSelectedQuestions([]);
       setShowQuestionList(true);
     } catch (error) {
       console.error("Error generating questions:", error);
@@ -304,7 +252,6 @@ function StudentDash() {
     setSelectedQuestions(selectedQuestionsData);
     setShowQuestionList(false);
 
-    // Navigate to SolveQuestion with the first selected question
     const firstQuestion = selectedQuestionsData[0];
     navigate("/solvequestion", {
       state: {
@@ -322,42 +269,87 @@ function StudentDash() {
     });
   };
 
-  // Reset Question Level and Selected Worksheet when Question Type changes
-  useEffect(() => {
-    if (questionType !== "external") {
-      setQuestionLevel("");
-    }
-    if (questionType !== "worksheets") {
-      setSelectedWorksheet("");
-    }
-  }, [questionType]);
-
   return (
-    <div className="d-flex flex-column min-vh-100">
-      {shouldShowTutorialForPage("studentDash") && (
-        <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
-      )}
-      <main className="flex-fill">
-        <Container className="py-4">
-          <div className="form-container mb-4">
-            <Form onSubmit={handleSubmit}>
-              <div className="restart-tutorial-btn-container mb-3 text-right">
-                <Button
-                  variant="outline-info"
-                  className="restart-tutorial-btn"
-                  onClick={() => {
-                    console.log("Restarting tutorial on StudentDash page...");
-                    restartTutorialForPage("studentDash");
-                  }}
-                  size="sm"
-                >
-                  <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
-                  Replay Tutorial
-                </Button>
-              </div>
+    <div className={`student-dashboard-wrapper ${isDarkMode ? 'dark-mode' : ''}`}>
+      {/* Sidebar */}
+      <div className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-brand">
+            <FontAwesomeIcon icon={faRocket} className="brand-icon" />
+            {!sidebarCollapsed && <span className="brand-text">Dashboard</span>}
+          </div>
+          <button className="sidebar-toggle" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={sidebarCollapsed ? faBars : faTimes} />
+          </button>
+        </div>
 
-              <Row className="mb-3">
-                <Col xs={12} md={6}>
+        <div className="sidebar-stats">
+          <div className="stat-card-sidebar">
+            <FontAwesomeIcon icon={faChartLine} className="stat-icon" />
+            <div className="stat-content">
+              <div className="stat-number">89%</div>
+              <div className="stat-label">Progress</div>
+            </div>
+          </div>
+          
+          <div className="stat-card-sidebar">
+            <FontAwesomeIcon icon={faFire} className="stat-icon fire" />
+            <div className="stat-content">
+              <div className="stat-number">5</div>
+              <div className="stat-label">Streak</div>
+            </div>
+          </div>
+          
+          <div className="stat-card-sidebar">
+            <FontAwesomeIcon icon={faTrophy} className="stat-icon trophy" />
+            <div className="stat-content">
+              <div className="stat-number">3</div>
+              <div className="stat-label">Badges</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="sidebar-menu">
+          <div className="menu-section">
+            <div className="section-title">Overview</div>
+            <ProgressCard />
+          </div>
+          
+          <div className="menu-section">
+            <div className="section-title">Achievements</div>
+            <StudyStreaks />
+            <Achievements />
+          </div>
+        </div>
+
+        {/* Theme Toggle in Sidebar */}
+        <div className="sidebar-footer">
+          <button className="theme-toggle-sidebar" onClick={toggleDarkMode}>
+            <FontAwesomeIcon icon={isDarkMode ? faSun : faMoon} />
+            {!sidebarCollapsed && <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className={`dashboard-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <Container fluid className="main-container">
+          {/* Greeting Header */}
+          <GreetingHeader username={username} />
+          
+          {/* Motivational Quote */}
+          <MotivationalQuote />
+
+          {/* Question Generation Form */}
+          <div className="main-content-card">
+            <div className="content-header">
+              <h3>🚀 Start Your Learning Adventure</h3>
+              <p>Select your preferences and let's begin!</p>
+            </div>
+            
+            <Form onSubmit={handleSubmit}>
+              <Row className="form-row">
+                <Col md={6}>
                   <Form.Group controlId="formClass">
                     <Form.Label>
                       <FontAwesomeIcon icon={faSchool} className="me-2" />
@@ -367,7 +359,7 @@ function StudentDash() {
                       as="select"
                       value={selectedClass}
                       onChange={(e) => setSelectedClass(e.target.value)}
-                      className="form-control"
+                      className="form-control-enhanced"
                     >
                       <option value="">Select Class</option>
                       {classes.map((cls) => (
@@ -378,7 +370,8 @@ function StudentDash() {
                     </Form.Control>
                   </Form.Group>
                 </Col>
-                <Col xs={12} md={6}>
+                
+                <Col md={6}>
                   <Form.Group controlId="formSubject">
                     <Form.Label>
                       <FontAwesomeIcon icon={faBookOpen} className="me-2" />
@@ -388,15 +381,12 @@ function StudentDash() {
                       as="select"
                       value={selectedSubject}
                       onChange={(e) => setSelectedSubject(e.target.value)}
-                      className="form-control"
+                      className="form-control-enhanced"
                       disabled={!selectedClass}
                     >
                       <option value="">Select Subject</option>
                       {subjects.map((subject) => (
-                        <option
-                          key={subject.subject_code}
-                          value={subject.subject_code}
-                        >
+                        <option key={subject.subject_code} value={subject.subject_code}>
                           {subject.subject_name}
                         </option>
                       ))}
@@ -405,9 +395,9 @@ function StudentDash() {
                 </Col>
               </Row>
 
-              <Row className="mb-3">
-                <Col className="select-chapters" xs={12} md={6}>
-                  <Form.Group controlId="formChapters">
+              <Row className="form-row">
+                <Col md={6}>
+                  <Form.Group>
                     <Form.Label>
                       <FontAwesomeIcon icon={faListAlt} className="me-2" />
                       Chapters
@@ -415,75 +405,63 @@ function StudentDash() {
                     <Select
                       isMulti
                       options={chapters.map((chapter) => ({
-                        value: chapter.topic_code,
+                        value: chapter.chapter_code,
                         label: chapter.name,
                       }))}
-                      value={selectedChapters.map((code) => ({
-                        value: code,
-                        label: chapters.find(
-                          (chapter) => chapter.topic_code === code
-                        )?.name,
-                      }))}
-                      onChange={(selectedOptions) => {
-                        setSelectedChapters(
-                          selectedOptions.map((option) => option.value)
-                        );
-                      }}
+                      value={selectedChapters.map((chapterCode) => {
+                        const chapter = chapters.find(ch => ch.chapter_code === chapterCode);
+                        return { value: chapterCode, label: chapter?.name || chapterCode };
+                      })}
+                      onChange={(selectedOptions) =>
+                        setSelectedChapters(selectedOptions.map(option => option.value))
+                      }
+                      placeholder="Select chapters to study"
+                      className="react-select-enhanced"
                       classNamePrefix="react-select"
-                      placeholder="Select Chapters"
                       isDisabled={!selectedSubject}
                     />
                   </Form.Group>
                 </Col>
-                <Col xs={12} md={6}>
+                
+                <Col md={6}>
                   <Form.Group controlId="formQuestionType">
                     <Form.Label>
-                      <FontAwesomeIcon
-                        icon={faClipboardQuestion}
-                        className="me-2"
-                      />
+                      <FontAwesomeIcon icon={faClipboardQuestion} className="me-2" />
                       Question Type
                     </Form.Label>
                     <Form.Control
                       as="select"
                       value={questionType}
                       onChange={(e) => setQuestionType(e.target.value)}
-                      className="form-control"
+                      className="form-control-enhanced"
                       disabled={selectedChapters.length === 0}
                     >
-                      <option value="">Select Question Type</option>
-                      <option value="solved">Solved</option>
-                      <option value="exercise">Exercise</option>
-                      <option value="external">Set of Questions</option>
+                      <option value="">Select Type</option>
+                      <option value="solved">Solved Examples</option>
+                      <option value="exercise">Practice Exercises</option>
+                      <option value="external">External Questions</option>
                       <option value="worksheets">Worksheets</option>
                     </Form.Control>
                   </Form.Group>
                 </Col>
               </Row>
 
+              {/* Conditional fields for external questions and worksheets */}
               {questionType === "external" && (
-                <Row className="mb-3">
-                  <Col xs={12} md={6}>
-                    <Form.Group controlId="formQuestionLevel">
-                      <Form.Label>
-                        <FontAwesomeIcon
-                          icon={faClipboardQuestion}
-                          className="me-2"
-                        />
-                        Select The Set
-                      </Form.Label>
+                <Row className="form-row">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Difficulty Level</Form.Label>
                       <Form.Control
                         as="select"
                         value={questionLevel}
                         onChange={(e) => setQuestionLevel(e.target.value)}
-                        className="form-control"
+                        className="form-control-enhanced"
                       >
-                        <option value="">Select The Set</option>
-                        {subTopics.map((subTopic, index) => (
-                          <option key={subTopic} value={subTopic}>
-                            {`Exercise ${index + 1}`}
-                          </option>
-                        ))}
+                        <option value="">Select Level</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
                       </Form.Control>
                     </Form.Group>
                   </Col>
@@ -491,21 +469,15 @@ function StudentDash() {
               )}
 
               {questionType === "worksheets" && (
-                <Row className="mb-3">
-                  <Col xs={12} md={6}>
-                    <Form.Group controlId="formWorksheets">
-                      <Form.Label>
-                        <FontAwesomeIcon
-                          icon={faClipboardQuestion}
-                          className="me-2"
-                        />
-                        Select Worksheet
-                      </Form.Label>
+                <Row className="form-row">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Select Worksheet</Form.Label>
                       <Form.Control
                         as="select"
                         value={selectedWorksheet}
                         onChange={(e) => setSelectedWorksheet(e.target.value)}
-                        className="form-control"
+                        className="form-control-enhanced"
                       >
                         <option value="">Select Worksheet</option>
                         {worksheets.map((worksheet) => (
@@ -519,23 +491,24 @@ function StudentDash() {
                 </Row>
               )}
 
-              <div className="d-flex justify-content-end">
+              <div className="form-actions">
                 <Button
                   variant="primary"
                   type="submit"
-                  className="btn-generate mt-3"
+                  className="btn-generate-enhanced"
                   disabled={!isGenerateButtonEnabled()}
                 >
+                  <FontAwesomeIcon icon={faRocket} className="me-2" />
                   Generate Questions
                 </Button>
               </div>
             </Form>
           </div>
 
-          {/* Recent Sessions Section */}
+          {/* Recent Sessions */}
           <RecentSessions />
         </Container>
-      </main>
+      </div>
 
       <QuestionListModal
         show={showQuestionList}

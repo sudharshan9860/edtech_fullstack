@@ -10,7 +10,6 @@ import { CurrentQuestionProvider } from "./contexts/CurrentQuestionContext";
 import AppRoutes from "./routing/Routing";
 import ChatBox from "./components/ChatBox";
 import "./styles/theme.css";
-import { TutorialProvider } from "./contexts/TutorialContext";
 import { TimerProvider } from "./contexts/TimerContext";
 
 
@@ -37,13 +36,11 @@ function App() {
           <TimerProvider>
             <LeaderboardProvider>
               <QuestProvider>
-                <TutorialProvider>
                   <CurrentQuestionProvider>
                     <Router>
                       <AppContent />
                     </Router>
                   </CurrentQuestionProvider>
-                </TutorialProvider>
               </QuestProvider>
             </LeaderboardProvider>
           </TimerProvider>

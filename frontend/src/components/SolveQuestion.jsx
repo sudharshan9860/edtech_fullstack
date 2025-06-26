@@ -11,8 +11,6 @@ import { QUEST_TYPES } from "../models/QuestSystem";
 import { useSoundFeedback } from "../hooks/useSoundFeedback";
 import { useTimer } from "../contexts/TimerContext";
 import StudyTimer from "./StudyTimer";
-import Tutorial from "./Tutorial";
-import { useTutorial } from "../contexts/TutorialContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faCamera, faUpload } from "@fortawesome/free-solid-svg-icons";
 import "./StudyTimer.css";
@@ -96,57 +94,6 @@ function SolveQuestion() {
     };
   }, [currentQuestion.id]);
 
-  // Tutorial steps for SolveQuestion page
-  const tutorialSteps = [
-    {
-      target: ".study-timer",
-      content: "This timer tracks how long you spend on each question. It starts automatically when you open a question and stops when you submit your solution.",
-      disableBeacon: true,
-    },
-    {
-      target: ".question-text-container",
-      content:
-        "This is the question you need to solve. Read it carefully to understand what's being asked.",
-    },
-    {
-      target: ".image-source-buttons",
-      content:
-        "Choose how you want to add your solution: upload existing images or take photos with your camera.",
-    },
-    {
-      target: ".btn-submit",
-      content:
-        "After uploading your solution, click this button to submit it for evaluation.",
-    },
-    {
-      target: "button.btn-correct",
-      content:
-        "Click here to check if your answer is correct. Our system will analyze your solution image.",
-    },
-    {
-      target: ".btn-back",
-      content: "Click here to go back to the previous page.",
-    },
-    {
-      target: ".btn-question-list",
-      content: "Click here to see the list of questions.",
-    },
-    {
-      target: ".solve-btn",
-      content: "If you're stuck, click here to see a step-by-step solution.",
-    },
-    {
-      target: ".explain-btn",
-      content:
-        "Need more help? Click here to get an explanation of the concepts needed to solve this problem.",
-    },
-    {
-      target: ".gap-btn",
-      content:
-        "This will analyze your knowledge gaps related to this question and recommend what to study next.",
-    },
-  ];
-
   // Set current page when component mounts
   useEffect(() => {
     console.log("SolveQuestion component mounted");
@@ -157,13 +104,6 @@ function SolveQuestion() {
       console.log("Should show tutorial for SolveQuestion");
     }
   }, [setCurrentPage, shouldShowTutorialForPage]);
-
-  // Handle tutorial completion - this is the final step in the tutorial flow
-  const handleTutorialComplete = () => {
-    console.log("Tutorial completed in SolveQuestion");
-    markPageCompleted("solveQuestion");
-    exitTutorialFlow(); // Mark the entire tutorial flow as complete
-  };
 
   // Helper function to convert base64 to Blob
   const base64ToBlob = (base64Data, mimeType) => {

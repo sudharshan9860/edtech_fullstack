@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "./QuestionListModal.css";
-import Tutorial from "./Tutorial";
-import { useTutorial } from "../contexts/TutorialContext";
 import MarkdownWithMath from "./MarkdownWithMath";
 const QuestionListModal = ({
   show,
@@ -12,43 +10,8 @@ const QuestionListModal = ({
   isMultipleSelect = false,
   onMultipleSelectSubmit,
 }) => {
-  const {
-    markPageCompleted,
-    setCurrentPage,
-    continueTutorialFlow,
-    shouldShowTutorialForPage,
-    exitTutorialFlow,
-  } = useTutorial();
 
   const [selectedQuestions, setSelectedQuestions] = useState([]);
-
-  useEffect(() => {
-    if (show) {
-      console.log("QuestionListModal is now visible, setting current page");
-      setCurrentPage("questionListModal");
-      if (shouldShowTutorialForPage("questionListModal")) {
-        console.log("Should show tutorial for QuestionListModal");
-      }
-    }
-  }, [show, setCurrentPage, shouldShowTutorialForPage]);
-
-  const tutorialSteps = [
-    {
-      target: ".question-list",
-      content:
-        "Here's the list of questions we generated for you. Browse through them and select one to start.",
-      disableBeacon: true,
-    },
-    {
-      target: ".question-item",
-      content:
-        "Click on any question to start solving it. We'll continue the tutorial once you select a question.",
-    },
-  ];
-
-  const handleTutorialComplete = () => {
-    console.log("Tutorial steps in QuestionListModal completed");
-  };
 
   const handleQuestionClick = (questionData, index) => {
     if (isMultipleSelect) {
@@ -110,9 +73,6 @@ const QuestionListModal = ({
       size="lg"
       className="question-modal"
     >
-      {shouldShowTutorialForPage("questionListModal") && (
-        <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
-      )}
 
       <Modal.Header closeButton>
         <Modal.Title>
