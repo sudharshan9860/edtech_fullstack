@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useState, useContext, useEffect, useRef, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Form, Button, Spinner, Alert, Row, Col } from "react-bootstrap";
 import axiosInstance from "../api/axiosInstance";
@@ -12,7 +12,7 @@ import { useSoundFeedback } from "../hooks/useSoundFeedback";
 import { useTimer } from "../contexts/TimerContext";
 import StudyTimer from "./StudyTimer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faCamera, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faUpload } from "@fortawesome/free-solid-svg-icons";
 import "./StudyTimer.css";
 import { useCurrentQuestion } from "../contexts/CurrentQuestionContext";
 import MarkdownWithMath from "./MarkdownWithMath";
@@ -26,13 +26,6 @@ function SolveQuestion() {
   const { updateStudySession } = useContext(ProgressContext);
   const { addProgressNotification } = useContext(NotificationContext);
   const { updateQuestProgress } = useContext(QuestContext);
-  const {
-    shouldShowTutorialForPage,
-    markPageCompleted,
-    setCurrentPage,
-    exitTutorialFlow,
-    restartTutorialForPage,
-  } = useTutorial();
 
   // Timer context
   const { 
@@ -44,6 +37,22 @@ function SolveQuestion() {
   // Sound feedback hook
   const { playQuestionSolvedSound, playAchievementSound } = useSoundFeedback();
 
+  // Extract data from location state once
+  const locationData = location.state || {};
+  const {
+    question,
+    index,
+    questionList,
+    class_id,
+    subject_id,
+    topic_ids,
+    subtopic,
+    selectedQuestions,
+    questionNumber: locationQuestionNumber,
+    questionId: locationQuestionId,
+    image: locationImage
+  } = locationData;
+
   // State for tracking study session
   const [studyTime, setStudyTime] = useState(0);
   const [images, setImages] = useState([]);
@@ -54,56 +63,92 @@ function SolveQuestion() {
   const [error, setError] = useState(null);
   const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
 
-  // Extract data from location state
-  const {
-    question,
-    index,
-    questionList,
-    class_id,
-    subject_id,
-    topic_ids,
-    subtopic,
-    selectedQuestions,
-  } = location.state || {};
-  const { questionNumber } = location.state || {};
-  const questionId = location.state?.questionId || `question_${index}_${Date.now()}`;
-  const question_image =
-    location.state?.image || questionList?.[index]?.image || "";
+  // Initialize current question state
+  const [currentQuestion, setCurrentQuestion] = useState(() => {
+    const questionId = locationQuestionId || `question_${index}_${Date.now()}`;
+    const questionNumber = locationQuestionNumber || (index !== undefined ? index + 1 : 1);
+    const question_image = locationImage || questionList?.[index]?.image || "";
 
-  const [currentQuestion, setCurrentQuestion] = useState({
-    question: question,
-    questionNumber: questionNumber || (index !== undefined ? index + 1 : 1),
-    image: question_image,
-    id: questionId
+    return {
+      question: question || "",
+      questionNumber,
+      image: question_image,
+      id: questionId
+    };
   });
-
-  console.log("questionList", questionList);
 
   const { setCurrentQuestion: setContextQuestion } = useCurrentQuestion();
 
-  // Start timer when component mounts
+  // Use refs to track if we've already processed the location state
+  const hasInitialized = useRef(false);
+  const lastLocationKey = useRef(location.key);
+
+  // Memoized timer functions to prevent re-renders
+  const memoizedStartTimer = useCallback(startTimer, [startTimer]);
+  const memoizedStopTimer = useCallback(stopTimer, [stopTimer]);
+
+  // Only run timer setup once when component mounts or question changes
   useEffect(() => {
-    if (currentQuestion.id) {
-      startTimer(currentQuestion.id);
+    console.log("Timer effect running for question:", currentQuestion.id);
+    
+    if (currentQuestion.id && !hasInitialized.current) {
+      memoizedStartTimer(currentQuestion.id);
+      hasInitialized.current = true;
     }
     
-    // Stop timer when component unmounts
+    // Cleanup function
     return () => {
-      const timeSpent = stopTimer();
-      console.log(`Study session ended. Time spent: ${timeSpent}ms`);
+      if (hasInitialized.current) {
+        const timeSpent = memoizedStopTimer();
+        console.log(`Study session ended. Time spent: ${timeSpent}ms`);
+      }
     };
-  }, [currentQuestion.id]);
+  }, [currentQuestion.id, memoizedStartTimer, memoizedStopTimer]);
 
-  // Set current page when component mounts
+  // Handle location state changes only when location.key changes
   useEffect(() => {
-    console.log("SolveQuestion component mounted");
-    setCurrentPage("solveQuestion");
+    // Only process if this is a new navigation (different location key)
+    if (location.key !== lastLocationKey.current && location.state) {
+      console.log("Processing new location state");
+      lastLocationKey.current = location.key;
+      
+      const newQuestionId = locationQuestionId || `question_${index}_${Date.now()}`;
+      const newQuestionNumber = locationQuestionNumber || (index !== undefined ? index + 1 : 1);
+      const newImage = locationImage || "";
+      
+      const newQuestion = {
+        question: question || "",
+        questionNumber: newQuestionNumber,
+        image: newImage,
+        id: newQuestionId
+      };
 
-    // Check if tutorial should be shown
-    if (shouldShowTutorialForPage("solveQuestion")) {
-      console.log("Should show tutorial for SolveQuestion");
+      setCurrentQuestion(newQuestion);
+      setContextQuestion(newQuestion);
+
+      // Reset other state
+      setImages([]);
+      setError(null);
+      setUploadProgress(0);
+      setProcessingButton(null);
+      setIsSolveEnabled(true);
+
+      // Update timer for new question
+      memoizedStopTimer();
+      memoizedStartTimer(newQuestionId);
+      hasInitialized.current = true;
     }
-  }, [setCurrentPage, shouldShowTutorialForPage]);
+  }, [location.key, location.state]); // Only depend on location.key and location.state
+
+  // Log state for debugging - remove duplicate console.log
+  useEffect(() => {
+    console.log("Location state:", location.state);
+    console.log("Current question:", currentQuestion);
+    console.log("Selected Questions:", selectedQuestions);
+    if (questionList) {
+      console.log("questionList", questionList);
+    }
+  }, [location.state, currentQuestion, selectedQuestions, questionList]);
 
   // Helper function to convert base64 to Blob
   const base64ToBlob = (base64Data, mimeType) => {
@@ -135,43 +180,6 @@ function SolveQuestion() {
     }
   };
 
-  // Log state for debugging
-  useEffect(() => {
-    console.log("Location state:", location.state);
-    console.log("Current question:", currentQuestion);
-    console.log("Selected Questions:", selectedQuestions);
-    console.log("Question List:", questionList);
-  }, [location.state, currentQuestion, selectedQuestions, questionList]);
-
-  // Update currentQuestion when location state changes
-  useEffect(() => {
-    if (location.state) {
-      const newQuestionId = location.state?.questionId || `question_${index}_${Date.now()}`;
-      
-      const newQuestion = {
-        question: location.state.question || "",
-        questionNumber:
-          location.state.questionNumber ||
-          (index !== undefined ? index + 1 : 1),
-        image: location.state.image || "",
-        id: newQuestionId
-      };
-
-      setCurrentQuestion(newQuestion);
-      setContextQuestion(newQuestion); // Update the context with the new question
-
-      // Stop previous timer and start a new one
-      stopTimer();
-      startTimer(newQuestionId);
-
-      // Reset other state
-      setImages([]);
-      setError(null);
-      setUploadProgress(0);
-      setProcessingButton(null);
-    }
-  }, [location.state, index, setContextQuestion]);
-
   // Handle image upload
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -192,28 +200,28 @@ function SolveQuestion() {
   };
 
   // Handle captured image from camera
-  const handleCapturedImage = (capturedImageBlob) => {
+  const handleCapturedImage = useCallback((capturedImageBlob) => {
     // Convert blob to File object
     const file = new File([capturedImageBlob], `captured-solution-${Date.now()}.jpg`, { type: 'image/jpeg' });
     setImages(prevImages => [...prevImages, file]);
     setIsSolveEnabled(false);
     setError(null);
-  };
+  }, []);
 
   // Handle upload progress
-  const handleUploadProgress = (percent) => {
+  const handleUploadProgress = useCallback((percent) => {
     setUploadProgress(percent);
-  };
+  }, []);
 
   // Handle timer completion
-  const handleTimerComplete = (seconds) => {
+  const handleTimerComplete = useCallback((seconds) => {
     setStudyTime(seconds);
-  };
+  }, []);
 
   // Handlers for different actions
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     // Stop the timer and get the time spent
-    const timeSpentMs = stopTimer();
+    const timeSpentMs = memoizedStopTimer();
     const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
     
     // Add study time to the request
@@ -222,11 +230,11 @@ function SolveQuestion() {
       study_time_seconds: Math.floor(timeSpentMs / 1000),
       study_time_minutes: timeSpentMinutes
     }, "submit");
-  };
+  }, [memoizedStopTimer]);
 
-  const handleSolve = () => {
+  const handleSolve = useCallback(() => {
     // Stop the timer and get the time spent
-    const timeSpentMs = stopTimer();
+    const timeSpentMs = memoizedStopTimer();
     const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
     
     sendFormData({ 
@@ -234,11 +242,11 @@ function SolveQuestion() {
       study_time_seconds: Math.floor(timeSpentMs / 1000),
       study_time_minutes: timeSpentMinutes
     }, "solve");
-  };
+  }, [memoizedStopTimer]);
 
-  const handleExplain = () => {
+  const handleExplain = useCallback(() => {
     // Stop the timer and get the time spent
-    const timeSpentMs = stopTimer();
+    const timeSpentMs = memoizedStopTimer();
     const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
     
     sendFormData({ 
@@ -246,16 +254,16 @@ function SolveQuestion() {
       study_time_seconds: Math.floor(timeSpentMs / 1000),
       study_time_minutes: timeSpentMinutes
     }, "explain");
-  };
+  }, [memoizedStopTimer]);
 
   // Enhanced handleCorrect function
-  const handleCorrect = async () => {
+  const handleCorrect = useCallback(async () => {
     console.log("Starting handleCorrect function");
     setProcessingButton("correct");
     setError(null);
 
     // Stop the timer and get the time spent
-    const timeSpentMs = stopTimer();
+    const timeSpentMs = memoizedStopTimer();
     const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
 
     const formData = new FormData();
@@ -328,7 +336,7 @@ function SolveQuestion() {
         setUploadProgress(0);
         
         // Restart timer since submission failed
-        startTimer(currentQuestion.id);
+        memoizedStartTimer(currentQuestion.id);
       }
     };
 
@@ -375,12 +383,12 @@ function SolveQuestion() {
       // No question image to process
       finalizeAndSendForm();
     }
-  };
+  }, [memoizedStopTimer, currentQuestion, images, class_id, subject_id, topic_ids, subtopic, handleUploadProgress, updateStudySession, updateQuestProgress, navigate, questionList, playQuestionSolvedSound, memoizedStartTimer]);
 
   // New handler for Gap Analysis
-  const handleGapAnalysis = () => {
+  const handleGapAnalysis = useCallback(() => {
     // Stop the timer before navigating
-    stopTimer();
+    memoizedStopTimer();
 
     navigate("/gap-analysis", {
       state: {
@@ -391,10 +399,10 @@ function SolveQuestion() {
         topic_ids,
       },
     });
-  };
+  }, [memoizedStopTimer, navigate, currentQuestion, class_id, subject_id, topic_ids]);
 
   // Send form data with progress tracking
-  const sendFormData = async (flags = {}, actionType) => {
+  const sendFormData = useCallback(async (flags = {}, actionType) => {
     setProcessingButton(actionType);
     setError(null);
 
@@ -474,19 +482,19 @@ function SolveQuestion() {
       setUploadProgress(0);
       
       // Restart timer since submission failed
-      startTimer(currentQuestion.id);
+      memoizedStartTimer(currentQuestion.id);
     }
-  };
+  }, [class_id, subject_id, topic_ids, currentQuestion.question, subtopic, images, handleUploadProgress, updateStudySession, navigate, questionList, currentQuestion.image, currentQuestion.questionNumber, memoizedStartTimer]);
 
   // Cancel image upload
-  const handleCancelImage = (index) => {
+  const handleCancelImage = useCallback((index) => {
     const updatedImages = images.filter((_, i) => i !== index);
     setImages(updatedImages);
     setIsSolveEnabled(updatedImages.length === 0);
-  };
+  }, [images]);
 
-  // Select question from list with tutorial flow handling
-  const handleQuestionSelect = (
+  // Select question from list
+  const handleQuestionSelect = useCallback((
     selectedQuestion,
     selectedIndex,
     selectedImage
@@ -496,19 +504,21 @@ function SolveQuestion() {
     console.log("Selected image:", selectedImage);
 
     // Stop the current timer
-    stopTimer();
+    memoizedStopTimer();
 
     const newQuestionId = `question_${selectedIndex}_${Date.now()}`;
     
-    setCurrentQuestion({
+    const newQuestion = {
       question: selectedQuestion,
       questionNumber: selectedIndex + 1,
       image: selectedImage,
       id: newQuestionId
-    });
+    };
+
+    setCurrentQuestion(newQuestion);
 
     // Start a new timer for the selected question
-    startTimer(newQuestionId);
+    memoizedStartTimer(newQuestionId);
 
     // Reset image related state
     setImages([]);
@@ -518,50 +528,30 @@ function SolveQuestion() {
 
     // Close modal
     setShowQuestionListModal(false);
-  };
+  }, [memoizedStopTimer, memoizedStartTimer]);
 
   // Handle back button click
-  const handleBackClick = () => {
+  const handleBackClick = useCallback(() => {
     // Stop the timer before navigating back
-    stopTimer();
+    memoizedStopTimer();
     navigate(-1);
-  };
+  }, [memoizedStopTimer, navigate]);
 
   // Determine if a specific button is processing
-  const isButtonProcessing = (buttonType) => {
+  const isButtonProcessing = useCallback((buttonType) => {
     return processingButton === buttonType;
-  };
+  }, [processingButton]);
 
   // Determine if any button is processing (to disable all buttons)
-  const isAnyButtonProcessing = () => {
+  const isAnyButtonProcessing = useCallback(() => {
     return processingButton !== null;
-  };
+  }, [processingButton]);
 
   return (
     <div className="solve-question-wrapper">
-      {shouldShowTutorialForPage("solveQuestion") && (
-        <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
-      )}
-
       <div className="solve-question-container">
         {/* Header section with timer */}
-        <div className="solve-question-header d-flex justify-content-between align-items-center mb-3">
-          {/* Tutorial restart button */}
-          <div className="restart-tutorial-btn-container">
-            <Button
-              variant="outline-info"
-              className="restart-tutorial-btn"
-              onClick={() => {
-                console.log("Restarting tutorial on SolveQuestion page...");
-                restartTutorialForPage("solveQuestion");
-              }}
-              size="sm"
-            >
-              <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
-              Replay Tutorial
-            </Button>
-          </div>
-          
+        <div className="solve-question-header d-flex justify-content-end align-items-center mb-3">
           {/* Study Timer */}
           <StudyTimer 
             isActive={isTimerActive}
@@ -643,17 +633,17 @@ function SolveQuestion() {
               }}>
               
               <CameraCapture
-  onImageCapture={handleCapturedImage}
-  videoConstraints={{ 
-    facingMode: { ideal: "environment" },
-    // For text documents, use higher resolution
-    width: { ideal: 4096 },
-    height: { ideal: 3072 },
-    // Additional constraints for clarity
-    focusMode: { ideal: "continuous" },
-    exposureMode: { ideal: "continuous" }
-  }}
-/>
+                onImageCapture={handleCapturedImage}
+                videoConstraints={{ 
+                  facingMode: { ideal: "environment" },
+                  // For text documents, use higher resolution
+                  width: { ideal: 4096 },
+                  height: { ideal: 3072 },
+                  // Additional constraints for clarity
+                  focusMode: { ideal: "continuous" },
+                  exposureMode: { ideal: "continuous" }
+                }}
+              />
                 <p className="text-muted mt-2 text-center">
                   Click "Capture" to take a photo of your solution
                 </p>
