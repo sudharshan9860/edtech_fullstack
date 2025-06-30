@@ -490,7 +490,7 @@ const EnhancedTeacherDash = () => {
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Bar dataKey="efficiencyImprovement" fill="#22c55e" name="Efficiency Improvement" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="regularScoreImprovement" fill="#ef4444" name="Regular Score Improvement" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="regularScoreImprovement" fill="#000000" name="Regular Score Improvement" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -1398,7 +1398,7 @@ const EnhancedTeacherDash = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              Homework
+              Worksheets
             </button>
             <button 
               onClick={() => setActiveTab('exercise')}
@@ -1415,7 +1415,7 @@ const EnhancedTeacherDash = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              Quick Exercise
+              Homework
             </button>
             <button 
               onClick={() => setActiveTab('classwork')}

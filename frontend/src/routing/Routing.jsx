@@ -17,6 +17,10 @@ import QuestsPage from '../components/QuestsPage';
 import TeacherDash from '../components/EnhancedTeacherDash';   
 import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';
 import StudentGapAnalysisReport from '../components/StudentGapAnalysisReport';
+import WorksheetSubmission from '../components/WorksheetSubmission';
+
+// In your routes
+
 
 const AppRoutes = () => {
   return (
@@ -46,6 +50,12 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+
+      <Route path="/worksheet-submission" element={<PrivateRoute>
+            <Layout>
+              <WorksheetSubmission />
+            </Layout>
+          </PrivateRoute>} />
 
       <Route
         path="/solvequestion"

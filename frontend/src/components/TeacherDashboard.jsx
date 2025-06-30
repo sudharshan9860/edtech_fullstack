@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import './TeacherDashboard.css';
 import axiosInstance from '../api/axiosInstance';
 import CameraCapture from './CameraCapture';
+import QuestionListModal from './QuestionListModal'; // Import the modal
 import { AuthContext } from './AuthContext';
 
 const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }) => {
@@ -25,6 +26,13 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [worksheetName, setWorksheetName] = useState('');
+
+  // New state for question preview modal
+  const [showQuestionList, setShowQuestionList] = useState(false);
+  const [questionList, setQuestionList] = useState([]);
+  const [selectedQuestions, setSelectedQuestions] = useState([]);
+  const [isPreviewMode, setIsPreviewMode] = useState(true);
+  const [worksheetUploadData, setWorksheetUploadData] = useState(null);
 
   const { username } = useContext(AuthContext);
 
@@ -101,22 +109,73 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
     }
   }, [selectedClass, selectedSubject, selectedChapter, submissionType, classes, subjects, chapters]);
 
+  // Function to display questions from the uploaded worksheet response
+  const displayWorksheetQuestions = (uploadResponse) => {
+    try {
+      console.log("Processing worksheet upload response:", uploadResponse);
+      
+      // Extract questions from saved_worksheets array
+      const savedWorksheets = uploadResponse.saved_worksheets || [];
+      
+      // Process questions to match QuestionListModal format
+      const questionsWithImages = savedWorksheets.map((worksheet, index) => ({
+        question: worksheet.question_text,
+        question_image: null, // No base64 images in worksheet upload response
+        level: "Medium", // Default level since not provided
+        id: worksheet.id,
+        question_id: worksheet.question_id,
+        worksheet_name: worksheet.worksheet_name,
+        has_diagram: worksheet.has_diagram,
+        index: index // Add index for selection tracking
+      }));
+
+      console.log("Processed questions for modal:", questionsWithImages);
+      setQuestionList(questionsWithImages);
+      setSelectedQuestions([]); // Reset selected questions
+      setIsPreviewMode(true); // Set to preview mode
+      setShowQuestionList(true);
+    } catch (error) {
+      console.error("Error processing worksheet questions:", error);
+      setError("Failed to process worksheet questions for preview");
+    }
+  };
+
   // Separate function to handle worksheet upload
-  const handleWorksheetUpload = async () => {
+  const handleWorksheetUpload = async (preview = true) => {
     try {
       setIsSubmitting(true);
       setError(null);
       setSuccess('');
 
       // Validation for worksheet assignments
-      if (!selectedClass || !selectedSubject || !selectedChapter || !worksheetName.trim() || !worksheetFile) {
+      if (!selectedClass || !selectedSubject || !selectedChapter || !worksheetName.trim() || (!worksheetFile && preview)) {
         setError('Please fill in all worksheet fields and upload a worksheet file');
         return;
       }
 
       // Create FormData for worksheet upload to /worksheets/ endpoint
       const formData = new FormData();
-      formData.append('file', worksheetFile); // Backend expects 'file' key
+      
+      if (preview) {
+        // First time upload - include file and set preview=true
+        formData.append('file', worksheetFile); // Backend expects 'file' key
+        formData.append('preview', 'true');
+      } else {
+        // Final submission - no file, set preview=false and include selected questions
+        formData.append('preview', 'false');
+        
+        // Add selected questions data
+        const selectedQuestionsData = selectedQuestions.map(questionData => ({
+          id: questionData.id,
+          question_id: questionData.question_id,
+          question_text: questionData.question,
+          worksheet_name: questionData.worksheet_name,
+          has_diagram: questionData.has_diagram
+        }));
+        
+        formData.append('selected_questions', JSON.stringify(selectedQuestionsData));
+      }
+      
       formData.append('class_code', selectedClass);
       formData.append('subject_code', selectedSubject);
       formData.append('topic_code', selectedChapter);
@@ -127,28 +186,51 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
         formData.append('due_date', new Date(dueDate).toISOString());
       }
 
+      // Store upload data for final submission
+      if (preview) {
+        setWorksheetUploadData({
+          selectedClass,
+          selectedSubject,
+          selectedChapter,
+          worksheetName: worksheetName.trim(),
+          dueDate
+        });
+      }
+
       // Make API call to worksheets endpoint
-      // console.log('Uploading worksheet with data:', formData);
       const response = await axiosInstance.post('/worksheets/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      // console.log('Worksheet upload response:', response.data);
+
+      console.log('Worksheet upload response:', response.data);
+      
       if (response.data.success) {
-        setSuccess(`Successfully processed worksheet! Extracted ${response.data.total_questions} questions.`);
-        
-        // Reset worksheet form
-        setSelectedClass('');
-        setSelectedSubject('');
-        setSelectedChapter('');
-        setWorksheetName('');
-        setWorksheetFile(null);
-        setDueDate('');
-        
-        // Reset file input
-        const worksheetInput = document.getElementById('worksheet-file');
-        if (worksheetInput) worksheetInput.value = '';
+        if (preview) {
+          setSuccess(`Successfully processed worksheet! Extracted ${response.data.total_questions} questions. Please select questions to include.`);
+          
+          // Display questions for selection without resetting form
+          displayWorksheetQuestions(response.data);
+        } else {
+          setSuccess(`Successfully created worksheet assignment with ${selectedQuestions.length} selected questions!`);
+          
+          // Reset worksheet form after final submission
+          setSelectedClass('');
+          setSelectedSubject('');
+          setSelectedChapter('');
+          setWorksheetName('');
+          setWorksheetFile(null);
+          setDueDate('');
+          setSelectedQuestions([]);
+          setWorksheetUploadData(null);
+          
+          // Reset file input
+          const worksheetInput = document.getElementById('worksheet-file');
+          if (worksheetInput) worksheetInput.value = '';
+          
+          setShowQuestionList(false);
+        }
         
         console.log('Worksheet processing response:', response.data);
       } else {
@@ -174,7 +256,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
     // Handle worksheet upload separately
     if (submissionType === 'worksheet') {
-      await handleWorksheetUpload();
+      await handleWorksheetUpload(true); // true = preview mode
       return;
     }
 
@@ -286,6 +368,24 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
     }
   };
 
+  // Handle question preview modal actions
+  const handleQuestionClick = (question, index, image) => {
+    // For teacher dashboard, we might just want to view the question
+    // You can implement navigation to a preview/edit mode if needed
+    console.log('Teacher viewing question:', { question, index, image });
+  };
+
+  const handleMultipleSelectSubmit = async (selectedQuestionsData) => {
+    // Handle multiple selection for final worksheet submission
+    console.log('Teacher selected questions:', selectedQuestionsData);
+    setSelectedQuestions(selectedQuestionsData);
+    setShowQuestionList(false);
+    setIsPreviewMode(false);
+    
+    // Submit the final worksheet with selected questions
+    await handleWorksheetUpload(false); // false = final submission mode
+  };
+
   const getSubmissionCount = (assignmentId) => {
     return submissions.filter((s) => s.assignmentId === assignmentId).length;
   };
@@ -339,31 +439,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
             <div className="form-group">
               <label className="form-label">Assignment Type</label>
               <div className="type-buttons">
-                <button
-                  type="button"
-                  className={`type-btn ${submissionType === "text" ? 'active' : ''}`}
-                  onClick={() => setSubmissionType("text")}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14,2 14,8 20,8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                  </svg>
-                  Text Description
-                </button>
-                <button
-                  type="button"
-                  className={`type-btn ${submissionType === "image" ? 'active' : ''}`}
-                  onClick={() => setSubmissionType("image")}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="12" cy="8" r="3"/>
-                    <polyline points="16,21 16,14 8,14 8,21"/>
-                  </svg>
-                  Image Assignment
-                </button>
+              
                 <button
                   type="button"
                   className={`type-btn ${submissionType === "worksheet" ? 'active' : ''}`}
@@ -684,13 +760,13 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 submissionType === 'worksheet' ? (
                   <>
                     <span className="loading-spinner"></span>
-                    Processing Worksheet...
+                    {isPreviewMode ? "Processing Worksheet..." : "Creating Assignment..."}
                   </>
                 ) : (
                   "Creating..."
                 )
               ) : (
-                submissionType === 'worksheet' ? "📤 Process & Upload Worksheet" : "Create Assignment"
+                submissionType === 'worksheet' ? "📤 Process & Preview Worksheet" : "Create Assignment"
               )}
             </button>
           </form>
@@ -761,6 +837,20 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
           </div>
         </div>
       </div>
+
+      {/* Question Preview Modal */}
+      <QuestionListModal
+        show={showQuestionList}
+        onHide={() => {
+          setShowQuestionList(false);
+          setSelectedQuestions([]);
+          setIsPreviewMode(true);
+        }}
+        questionList={questionList}
+        onQuestionClick={handleQuestionClick}
+        isMultipleSelect={isPreviewMode} // Enable multiple selection in preview mode
+        onMultipleSelectSubmit={handleMultipleSelectSubmit}
+      />
     </div>
   );
 };

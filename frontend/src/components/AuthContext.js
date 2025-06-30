@@ -18,6 +18,10 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem("role") || "";
   });
 
+  const [className, setClassName] = useState(() => {
+    return localStorage.getItem("class_name") || ""; 
+  });
+
   // Sync state with localStorage changes
   useEffect(() => {
     const handleStorageChange = (e) => {
@@ -27,6 +31,8 @@ export const AuthProvider = ({ children }) => {
         setUsername(e.newValue || "");
       } else if (e.key === "role") {
         setRole(e.newValue || "");
+      } else if (e.key === "class_name") {
+        setClassName(e.newValue || ""); // Update class name state
       }
     };
 
@@ -34,17 +40,20 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const login = (user, token, userRole) => {
+  const login = (user, token, userRole,className) => {
+    console.log("Logging in user:", user, "with role:", userRole, "and class name:", className);
     try {
       // Store in localStorage
       localStorage.setItem("username", user);
       localStorage.setItem("accessToken", token);
       localStorage.setItem("role", userRole);
-
+      localStorage.setItem("class_name", className || ""); // Store class name if provided
       // Update state
+      console.log("Logging in user:", className);
       setIsAuthenticated(true);
       setUsername(user);
       setRole(userRole);
+      setClassName(className || ""); // Update class name state
     } catch (error) {
       console.error("Error during login:", error);
       throw new Error("Failed to store authentication data");
@@ -67,7 +76,8 @@ export const AuthProvider = ({ children }) => {
 
       setIsAuthenticated(false);
       setUsername("");
-      setRole("");
+      setRole("")
+      setClassName("");
 
       window.location.href = "/login";
     } catch (error) {
@@ -76,6 +86,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       setUsername("");
       setRole("");
+      setClassName("");
       window.location.href = "/login";
     }
   };

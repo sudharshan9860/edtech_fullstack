@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
@@ -8,12 +9,13 @@ import './HomeworkSubmissionForm.css';
 const HomeworkSubmissionForm = () => {
   const [submissionType, setSubmissionType] = useState("text");
   const [textResponse, setTextResponse] = useState("");
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]); // Changed from single file to array
   const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
   const [assignment, setAssignment] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0); // Add upload progress
   const location = useLocation();
   const navigate = useNavigate();
   const { username } = useContext(AuthContext);
@@ -25,7 +27,7 @@ const HomeworkSubmissionForm = () => {
         const homeworkDetails = location.state?.homeworkDetails;
         // Get homework code from either state or URL query parameters
         const homeworkCode = location.state?.homeworkCode || new URLSearchParams(location.search).get('code');
-        console.log("Homework_Code",homeworkCode)
+        console.log("Homework_Code", homeworkCode)
         if (!homeworkCode) {
           setError("No homework code provided");
           return;
@@ -50,11 +52,46 @@ const HomeworkSubmissionForm = () => {
     fetchAssignment();
   }, [location]);
 
+  // Handle multiple image upload
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    // Validate file size before accepting
+    const oversizedFiles = files.filter((file) => file.size > 5 * 1024 * 1024); // 5MB limit
+
+    if (oversizedFiles.length > 0) {
+      setError(
+        `Some files exceed the 5MB size limit. Please select smaller images.`
+      );
+      return;
+    }
+
+    setImageFiles(prevImages => [...prevImages, ...files]);
+    setError(null); // Clear previous errors
+  };
+
   // Handle captured image from camera
   const handleCapturedImage = (capturedImageBlob) => {
     // Convert blob to File object
     const file = new File([capturedImageBlob], `homework-response-${Date.now()}.jpg`, { type: 'image/jpeg' });
-    setImageFile(file);
+    setImageFiles(prevImages => [...prevImages, file]);
+    setError(null);
+  };
+
+  // Handle upload progress
+  const handleUploadProgress = (percent) => {
+    setUploadProgress(percent);
+  };
+
+  // Cancel/Remove specific image
+  const handleCancelImage = (index) => {
+    const updatedImages = imageFiles.filter((_, i) => i !== index);
+    setImageFiles(updatedImages);
+  };
+
+  // Clear all images
+  const handleClearAllImages = () => {
+    setImageFiles([]);
   };
 
   // Check if user is loaded
@@ -92,14 +129,15 @@ const HomeworkSubmissionForm = () => {
     setError(null);
     setSuccess(null);
     setIsSubmitting(true);
+    setUploadProgress(0);
 
     if (submissionType === "text" && !textResponse.trim()) {
       setError("Please provide a text response");
       setIsSubmitting(false);
       return;
     }
-    if (submissionType === "image" && !imageFile) {
-      setError("Please upload or capture an image");
+    if (submissionType === "image" && imageFiles.length === 0) {
+      setError("Please upload or capture at least one image");
       setIsSubmitting(false);
       return;
     }
@@ -112,21 +150,37 @@ const HomeworkSubmissionForm = () => {
 
       if (submissionType === "text") {
         formData.append('text_response', textResponse.trim());
-      } else if (imageFile) {
-        formData.append('image_response', imageFile);
+      } else if (imageFiles.length > 0) {
+        // Append multiple image files
+        imageFiles.forEach((file, index) => {
+          formData.append('image_response', file);
+        });
       }
 
-      // Submit the homework
-      console.log(formData)
-      await axiosInstance.post('/homework-submission/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Submit the homework with progress tracking
+      console.log(formData);
+      
+      let response;
+      if (submissionType === "image" && imageFiles.length > 0) {
+        // Use custom upload method with progress tracking for images
+        response = await axiosInstance.uploadFile(
+          '/homework-submission/',
+          formData,
+          handleUploadProgress
+        );
+      } else {
+        // Regular request for text submissions
+        response = await axiosInstance.post('/homework-submission/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
 
       setSuccess("Homework submitted successfully!");
       setTextResponse("");
-      setImageFile(null);
+      setImageFiles([]);
+      setUploadProgress(0);
 
       // Redirect to student dashboard after submission
       setTimeout(() => {
@@ -141,6 +195,7 @@ const HomeworkSubmissionForm = () => {
     } catch (error) {
       setError(error.response?.data?.message || "Failed to submit homework");
       console.error("Error submitting homework:", error);
+      setUploadProgress(0);
     } finally {
       setIsSubmitting(false);
     }
@@ -171,16 +226,22 @@ const HomeworkSubmissionForm = () => {
           {/* Assignment Details */}
           <div className="assignment-details">
             <h3 className="assignment-title">{assignment.title || 'Untitled Homework'}</h3>
-            {assignment.description && (
-              <p className="assignment-description">{assignment.description}</p>
-            )}
-            {assignment.attachment && (
-              <img
-                src={`data:image/jpeg;base64,${assignment.attachment}`}
-                alt="Assignment"
-                className="assignment-image"
-              />
-            )}
+            
+              {assignment.questions && assignment.questions.map((question, index) => {
+    return (  
+      <div key={index} className="assignment-question">
+        <h4 className="question-title">Question {index + 1}</h4>
+        <p className="question-text">{question.question}</p>
+        {question.image && (
+          <img 
+            src={question.image} 
+            alt={`Question ${index + 1}`} 
+            className="question-image"
+          />
+        )}
+      </div>
+    );
+  })}
             <div className="assignment-meta">
               <div className="meta-item">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -226,6 +287,7 @@ const HomeworkSubmissionForm = () => {
                 {success}
               </div>
             )}
+            
             <div className="form-group">
               <label className="form-label">Response Type</label>
               <div className="type-buttons">
@@ -234,8 +296,9 @@ const HomeworkSubmissionForm = () => {
                   className={`type-btn ${submissionType === "text" ? 'active' : ''}`}
                   onClick={() => {
                     setSubmissionType("text");
-                    setImageFile(null); // Clear image when switching to text
+                    setImageFiles([]); // Clear images when switching to text
                   }}
+                  disabled={isSubmitting}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -252,6 +315,7 @@ const HomeworkSubmissionForm = () => {
                     setSubmissionType("image");
                     setTextResponse(""); // Clear text when switching to image
                   }}
+                  disabled={isSubmitting}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -274,6 +338,7 @@ const HomeworkSubmissionForm = () => {
                   placeholder="Write your homework response here..."
                   rows="8"
                   required
+                  disabled={isSubmitting}
                 />
                 <p className="character-count">{textResponse.length} characters</p>
               </div>
@@ -286,94 +351,125 @@ const HomeworkSubmissionForm = () => {
                       type="button"
                       className={`type-btn ${imageSourceType === "upload" ? 'active' : ''}`}
                       onClick={() => setImageSourceType("upload")}
+                      disabled={isSubmitting}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17,8 12,3 7,8"/>
                         <line x1="12" y1="3" x2="12" y2="15"/>
                       </svg>
-                      Upload Image
+                      Upload Images
                     </button>
                     <button
                       type="button"
                       className={`type-btn ${imageSourceType === "camera" ? 'active' : ''}`}
                       onClick={() => setImageSourceType("camera")}
+                      disabled={isSubmitting}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                         <circle cx="12" cy="13" r="4"/>
                       </svg>
-                      Take Photo
+                      Take Photos
                     </button>
                   </div>
                 </div>
 
                 {imageSourceType === "upload" ? (
                   <div className="form-group">
-                    <label htmlFor="image-response" className="form-label">Upload Your Response</label>
+                    <label htmlFor="image-response" className="form-label">Upload Your Response Images</label>
                     <input
                       id="image-response"
                       type="file"
                       className="form-input file-input"
                       accept="image/*"
-                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                      required={submissionType === "image" && !imageFile}
+                      multiple // Enable multiple file selection
+                      onChange={handleImageChange}
+                      disabled={isSubmitting}
                     />
-                    {imageFile && (
-                      <div className="image-preview">
-                        <img
-                          src={URL.createObjectURL(imageFile)}
-                          alt="Response preview"
-                          className="preview-image"
-                        />
-                        <button
-                          type="button"
-                          className="remove-image-btn"
-                          onClick={() => setImageFile(null)}
-                        >
-                          Remove Image
-                        </button>
-                      </div>
-                    )}
+                    <p className="form-text-muted">
+                      Maximum file size: 5MB per image. You can select multiple images.
+                    </p>
                   </div>
                 ) : (
                   <div className="form-group">
-                    <label className="form-label">Capture Your Response</label>
+                    <label className="form-label">Capture Your Response Images</label>
                     <div className="camera-capture-container">
-                    <CameraCapture
-  onImageCapture={handleCapturedImage}
-  videoConstraints={{ 
-    facingMode: { ideal: "environment" },
-    // For text documents, use higher resolution
-    width: { ideal: 4096 },
-    height: { ideal: 3072 },
-    // Additional constraints for clarity
-    focusMode: { ideal: "continuous" },
-    exposureMode: { ideal: "continuous" }
-  }}
-/>
-                      {imageFile && (
-                        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                          <p style={{ color: '#10b981', fontWeight: '500', marginBottom: '0.5rem' }}>
-                            ✓ Image captured successfully
-                          </p>
-                          <div className="image-preview">
-                            <img
-                              src={URL.createObjectURL(imageFile)}
-                              alt="Captured response"
-                              className="preview-image"
-                            />
-                          </div>
+                      <CameraCapture
+                        onImageCapture={handleCapturedImage}
+                        videoConstraints={{ 
+                          facingMode: { ideal: "environment" },
+                          // For text documents, use higher resolution
+                          width: { ideal: 4096 },
+                          height: { ideal: 3072 },
+                          // Additional constraints for clarity
+                          focusMode: { ideal: "continuous" },
+                          exposureMode: { ideal: "continuous" }
+                        }}
+                      />
+                      <p className="form-text-muted">
+                        Click "Capture" to take photos of your homework response. You can capture multiple images.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Progress Bar */}
+                {isSubmitting && uploadProgress > 0 && (
+                  <div className="upload-progress">
+                    <div className="progress-bar-container">
+                      <div
+                        className="progress-bar"
+                        style={{ width: `${uploadProgress}%` }}
+                      >
+                        {uploadProgress}%
+                      </div>
+                    </div>
+                    <p className="progress-text">
+                      Uploading images... Please don't close this page.
+                    </p>
+                  </div>
+                )}
+
+                {/* Image Previews */}
+                {imageFiles.length > 0 && (
+                  <div className="uploaded-images">
+                    <div className="images-header">
+                      <h6>Uploaded Images ({imageFiles.length})</h6>
+                      <button
+                        type="button"
+                        className="clear-all-btn"
+                        onClick={handleClearAllImages}
+                        disabled={isSubmitting}
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="images-grid">
+                      {imageFiles.map((image, index) => (
+                        <div key={index} className="image-preview-container">
+                          <img
+                            src={URL.createObjectURL(image)}
+                            alt={`Preview ${index + 1}`}
+                            className="preview-image"
+                          />
                           <button
                             type="button"
-                            onClick={() => setImageFile(null)}
-                            className="retake-photo-btn"
-                            style={{ marginTop: '1rem' }}
+                            className="remove-image-btn"
+                            onClick={() => handleCancelImage(index)}
+                            disabled={isSubmitting}
+                            aria-label="Remove image"
                           >
-                            Retake Photo
+                            ×
                           </button>
+                          <div className="image-info">
+                            <span className="image-name">{image.name}</span>
+                            <span className="image-size">
+                              {(image.size / 1024 / 1024).toFixed(2)} MB
+                            </span>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
                 )}
@@ -384,7 +480,7 @@ const HomeworkSubmissionForm = () => {
               <button
                 type="submit"
                 className="submit-btn"
-                disabled={isSubmitting}
+                disabled={isSubmitting || (submissionType === "image" && imageFiles.length === 0) || (submissionType === "text" && !textResponse.trim())}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Homework'}
               </button>
@@ -396,4 +492,4 @@ const HomeworkSubmissionForm = () => {
   );
 };
 
-export default HomeworkSubmissionForm;
+export default HomeworkSubmissionForm; 

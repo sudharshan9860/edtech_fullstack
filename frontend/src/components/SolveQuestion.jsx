@@ -11,10 +11,8 @@ import { QUEST_TYPES } from "../models/QuestSystem";
 import { useSoundFeedback } from "../hooks/useSoundFeedback";
 import { useTimer } from "../contexts/TimerContext";
 import StudyTimer from "./StudyTimer";
-import Tutorial from "./Tutorial";
-import { useTutorial } from "../contexts/TutorialContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faCamera, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faUpload } from "@fortawesome/free-solid-svg-icons";
 import "./StudyTimer.css";
 import { useCurrentQuestion } from "../contexts/CurrentQuestionContext";
 import MarkdownWithMath from "./MarkdownWithMath";
@@ -28,13 +26,6 @@ function SolveQuestion() {
   const { updateStudySession } = useContext(ProgressContext);
   const { addProgressNotification } = useContext(NotificationContext);
   const { updateQuestProgress } = useContext(QuestContext);
-  const {
-    shouldShowTutorialForPage,
-    markPageCompleted,
-    setCurrentPage,
-    exitTutorialFlow,
-    restartTutorialForPage,
-  } = useTutorial();
 
   // Timer context
   const { 
@@ -96,105 +87,6 @@ function SolveQuestion() {
     };
   }, [currentQuestion.id]);
 
-  // Tutorial steps for SolveQuestion page
-  const tutorialSteps = [
-    {
-      target: ".study-timer",
-      content: "This timer tracks how long you spend on each question. It starts automatically when you open a question and stops when you submit your solution.",
-      disableBeacon: true,
-    },
-    {
-      target: ".question-text-container",
-      content:
-        "This is the question you need to solve. Read it carefully to understand what's being asked.",
-    },
-    {
-      target: ".image-source-buttons",
-      content:
-        "Choose how you want to add your solution: upload existing images or take photos with your camera.",
-    },
-    {
-      target: ".btn-submit",
-      content:
-        "After uploading your solution, click this button to submit it for evaluation.",
-    },
-    {
-      target: "button.btn-correct",
-      content:
-        "Click here to check if your answer is correct. Our system will analyze your solution image.",
-    },
-    {
-      target: ".btn-back",
-      content: "Click here to go back to the previous page.",
-    },
-    {
-      target: ".btn-question-list",
-      content: "Click here to see the list of questions.",
-    },
-    {
-      target: ".solve-btn",
-      content: "If you're stuck, click here to see a step-by-step solution.",
-    },
-    {
-      target: ".explain-btn",
-      content:
-        "Need more help? Click here to get an explanation of the concepts needed to solve this problem.",
-    },
-    {
-      target: ".gap-btn",
-      content:
-        "This will analyze your knowledge gaps related to this question and recommend what to study next.",
-    },
-  ];
-
-  // Set current page when component mounts
-  useEffect(() => {
-    console.log("SolveQuestion component mounted");
-    setCurrentPage("solveQuestion");
-
-    // Check if tutorial should be shown
-    if (shouldShowTutorialForPage("solveQuestion")) {
-      console.log("Should show tutorial for SolveQuestion");
-    }
-  }, [setCurrentPage, shouldShowTutorialForPage]);
-
-  // Handle tutorial completion - this is the final step in the tutorial flow
-  const handleTutorialComplete = () => {
-    console.log("Tutorial completed in SolveQuestion");
-    markPageCompleted("solveQuestion");
-    exitTutorialFlow(); // Mark the entire tutorial flow as complete
-  };
-
-  // Helper function to convert base64 to Blob
-  const base64ToBlob = (base64Data, mimeType) => {
-    try {
-      // Remove data URL prefix if it exists
-      const dataStart = base64Data.indexOf(",");
-      const actualData =
-        dataStart !== -1 ? base64Data.slice(dataStart + 1) : base64Data;
-
-      const byteCharacters = atob(actualData);
-      const byteArrays = [];
-
-      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-        const slice = byteCharacters.slice(offset, offset + 512);
-
-        const byteNumbers = new Array(slice.length);
-        for (let i = 0; i < slice.length; i++) {
-          byteNumbers[i] = slice.charCodeAt(i);
-        }
-
-        const byteArray = new Uint8Array(byteNumbers);
-        byteArrays.push(byteArray);
-      }
-
-      return new Blob(byteArrays, { type: mimeType });
-    } catch (error) {
-      console.error("Error converting base64 to blob:", error);
-      return null;
-    }
-  };
-
   // Log state for debugging
   useEffect(() => {
     console.log("Location state:", location.state);
@@ -231,6 +123,36 @@ function SolveQuestion() {
       setProcessingButton(null);
     }
   }, [location.state, index, setContextQuestion]);
+
+  // Helper function to convert base64 to Blob
+  const base64ToBlob = (base64Data, mimeType) => {
+    try {
+      // Remove data URL prefix if it exists
+      const dataStart = base64Data.indexOf(",");
+      const actualData =
+        dataStart !== -1 ? base64Data.slice(dataStart + 1) : base64Data;
+
+      const byteCharacters = atob(actualData);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+
+      return new Blob(byteArrays, { type: mimeType });
+    } catch (error) {
+      console.error("Error converting base64 to blob:", error);
+      return null;
+    }
+  };
 
   // Handle image upload
   const handleImageChange = (e) => {
@@ -369,6 +291,8 @@ function SolveQuestion() {
             subtopic,
             questionImage: currentQuestion.image,
             questionNumber: currentQuestion.questionNumber,
+            // Add the student's uploaded/captured images
+            studentImages: images.map(img => URL.createObjectURL(img))
           },
         });
 
@@ -545,7 +469,7 @@ function SolveQuestion() {
     setIsSolveEnabled(updatedImages.length === 0);
   };
 
-  // Select question from list with tutorial flow handling
+  // Select question from list
   const handleQuestionSelect = (
     selectedQuestion,
     selectedIndex,
@@ -597,31 +521,23 @@ function SolveQuestion() {
     return processingButton !== null;
   };
 
+  // Clean up object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      images.forEach(img => {
+        if (img instanceof File) {
+          const url = URL.createObjectURL(img);
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [images]);
+
   return (
     <div className="solve-question-wrapper">
-      {shouldShowTutorialForPage("solveQuestion") && (
-        <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
-      )}
-
       <div className="solve-question-container">
         {/* Header section with timer */}
         <div className="solve-question-header d-flex justify-content-between align-items-center mb-3">
-          {/* Tutorial restart button */}
-          <div className="restart-tutorial-btn-container">
-            <Button
-              variant="outline-info"
-              className="restart-tutorial-btn"
-              onClick={() => {
-                console.log("Restarting tutorial on SolveQuestion page...");
-                restartTutorialForPage("solveQuestion");
-              }}
-              size="sm"
-            >
-              <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
-              Replay Tutorial
-            </Button>
-          </div>
-          
           {/* Study Timer */}
           <StudyTimer 
             isActive={isTimerActive}
@@ -703,17 +619,17 @@ function SolveQuestion() {
               }}>
               
               <CameraCapture
-  onImageCapture={handleCapturedImage}
-  videoConstraints={{ 
-    facingMode: { ideal: "environment" },
-    // For text documents, use higher resolution
-    width: { ideal: 4096 },
-    height: { ideal: 3072 },
-    // Additional constraints for clarity
-    focusMode: { ideal: "continuous" },
-    exposureMode: { ideal: "continuous" }
-  }}
-/>
+                onImageCapture={handleCapturedImage}
+                videoConstraints={{ 
+                  facingMode: { ideal: "environment" },
+                  // For text documents, use higher resolution
+                  width: { ideal: 4096 },
+                  height: { ideal: 3072 },
+                  // Additional constraints for clarity
+                  focusMode: { ideal: "continuous" },
+                  exposureMode: { ideal: "continuous" }
+                }}
+              />
                 <p className="text-muted mt-2 text-center">
                   Click "Capture" to take a photo of your solution
                 </p>
@@ -796,7 +712,7 @@ function SolveQuestion() {
           </div>
         )}
 
-        {/* New Button Layout */}
+        {/* Button Layout */}
         <div className="button-grid mt-4">
           {/* Top Row with Navigation and Submit */}
           <Row className="mb-3">
@@ -866,7 +782,7 @@ function SolveQuestion() {
                     Processing...
                   </>
                 ) : (
-                  "Correct"
+                  "Auto-Correct"
                 )}
               </Button>
             </Col>

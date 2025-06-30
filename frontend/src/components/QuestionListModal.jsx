@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import "./QuestionListModal.css";
-import Tutorial from "./Tutorial";
-import { useTutorial } from "../contexts/TutorialContext";
 import MarkdownWithMath from "./MarkdownWithMath";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClipboardCheck } from "@fortawesome/free-solid-svg-icons";
+
 const QuestionListModal = ({
   show,
   onHide,
@@ -11,44 +13,10 @@ const QuestionListModal = ({
   onQuestionClick,
   isMultipleSelect = false,
   onMultipleSelectSubmit,
+  worksheetName = "",
 }) => {
-  const {
-    markPageCompleted,
-    setCurrentPage,
-    continueTutorialFlow,
-    shouldShowTutorialForPage,
-    exitTutorialFlow,
-  } = useTutorial();
-
+  const navigate = useNavigate();
   const [selectedQuestions, setSelectedQuestions] = useState([]);
-
-  useEffect(() => {
-    if (show) {
-      console.log("QuestionListModal is now visible, setting current page");
-      setCurrentPage("questionListModal");
-      if (shouldShowTutorialForPage("questionListModal")) {
-        console.log("Should show tutorial for QuestionListModal");
-      }
-    }
-  }, [show, setCurrentPage, shouldShowTutorialForPage]);
-
-  const tutorialSteps = [
-    {
-      target: ".question-list",
-      content:
-        "Here's the list of questions we generated for you. Browse through them and select one to start.",
-      disableBeacon: true,
-    },
-    {
-      target: ".question-item",
-      content:
-        "Click on any question to start solving it. We'll continue the tutorial once you select a question.",
-    },
-  ];
-
-  const handleTutorialComplete = () => {
-    console.log("Tutorial steps in QuestionListModal completed");
-  };
 
   const handleQuestionClick = (questionData, index) => {
     if (isMultipleSelect) {
@@ -64,9 +32,6 @@ const QuestionListModal = ({
         }
       });
     } else {
-      console.log("Question clicked, continuing tutorial flow");
-      continueTutorialFlow("questionListModal", "solveQuestion");
-
       const selectedQuestion = {
         question: questionData.question,
         image: questionData.question_image
@@ -91,13 +56,18 @@ const QuestionListModal = ({
     }
   };
 
+  const handleSolveWorksheet = () => {
+    // Navigate to worksheet submission page with worksheet name and questions
+    navigate("/worksheet-submission", {
+      state: {
+        worksheetName: worksheetName,
+        worksheetQuestions: questionList,
+      }
+    });
+    onHide();
+  };
+
   const handleModalClose = () => {
-    console.log("QuestionListModal closing");
-    if (shouldShowTutorialForPage("questionListModal")) {
-      console.log("Modal closed during tutorial, marking as complete");
-      markPageCompleted("questionListModal");
-      exitTutorialFlow();
-    }
     setSelectedQuestions([]);
     onHide();
   };
@@ -110,13 +80,13 @@ const QuestionListModal = ({
       size="lg"
       className="question-modal"
     >
-      {shouldShowTutorialForPage("questionListModal") && (
-        <Tutorial steps={tutorialSteps} onComplete={handleTutorialComplete} />
-      )}
-
       <Modal.Header closeButton>
         <Modal.Title>
-          {isMultipleSelect ? "Select up to 5 Questions" : "Question List"}
+          {worksheetName 
+            ? `Worksheet: ${worksheetName}` 
+            : isMultipleSelect 
+              ? "Select up to 5 Questions" 
+              : "Question List"}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -128,10 +98,11 @@ const QuestionListModal = ({
                   key={index}
                   className={`question-item ${
                     selectedQuestions.includes(index) ? "selected" : ""
-                  }`}
-                  onClick={() => handleQuestionClick(questionData, index)}
+                  } ${worksheetName ? "worksheet-question" : ""}`}
+                  onClick={() => !worksheetName && handleQuestionClick(questionData, index)}
+                  style={{ cursor: worksheetName ? "default" : "pointer" }}
                 >
-                  {isMultipleSelect && (
+                  {isMultipleSelect && !worksheetName && (
                     <input
                       type="checkbox"
                       checked={selectedQuestions.includes(index)}
@@ -145,12 +116,12 @@ const QuestionListModal = ({
                     </div>
 
                     <div
-  className={`question-level ${
-    questionData.level?.toLowerCase() || ""
-  }`}
->
-  {questionData.level}
-</div>
+                      className={`question-level ${
+                        questionData.level?.toLowerCase() || ""
+                      }`}
+                    >
+                      {questionData.level}
+                    </div>
 
                     {questionData.question_image && (
                       <div className="question-image-preview">
@@ -171,7 +142,17 @@ const QuestionListModal = ({
         </div>
       </Modal.Body>
       <Modal.Footer>
-        {isMultipleSelect && (
+        {worksheetName && (
+          <Button
+            variant="success"
+            onClick={handleSolveWorksheet}
+            className="me-2"
+          >
+            <FontAwesomeIcon icon={faClipboardCheck} className="me-2" />
+            Solve Worksheet
+          </Button>
+        )}
+        {isMultipleSelect && !worksheetName && (
           <Button
             variant="primary"
             onClick={handleMultipleSelectSubmit}

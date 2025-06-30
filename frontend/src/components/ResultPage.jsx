@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Container, Row, Col, Accordion, Alert, Spinner } from 'react-bootstrap';
 import './ResultPage.css';
 import QuestionListModal from './QuestionListModal';
 import axiosInstance from '../api/axiosInstance';
 import MarkdownWithMath from './MarkdownWithMath';
+
 const ResultPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -24,7 +25,8 @@ const ResultPage = () => {
     topic_ids, 
     subtopic,
     questionImage,
-    questionNumber
+    questionNumber,
+    studentImages = [] // Get student images from state
   } = state || {};
  
   const { 
@@ -39,16 +41,56 @@ const ResultPage = () => {
     obtained_marks, 
     total_marks, 
     question_marks,
-    question_image_base64
+    question_image_base64,
+    student_answer_base64 // Add this to get the processed student image from API
   } = ai_data || {};
 
-  const formated_concepts_used= Array.isArray(concepts_used)
-  ? concepts_used.join(', ')
-  : concepts_used || '';
+  const formated_concepts_used = Array.isArray(concepts_used)
+    ? concepts_used.join(', ')
+    : concepts_used || '';
+
+  // Combine student images from state and API response
+  const getAllStudentImages = () => {
+    const images = [];
+    
+    // Add images from state (uploaded/captured images)
+    if (studentImages && studentImages.length > 0) {
+      studentImages.forEach((imageUrl, index) => {
+        images.push({
+          src: imageUrl,
+          type: 'uploaded',
+          label: `Uploaded Image ${index + 1}`
+        });
+      });
+    }
+    
+    // Add processed image from API response
+    if (student_answer_base64) {
+      images.push({
+        src: `data:image/jpeg;base64,${student_answer_base64}`,
+        type: 'processed',
+        label: 'Processed Solution'
+      });
+    }
+    
+    return images;
+  };
+
+  const allStudentImages = getAllStudentImages();
+
+  // Cleanup object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      studentImages.forEach(url => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [studentImages]);
 
   // Auto-calculate score if none is provided from API
   useEffect(() => {
-    // Only auto-calculate for 'submit' and 'correct' actions if no score is provided
     if ((actionType === 'submit' || actionType === 'correct') && 
         student_answer && 
         obtained_marks === undefined && 
@@ -66,25 +108,21 @@ const ResultPage = () => {
     setIsCalculatingScore(true);
     
     try {
-      // Try to use AI to score the answer
       const aiScoringResponse = await axiosInstance.post('/auto-score/', {
         student_answer,
         question,
         expected_solution: ai_explaination || solution || [],
         total_marks: total_marks || question_marks || 10
-      }).catch(() => null); // Fail gracefully if endpoint doesn't exist
+      }).catch(() => null);
 
       if (aiScoringResponse?.data?.score !== undefined) {
-        // Use AI-generated score if available
         setAutoCalculatedScore(aiScoringResponse.data.score);
       } else {
-        // Fallback to basic keyword matching if AI scoring fails
         const fallbackScore = calculateFallbackScore();
         setAutoCalculatedScore(fallbackScore);
       }
     } catch (error) {
       console.error('Error calculating score:', error);
-      // Fallback to basic scoring if API fails
       const fallbackScore = calculateFallbackScore();
       setAutoCalculatedScore(fallbackScore);
     } finally {
@@ -96,27 +134,24 @@ const ResultPage = () => {
   const calculateFallbackScore = () => {
     const totalMark = total_marks || question_marks || 10;
     
-    // Convert expected solution to string for comparison
     const expectedSolution = Array.isArray(ai_explaination) 
       ? ai_explaination.join(' ') 
       : (Array.isArray(solution) ? solution.join(' ') : '');
     
     if (!expectedSolution) {
-      return 0; // No way to score without an expected solution
+      return 0;
     }
 
-    // Normalize text for comparison
     const normalizeText = (text) => {
       return text.toLowerCase()
         .replace(/\s+/g, ' ')
-        .replace(/[^\w\s]/g, '') // Remove punctuation
+        .replace(/[^\w\s]/g, '')
         .trim();
     };
     
     const normalizedStudentAnswer = normalizeText(student_answer);
     const normalizedSolution = normalizeText(expectedSolution);
     
-    // Extract keywords for comparison
     const extractKeywords = (text) => {
       const commonWords = ['the', 'and', 'is', 'in', 'of', 'to', 'for', 'a', 'by', 'with', 'as'];
       const words = text.split(/\s+/);
@@ -128,7 +163,6 @@ const ResultPage = () => {
     const solutionKeywords = extractKeywords(normalizedSolution);
     const studentKeywords = extractKeywords(normalizedStudentAnswer);
     
-    // Count matching keywords
     let matchCount = 0;
     for (const keyword of solutionKeywords) {
       if (studentKeywords.includes(keyword)) {
@@ -136,20 +170,16 @@ const ResultPage = () => {
       }
     }
     
-    // Calculate percentage match (with minimum score of 1 if any match is found)
     const matchPercentage = solutionKeywords.length > 0 
       ? matchCount / solutionKeywords.length 
       : 0;
     
-    // Convert to score out of total marks
     let calculatedScore = Math.round(matchPercentage * totalMark);
     
-    // Ensure score is at least 1 if there was some match and answer isn't empty
     if (calculatedScore === 0 && matchCount > 0 && normalizedStudentAnswer.length > 10) {
       calculatedScore = 1;
     }
     
-    // Special case: If answer matches nearly exactly, give full marks
     if (matchPercentage > 0.8) {
       calculatedScore = totalMark;
     }
@@ -161,6 +191,22 @@ const ResultPage = () => {
     navigate('/student-dash');
   };
 
+  const handleBack = () => {
+    navigate('/solvequestion', {
+      state: {
+        question: question,
+        questionNumber: questionNumber,
+        questionList: questionList,
+        class_id: class_id,
+        subject_id: subject_id,
+        topic_ids: topic_ids,
+        subtopic: subtopic,
+        image: questionImage,
+        index: questionNumber ? questionNumber - 1 : 0,
+        selectedQuestions: questionList
+      }
+    });
+  };
   const handleShowQuestionList = () => {
     setShowQuestionListModal(true);
   };
@@ -205,30 +251,26 @@ const ResultPage = () => {
 
   // Display the score with proper formatting
   const renderScore = () => {
-    // First try to use the API-provided score
     const scoreFromApi = obtained_marks !== undefined 
                     ? (typeof obtained_marks === 'number' ? obtained_marks : parseInt(obtained_marks, 10))
                     : (score !== undefined 
                         ? (typeof score === 'number' ? score : parseInt(score, 10))
                         : null);
     
-     // Get the total marks value
-  const totalValue = total_marks !== undefined
-  ? (typeof total_marks === 'number' ? total_marks : parseInt(total_marks, 10))
-  : (question_marks !== undefined
-      ? (typeof question_marks === 'number' ? question_marks : parseInt(question_marks, 10))
-      : 10);
+    const totalValue = total_marks !== undefined
+      ? (typeof total_marks === 'number' ? total_marks : parseInt(total_marks, 10))
+      : (question_marks !== undefined
+          ? (typeof question_marks === 'number' ? question_marks : parseInt(question_marks, 10))
+          : 10);
 
-// If API score is available, use it
-if (scoreFromApi !== null) {
-return (
-<div className="result-score">
-<p><strong>Score:</strong> {scoreFromApi} / {totalValue}</p>
-</div>
-);
-}
+    if (scoreFromApi !== null) {
+      return (
+        <div className="result-score">
+          <p><strong>Score:</strong> {scoreFromApi} / {totalValue}</p>
+        </div>
+      );
+    }
     
-    // If we're calculating score, show loading spinner
     if (isCalculatingScore) {
       return (
         <div className="result-score calculating">
@@ -239,73 +281,53 @@ return (
         </div>
       );
     }
-    
-    // If we have auto-calculated a score, show it
-    // if (autoCalculatedScore !== null) {
-    //   return (
-    //     <div className="result-score auto-calculated">
-    //       <p><strong>Auto-Score:</strong> {autoCalculatedScore} / {totalValue}</p>
-    //       <span className="score-note">This score was auto-calculated based on your answer</span>
-    //     </div>
-    //   );
-    // }
-    
-    // // Default case: show zero score
-    // return (
-    //   <div className="result-score">
-    //     <p><strong>Score:</strong> 0 / {totalValue}</p>
-    //   </div>
-    // );
   };
 
   // Function to render solution steps with proper formatting
-// Improved renderSolutionSteps function for ResultPage.jsx
-const renderSolutionSteps = (steps) => {
-  if (!steps || !Array.isArray(steps) || steps.length === 0) {
-    return <p>No solution steps available.</p>;
-  }
+  const renderSolutionSteps = (steps) => {
+    if (!steps || !Array.isArray(steps) || steps.length === 0) {
+      return <p>No solution steps available.</p>;
+    }
 
-  return (
-    <div className="solution-steps">
-      {steps.map((step, index) => {
-        // Check if the step contains a "Step X:" pattern
-        const stepMatch = step.match(/^Step\s+(\d+):\s+(.*)/i);
-        
-        if (stepMatch) {
-          const [_, stepNumber, stepContent] = stepMatch;
-          return (
-            <div key={index} className="solution-step-container">
-              <div className="step-title">Step {stepNumber}:</div>
-              <div className="step-description">
-                <MarkdownWithMath content={stepContent} />
+    return (
+      <div className="solution-steps">
+        {steps.map((step, index) => {
+          const stepMatch = step.match(/^Step\s+(\d+):\s+(.*)/i);
+          
+          if (stepMatch) {
+            const [_, stepNumber, stepContent] = stepMatch;
+            return (
+              <div key={index} className="solution-step-container">
+                <div className="step-title">Step {stepNumber}:</div>
+                <div className="step-description">
+                  <MarkdownWithMath content={stepContent} />
+                </div>
               </div>
-            </div>
-          );
-        } else {
-          // For steps without explicit "Step X:" format
-          return (
-            <div key={index} className="solution-step-container">
-              <div className="question-step">
-                <MarkdownWithMath content={step} />
+            );
+          } else {
+            return (
+              <div key={index} className="solution-step-container">
+                <div className="question-step">
+                  <MarkdownWithMath content={step} />
+                </div>
               </div>
-            </div>
-          );
-        }
-      })}
-    </div>
-  );
-};
+            );
+          }
+        })}
+      </div>
+    );
+  };
 
   const formatExampleContent = (example) => {
     if (!example) return null;
 
-    // Separate the initial part (before first Step) and the steps
     const [intro, ...stepParts] = example.split(/Step \d+:/);
     
     return (
       <div className="example-content">
         <p>
-          <MarkdownWithMath content={example.trim()} /></p>
+          <MarkdownWithMath content={example.trim()} />
+        </p>
         <div className="example-steps">
           {stepParts.map((step, index) => (
             <div key={index} className="example-step">
@@ -323,7 +345,7 @@ const renderSolutionSteps = (steps) => {
     }
 
     switch (actionType) {
-      
+
       case 'submit':
         return (
           <>
@@ -374,27 +396,27 @@ const renderSolutionSteps = (steps) => {
             )}
           </>
         );
-      case 'correct':
-        return (
-          <>
+        case 'correct':   
+        return (         
+        <>
             <div className="result-question">
               <p><strong>Student Answer:</strong></p>
               <div className="student-answer-content">
                 {student_answer || "No answer submitted"}
               </div>
             </div>
-            <div className="result-question">
-              <p className="solution-header">AI Solution:</p>
-              {question_image_base64 && (
-                <div className="solution-image-container">
-                  <img 
-                    src={`data:image/jpeg;base64,${question_image_base64}`}
-                    alt="Solution diagram"
-                    className="solution-image"
-                  />
-                </div>
-              )}
-              {renderSolutionSteps(ai_explaination)}
+          <div className="result-question">
+            <p className="solution-header">AI Solution:</p>
+            {question_image_base64 && (
+              <div className="solution-image-container">
+                <img 
+                  src={`data:image/jpeg;base64,${question_image_base64}`}
+                  alt="Solution diagram"
+                  className="solution-image"
+                />
+              </div>
+            )}
+            {renderSolutionSteps(ai_explaination)}
             </div>
             {renderScore()}
             {comment && (
@@ -409,6 +431,7 @@ const renderSolutionSteps = (steps) => {
             )}
           </>
         );
+    
       case 'explain':
         return (
           <>
@@ -426,7 +449,7 @@ const renderSolutionSteps = (steps) => {
                         <p className="example-header"><strong>Example:</strong></p>
                         {formatExampleContent(conceptItem['example'])}
                       </div>
-                      <p className="explanation"><strong>Explanation:</strong> <MarkdownWithMath content= {conceptItem.explanation} /></p>
+                      <p className="explanation"><strong>Explanation:</strong> <MarkdownWithMath content={conceptItem.explanation} /></p>
                     </Accordion.Body>
                   </Accordion.Item>
                 ))}
@@ -444,79 +467,132 @@ const renderSolutionSteps = (steps) => {
             )}
           </>
         );
+        
       default:
         return <p>No action type provided. Unable to display results.</p>;
     }
   };
 
   return (
-    <Container className="result-page-container">
-      <Row className="justify-content-center">
-        <Col md={10} lg={10} className="result-content">
-          <h2 className="result-title">Result</h2>
-          
-          {errorMessage && (
-            <Alert variant="danger" onClose={() => setErrorMessage(null)} dismissible>
-              {errorMessage}
-            </Alert>
+    <>
+      {/* Fixed Back Button - Top Left */}
+      <div className="fixed-back-button">
+        <Button
+          variant="outline-primary"
+          onClick={handleBack}
+          className="back-btn-fixed"
+        >
+          ← Back
+        </Button>
+      </div>
+
+      {/* Fixed Bottom Buttons */}
+      <div className="fixed-bottom-buttons">
+        <Button
+          variant="outline-primary"
+          onClick={handleShowQuestionList}
+          className="dashboard-btn-fixed"
+        >
+           Question List
+        </Button>
+        <Button
+          variant="primary"
+          onClick={handlePracticeSimilar}
+          className="practice-btn-fixed"
+        >
+          Similar Questions
+        </Button>
+      </div>
+
+      {/* Main Content Container */}
+      <Container fluid className="result-page-container">
+        <Row className="result-row">
+          {/* Left Column - Sticky Image Container */}
+          {allStudentImages.length > 0 && (
+            <Col lg={5} className="image-column">
+              <div className="result-content">
+                <h2 className="result-title">Your Solution</h2>
+                <div className="student-images-grid">
+                  {allStudentImages.map((imageData, index) => (
+                    <div key={index} className="student-image-wrapper">
+                      <img 
+                        src={imageData.src}
+                        alt={imageData.label}
+                        className="student-solution-image"
+                        onError={(e) => {
+                          console.error('Error loading image:', imageData.src);
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      <span className="image-label">{imageData.label}</span>
+                      {imageData.type === 'processed' && (
+                        <span className="image-type-badge">AI Processed</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Fallback text display if no images or images fail to load */}
+                {student_answer && (
+                  <div className="student-answer-text">
+                    <h5>Answer Text:</h5>
+                    <div className="answer-text-content">
+                      <MarkdownWithMath content={student_answer} />
+                    </div>
+                  </div>
+                )}
+               
+              </div>
+            </Col>
           )}
           
-          <div className="result-question">
-            <p><strong>Question {questionNumber}:</strong> <MarkdownWithMath content={question} /></p>
-            {questionImage && (
-              <div className="question-image-container">
-                <img 
-                  src={questionImage}
-                  alt="Question"
-                  className="question-image"
-                />
+          {/* Right Column - Content */}
+          <Col lg={allStudentImages.length > 0 ? 7 : 12} className="content-column">
+            <div className="result-content">
+              <h2 className="result-title">Result</h2>
+              
+              {errorMessage && (
+                <Alert variant="danger" onClose={() => setErrorMessage(null)} dismissible>
+                  {errorMessage}
+                </Alert>
+              )}
+              
+              <div className="result-question">
+                <p><strong>Question {questionNumber}:</strong> <MarkdownWithMath content={question} /></p>
+                {questionImage && (
+                  <div className="question-image-container">
+                    <img 
+                      src={questionImage}
+                      alt="Question"
+                      className="question-image"
+                    />
+                  </div>
+                )}
+                {solution && solution.length > 0 && (
+                  <div className="result-solution">
+                    <p className="solution-header">Solution:</p>
+                    {renderSolutionSteps(solution)}
+                  </div>
+                )}
               </div>
-            )}
-            {solution && solution.length > 0 && (
-              <div className="result-solution">
-                <p className="solution-header">Solution:</p>
-                {renderSolutionSteps(solution)}
-              </div>
-            )}
-          </div>
-          
-          
-          {renderContentBasedOnAction()}
-          
-          <div className="result-buttons">
-            <Button 
-              variant="primary" 
-              onClick={handleShowQuestionList}
-              className="next-question-btn"
-            >
-              Back
-            </Button>
-            <Button 
-              variant="outline-primary" 
-              onClick={handleBackToDashboard}
-              className="dashboard-btn"
-            >
-              Dashboard
-            </Button>
-            <Button 
-              variant="primary" 
-              onClick={handlePracticeSimilar}
-              className="practice-btn"
-            >
-              Similar Questions
-            </Button>
-          </div>
-        </Col>
-      </Row>
+              
+              {renderContentBasedOnAction()}
+              
+              {/* Add some bottom padding to prevent content from being hidden behind fixed buttons */}
+              <div style={{ height: '100px' }}></div>
+            </div>
+          </Col>
+        </Row>
 
-      <QuestionListModal 
-        show={showQuestionListModal} 
-        onHide={handleCloseQuestionList} 
-        questionList={questionList} 
-        onQuestionClick={handleQuestionSelect} 
-      />
-    </Container>
+        <QuestionListModal 
+          show={showQuestionListModal} 
+          onHide={handleCloseQuestionList} 
+          questionList={questionList} 
+          onQuestionClick={handleQuestionSelect} 
+        />
+      </Container>
+    </>
   );
 };
 
-export default ResultPage;
+export default ResultPage; 

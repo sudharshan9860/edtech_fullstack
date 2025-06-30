@@ -252,7 +252,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       const questionsText = selectedQuestions.map((q, idx) => 
         `Question ${idx + 1}: ${q.question}`
       ).join('\n\n');
-      
+      console.log("Questions text:", questionsText);
       // Combine user description with questions
       const fullDescription = homeworkDescription.trim() 
         ? `${homeworkDescription}\n\n${questionsText}`
@@ -262,7 +262,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       const assignment = {
         homework_code: homeworkCode.trim(),
         title: homeworkTitle.trim(),
-        description: fullDescription,
+        description: selectedQuestions,
         imageUrl: selectedQuestions.length > 0 && selectedQuestions[0].image ? selectedQuestions[0].image : null,
         teacherId: selectedClass, // Using selectedClass as teacherId
         classId: selectedClass,

@@ -59,6 +59,7 @@ function LoginPage() {
       const { token } = response.data;
     
       const role  =response.data.role;
+      const class_name = response.data.class_name || ""; // Get class name if available
       
       
       if (token) {
@@ -67,7 +68,7 @@ function LoginPage() {
         localStorage.setItem("username", username);
         
         // Update auth context
-        login(username, token, role);
+        login(username, token, role, class_name);
         if (role === "teacher") {
           navigate("/teacher-dash");
         } else {
