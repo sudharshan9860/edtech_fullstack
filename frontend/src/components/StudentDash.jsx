@@ -1,4 +1,3 @@
-// Enhanced StudentDash.jsx - Modern Design with Better UX and Chapter Debugging - FIXED
 import React, { useState, useEffect, useContext } from "react";
 import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
@@ -10,6 +9,7 @@ import QuestionListModal from "./QuestionListModal";
 import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AuthContext } from "./AuthContext";
+import MotivationalQuote from "./MotivationalQuote";
 import RecentSessions from "./RecentSessions";
 import {
   faSchool,
@@ -82,19 +82,68 @@ function StudentDash() {
     } else if (currentHour >= 17 && currentHour < 21) {
       return "Good Evening";
     } else {
-      return "Good Night";
-    }
+    return "Late night study? You're on your way to greatness! 🌟";
+  }
   };
 
-  // Get motivational message based on time
-  const getMotivationalMessage = () => {
-    const messages = [
-      "Ready to unlock your mathematical genius today? Let's dive into some exciting problem-solving! 🚀",
-      "Time to explore the fascinating world of mathematics! Every problem is a new adventure waiting to be solved! ✨",
-      "Mathematics is the language of the universe - let's learn to speak it fluently! 🌟",
-      "Today's learning journey begins with a single step. Let's make it count! 💪",
-      "Ready to turn complex problems into simple solutions? Your mathematical journey awaits! 🎯"
+  // FIXED: Enhanced motivational message function that actually works
+  const getEnhancedMotivationalMessage = () => {
+    const currentHour = new Date().getHours();
+    const dayOfWeek = new Date().getDay();
+    
+    const timeBasedMessages = {
+      morning: [
+        "Ready to unlock your mathematical genius today? Let's dive into some exciting problem-solving! 🚀",
+        "Mathematics is the language of the universe - let's learn to speak it fluently! 🌟",
+        "A fresh morning brings fresh opportunities to master new concepts! ☀️",
+        "Your brain is most active now - perfect time for complex problem solving! 🧠",
+      ],
+      afternoon: [
+        "Time to explore the fascinating world of mathematics! Every problem is a new adventure waiting to be solved! ✨",
+        "Afternoon energy boost! Let's tackle those challenging equations together! ⚡",
+        "Keep the momentum going - you're building incredible mathematical skills! 💪",
+        "Mathematics is all around us - let's discover its patterns and beauty! 🎯",
+      ],
+      evening: [
+        "Evening learning sessions are magical - your mind consolidates knowledge beautifully! 🌙",
+        "As the day winds down, let's illuminate your mind with mathematical wisdom! 💡",
+        "Perfect time for reflection and deeper understanding of today's concepts! 🤔",
+        "Your dedication to learning in the evening shows true commitment! 🌟",
+      ],
+      night: [
+        "Late night study sessions - the mark of a dedicated learner! 🌃",
+        "Mathematics never sleeps, and neither does your potential! ⭐",
+        "Night owls often see patterns others miss - let's explore! 🦉",
+        "Your persistence inspires! Even at this hour, you're growing stronger! 💫",
+      ]
+    };
+
+    const weekdayMessages = [
+      "Sunday vibes: Perfect day for peaceful learning and self-discovery! 🌸",
+      "Monday momentum: Start the week strong with mathematical mastery! 💼",
+      "Tuesday determination: Building on yesterday's success! 🔥",
+      "Wednesday wisdom: Midweek is perfect for deep learning! 📚",
+      "Thursday triumph: Almost there - keep pushing forward! 🎯",
+      "Friday focus: End the week with a bang of knowledge! 🎉",
+      "Saturday success: Weekend learning shows true passion! 🏆",
     ];
+
+    let messages;
+    if (currentHour >= 6 && currentHour < 12) {
+      messages = timeBasedMessages.morning;
+    } else if (currentHour >= 12 && currentHour < 17) {
+      messages = timeBasedMessages.afternoon;
+    } else if (currentHour >= 17 && currentHour < 22) {
+      messages = timeBasedMessages.evening;
+    } else {
+      messages = timeBasedMessages.night;
+    }
+
+    // 20% chance to show day-specific message
+    if (Math.random() < 0.2) {
+      return weekdayMessages[dayOfWeek];
+    }
+
     return messages[Math.floor(Math.random() * messages.length)];
   };
 
@@ -338,7 +387,7 @@ function StudentDash() {
       topicid: selectedChapters,
       solved: questionType === "solved",
       exercise: questionType === "exercise",
-      external: questionType === "external",
+      // external: questionType === "external",
       worksheets: questionType === "worksheets",
       subtopic: questionType === "external" ? questionLevel : null,
       worksheet_name: questionType === "worksheets" ? selectedWorksheet : null,
@@ -646,7 +695,7 @@ function StudentDash() {
                 {getTimeBasedGreeting()}, {username}! 
                 <span className="graduation-emoji">🎓</span>
               </h1>
-              <p>Class 10 Student • {getMotivationalMessage()}</p>
+              <p>Class 10 Student • {getEnhancedMotivationalMessage()}</p>
               <div className="motivation-buttons">
                 <Button variant="warning" size="sm" className="motivation-btn">
                   <FontAwesomeIcon icon={faStar} className="me-1" />
@@ -669,14 +718,8 @@ function StudentDash() {
           </div>
         </div>
 
-        {/* Enhanced Motivational Quote */}
-        <div className="motivational-quote">
-          <FontAwesomeIcon icon={faMagic} className="quote-icon" />
-          <div className="quote-content">
-            <h3>"Mathematics is not about numbers, equations, or algorithms: it is about understanding!"</h3>
-            <p>— William Paul Thurston</p>
-          </div>
-        </div>
+        {/* FIXED: Enhanced Motivational Quote that actually changes */}
+        <MotivationalQuote />
 
         <Container className="py-4">
           {/* Enhanced Learning Adventure Section */}
@@ -896,33 +939,7 @@ function StudentDash() {
         >
           Clear ({selectedChapters.length})
         </Button>
-        {/* <Button
-          variant="outline-info"
-          size="sm"
-          onClick={() => {
-            // console.log("📊 Chapter Debug Info:");
-            // console.log("Total chapters loaded:", chapters.length);
-            // console.log("Chapters:", chapters.map(ch => ch.name));
-            // console.log("Selected chapters:", selectedChapters.length);
-          }}
-          style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '6px' }}
-        >
-        </Button> */}
       </div>
-      
-      <small className="text-muted mt-1 d-block">
-        {/* <strong>{selectedChapters.length}</strong> of <strong>{chapters.length}</strong> chapters selected */}
-        {chapters.length === 13 && (
-          <span className="text-success ms-2">
-            {/* ✅ All chapters loaded */}
-          </span>
-        )}
-        {chapters.length !== 13 && chapters.length > 0 && (
-          <span className="text-warning ms-2">
-            {/* ⚠️ Expected 13 chapters, found {chapters.length} */}
-          </span>
-        )}
-      </small>
     </Form.Group>
   </Col>
 
@@ -948,41 +965,6 @@ function StudentDash() {
     </Form.Group>
   </Col>
 </Row>
-
-{/* Debug info - Remove after confirming all chapters work
-{chapters.length > 0 && (
-  <div style={{ 
-    background: '#e8f5e8', 
-    padding: '15px', 
-    borderRadius: '8px', 
-    margin: '15px 0',
-    fontSize: '14px',
-    border: '1px solid #4ade80'
-  }}>
-    <strong>✅ Chapter Status:</strong>
-    <br />• <strong>Total Loaded:</strong> {chapters.length} chapters
-    <br />• <strong>Currently Selected:</strong> {selectedChapters.length} chapters
-    <br />• <strong>Available Chapters:</strong>
-    <div style={{ 
-      maxHeight: '120px', 
-      overflow: 'auto', 
-      marginTop: '8px',
-      fontSize: '12px',
-      background: 'white',
-      padding: '8px',
-      borderRadius: '4px'
-    }}>
-      {chapters.map((ch, idx) => (
-        <div key={ch.topic_code} style={{ 
-          color: selectedChapters.includes(ch.topic_code) ? '#059669' : '#374151',
-          fontWeight: selectedChapters.includes(ch.topic_code) ? 'bold' : 'normal'
-        }}>
-          {idx + 1}. {ch.name} {selectedChapters.includes(ch.topic_code) ? '✓' : ''}
-        </div>
-      ))}
-    </div>
-  </div>
-)} */}
 
                 {questionType === "external" && (
                   <Row className="form-row">
