@@ -2,6 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import { AuthProvider } from "./components/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext"; // Import ThemeProvider
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { ProgressProvider } from "./contexts/ProgressContext";
 import { LeaderboardProvider } from "./contexts/LeaderboardContext";
@@ -30,7 +31,8 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
       <NotificationProvider>
         <ProgressProvider>
           <TimerProvider>
@@ -47,6 +49,7 @@ function App() {
         </ProgressProvider>
       </NotificationProvider>
     </AuthProvider>
+    </ThemeProvider>   
   );
 }
 export default App;

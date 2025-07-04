@@ -15,10 +15,13 @@ import {
   faFileAlt,
   faSchool,
   faCog,
-  faDatabase
+  faDatabase,
+  faSun,
+  faMoon
 } from '@fortawesome/free-solid-svg-icons';
 import './Layout.css';
 import { AuthContext } from './AuthContext';
+import { useTheme } from '../contexts/ThemeContext'; // Import theme context
 import NotificationDropdown from './NotificationDropdown';
 import SoundConfigModal from './SoundConfigModal';
 import { soundManager } from '../utils/SoundManager';
@@ -27,6 +30,7 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const currentLocation = useLocation();
   const { username, logout, role } = useContext(AuthContext);
+  const { isDarkMode, toggleTheme } = useTheme(); // Use theme context
   
   // Sound configuration state
   const [showSoundConfig, setShowSoundConfig] = useState(false);
@@ -79,7 +83,7 @@ const Layout = ({ children }) => {
       <Navbar expand="lg" className="custom-navbar">
         <Container fluid>
           <Navbar.Brand className="navbar-brand-custom">
-            {role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
+            {role === 'admin' ? 'Admin Dashboard' : 'AI Educator'}
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="offcanvasNavbar" />
           <Navbar.Offcanvas
@@ -114,45 +118,100 @@ const Layout = ({ children }) => {
                 >
                   <FontAwesomeIcon 
                     icon={isSoundEnabled ? faVolumeUp : faVolumeMute} 
-                    className="nav-icon"
+                    className="nav-icon" 
                   />
+                  <span className="nav-label">Sound</span>
                 </Nav.Link>
 
-                {/* Notifications for students */}
-                {role === 'student' && (
-                  <div className="notification-wrapper">
-                    <NotificationDropdown />
-                  </div>
-                )}
-                
-                {/* User section */}
-                <Nav.Item className="user-section">
+                {/* Notification Dropdown */}
+                <div className="notification-wrapper">
+                  <NotificationDropdown />
+                </div>
+
+                {/* User Info Section */}
+                <div className="user-section">
                   <div className="user-info">
                     <FontAwesomeIcon icon={faUser} className="user-icon" />
                     <span className="username-display">{username}</span>
                     <span className="role-badge">{role}</span>
                   </div>
-                  <button
-                    onClick={handleLogout}  
-                    className="logout-btn"
+                  <button 
+                    className="logout-btn" 
+                    onClick={handleLogout}
+                    title="Logout"
                   >
                     <FontAwesomeIcon icon={faSignOutAlt} />
                     <span>Logout</span>
                   </button>
-                </Nav.Item>
+                  
+                  {/* Theme Toggle Button - Positioned after logout */}
+                  <button 
+                    className="theme-toggle-btn-layout"
+                    onClick={toggleTheme}
+                    title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  >
+                    <FontAwesomeIcon 
+                      icon={isDarkMode ? faSun : faMoon} 
+                      className="theme-icon" 
+                    />
+                    <span className="theme-label">
+                      {isDarkMode ? 'Light' : 'Dark'} Mode
+                    </span>
+                  </button>
+                </div>
               </Nav>
             </Offcanvas.Body>
           </Navbar.Offcanvas>
         </Container>
       </Navbar>
 
-      {/* Main Content Area */}
-      <main className="main-content">
-        {/* Regular layout for all users - NO SIDEBAR for students and teachers */}
-        <Container fluid className="regular-content">
-          {children}
-        </Container>
-      </main>
+      {/* Main Content */}
+      <div className="main-content">
+        {role === 'admin' && !isAdminDashboard ? (
+          <div className="admin-layout">
+            {/* Admin Sidebar for specific admin routes */}
+            <div className="admin-sidebar">
+              <div className="sidebar-header">
+                <div className="sidebar-icon">
+                  <FontAwesomeIcon icon={faCog} />
+                </div>
+                <h3>Admin Panel</h3>
+                <p>System Management</p>
+              </div>
+              <Nav className="flex-column sidebar-nav">
+                {navigationLinks.map((link) => (
+                  <Nav.Link
+                    key={link.path}
+                    className={`sidebar-item ${currentLocation.pathname === link.path ? 'active' : ''}`}
+                    onClick={() => navigate(link.path)}
+                  >
+                    <FontAwesomeIcon icon={link.icon} className="sidebar-item-icon" />
+                    <span>{link.label}</span>
+                  </Nav.Link>
+                ))}
+              </Nav>
+            </div>
+            <div className="admin-main-content">
+              {children}
+            </div>
+          </div>
+        ) : (
+          <div className="regular-content">
+            {children}
+          </div>
+        )}
+      </div>
+
+      {/* Sound Configuration Modal */}
+      <SoundConfigModal 
+        show={showSoundConfig}
+        onHide={() => setShowSoundConfig(false)}
+        onSoundToggle={(enabled) => {
+          setIsSoundEnabled(enabled);
+          soundManager.toggleSound(enabled);
+        }}
+        isSoundEnabled={isSoundEnabled}
+      />
 
       {/* Footer */}
       <footer className="footer">
@@ -160,12 +219,6 @@ const Layout = ({ children }) => {
           <p>&copy; 2025 AI EDUCATOR. All rights reserved.</p>
         </Container>
       </footer>
-
-      {/* Sound Configuration Modal */}
-      <SoundConfigModal 
-        show={showSoundConfig} 
-        onHide={() => setShowSoundConfig(false)} 
-      />
     </div>
   );
 };
