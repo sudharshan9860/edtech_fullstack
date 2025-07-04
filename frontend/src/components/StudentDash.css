@@ -211,14 +211,15 @@ body {
 ======================================== */
 .sidebar-fixed {
   position: fixed;
-  top: 0;
+  top: 10;
   left: 0;
   width: var(--sidebar-width);
   height: 100vh;
   background: var(--glass-bg);
+  
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid var(--glass-border);
+  /* border-right: 1px solid var(--glass-border); */
   box-shadow: var(--shadow-2xl);
   z-index: 1000;
   overflow: hidden;
@@ -226,12 +227,13 @@ body {
   flex-direction: column;
   /* FIX 1: Ensure sidebar spacing matches top and bottom */
   padding-bottom: 0;
+  border-radius: var(--border-radius-lg); 
 }
 
 /* CRITICAL: Enhanced dark mode sidebar fixes */
 .dark-mode .sidebar-fixed {
   background: rgba(15, 23, 42, 0.98) !important;
-  border-right: 2px solid rgba(0, 188, 212, 0.3) !important;
+  /* border-right: 2px solid rgba(0, 188, 212, 0.3) !important; */
   backdrop-filter: blur(25px) !important;
   -webkit-backdrop-filter: blur(25px) !important;
   box-shadow: 
@@ -261,7 +263,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.5rem;
+  /* padding: 2rem 1.5rem; */
   background: var(--primary-gradient);
   color: var(--text-inverse);
   position: relative;
@@ -663,7 +665,8 @@ body {
 .greeting-header {
   background: transparent !important; /* Remove heavy background */
   color: var(--text-primary) !important;
-  padding: 3rem 2rem 2rem 2rem;
+  /* padding: 3rem 2rem 2rem 2rem; */
+  padding:10px;
   margin: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important; /* Remove heavy shadow */
@@ -713,8 +716,8 @@ body {
 
 /* FIX 4: Enhanced greeting with linear gradient and back shadow lighting */
 .greeting-text h1 {
-  font-size: 2.5rem;
-  font-weight: 900;
+  font-size: 1.75rem;
+  font-weight: 700;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -827,7 +830,7 @@ body {
 }
 
 .current-date h2 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
   line-height: 1.2;
@@ -1014,7 +1017,7 @@ body {
   -webkit-backdrop-filter: blur(10px) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: var(--border-radius-lg);
-  padding: 3rem;
+  padding: 2rem;
   box-shadow: var(--shadow-sm) !important; /* Lighter shadow */
   position: relative;
   overflow: hidden;

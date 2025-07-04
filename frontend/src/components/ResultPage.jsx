@@ -59,7 +59,7 @@ const ResultPage = () => {
         images.push({
           src: imageUrl,
           type: 'uploaded',
-          label: `Uploaded Image ${index + 1}`
+          label: `Uploaded Image `
         });
       });
     }
@@ -322,19 +322,18 @@ const ResultPage = () => {
     if (!example) return null;
 
     const [intro, ...stepParts] = example.split(/Step \d+:/);
-    
+// Remove empty parts
     return (
       <div className="example-content">
-        <p>
-          <MarkdownWithMath content={example.trim()} />
-        </p>
         <div className="example-steps">
           {stepParts.map((step, index) => (
             <div key={index} className="example-step">
-              <strong>{`Step ${index + 1}:`}</strong> {step.trim()}
+              <strong>{`Step ${index + 1}:`}</strong><MarkdownWithMath content={step.replace(/\*\*/g, '').trim()} />
             </div>
           ))}
         </div>
+        
+        
       </div>
     );
   };
@@ -399,12 +398,12 @@ const ResultPage = () => {
         case 'correct':   
         return (         
         <>
-            <div className="result-question">
+            {/* <div className="result-question">
               <p><strong>Student Answer:</strong></p>
               <div className="student-answer-content">
                 {student_answer || "No answer submitted"}
               </div>
-            </div>
+            </div> */}
           <div className="result-question">
             <p className="solution-header">AI Solution:</p>
             {question_image_base64 && (
@@ -426,7 +425,7 @@ const ResultPage = () => {
             )}
             {formated_concepts_used && (
               <div className="result-question">
-                <p><strong>Concepts Used:</strong> {formated_concepts_used}</p>
+                <p><strong>Concepts Required:</strong> {formated_concepts_used}</p>
               </div>
             )}
           </>
@@ -450,6 +449,7 @@ const ResultPage = () => {
                         {formatExampleContent(conceptItem['example'])}
                       </div>
                       <p className="explanation"><strong>Explanation:</strong> <MarkdownWithMath content={conceptItem.explanation} /></p>
+                      
                     </Accordion.Body>
                   </Accordion.Item>
                 ))}
@@ -512,7 +512,7 @@ const ResultPage = () => {
             <Col lg={5} className="image-column">
               <div className="result-content">
                 <h2 className="result-title">Your Solution</h2>
-                <div className="student-images-grid">
+                <div className="student-images">
                   {allStudentImages.map((imageData, index) => (
                     <div key={index} className="student-image-wrapper">
                       <img 

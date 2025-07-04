@@ -90,12 +90,12 @@ const Layout = ({ children }) => {
                 </Nav.Link>
 
                 {/* Added margin to create spacing */}
-            { role=='student'  ? <div className=" ms-3">
+            { role=='student'  ? <div className=" ms-0">
                   <NotificationDropdown />
                 </div>: ""}
                 
                 {/* Admin section with spacing */}
-                <Nav.Item className="d-flex align-items-center ms-3">
+                <Nav.Item className="d-flex align-items-center ms-0">
                   <FontAwesomeIcon 
                     icon={faUser} 
                     className="text-white" 

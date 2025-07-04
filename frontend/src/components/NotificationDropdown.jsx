@@ -65,14 +65,14 @@ const NotificationDropdown = () => {
         <Dropdown.Toggle
           variant="link"
           id="notifications-dropdown"
-          className="nav-link p-0 position-relative"
+          className="nav-link position-relative"
         >
           <FontAwesomeIcon icon={faBell} size="lg" />
           {unreadCount > 0 && (
             <Badge
-              pill
+              
               bg="danger"
-              className="position-absolute top-1 start-10 translate-middle p-1"
+              className="position-absolute top-10 start-1 translate-down p-1"
               style={{ fontSize: '0.7rem' }}
             >
               {unreadCount}

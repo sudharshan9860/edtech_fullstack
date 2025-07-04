@@ -576,7 +576,7 @@ function SolveQuestion() {
             
             {/* Image Source Selection Buttons */}
             <div className="image-source-buttons mb-3">
-              <Button
+              {/* <Button
                 variant={imageSourceType === "upload" ? "primary" : "outline-primary"}
                 className="me-2"
                 onClick={() => setImageSourceType("upload")}
@@ -584,7 +584,7 @@ function SolveQuestion() {
               >
                 <FontAwesomeIcon icon={faUpload} className="me-2" />
                 Upload Images
-              </Button>
+              </Button> */}
               <Button
                 variant={imageSourceType === "camera" ? "primary" : "outline-primary"}
                 onClick={() => setImageSourceType("camera")}
@@ -706,7 +706,7 @@ function SolveQuestion() {
                 }}
                 disabled={isAnyButtonProcessing()}
               >
-                Clear All Images
+                Clear All
               </Button>
             )}
           </div>

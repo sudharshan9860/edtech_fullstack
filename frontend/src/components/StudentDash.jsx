@@ -587,12 +587,12 @@ function StudentDash() {
     <div className={`student-dash-wrapper ${isDarkMode ? 'dark-mode' : ''}`}>
       {/* Enhanced Fixed Sidebar */}
       <div className="sidebar-fixed">
-        <div className="sidebar-header">
+        {/* <div className="sidebar-header">
           <div className="sidebar-brand">
             <FontAwesomeIcon icon={faGraduationCap} className="brand-icon" />
             <span>AI Educator</span>
           </div>
-        </div>
+        </div> */}
 
         <div className="sidebar-content">
           {/* Enhanced Progress Card with Animation */}
@@ -643,7 +643,7 @@ function StudentDash() {
           <div className="greeting-content">
             <div className="greeting-text">
               <h1>
-                <FontAwesomeIcon icon={faGraduationCap} className="me-2" />
+                <FontAwesomeIcon icon={faGraduationCap} className="me-1" />
                 {getTimeBasedGreeting()}, {username}! 
                 <span className="graduation-emoji">🎓</span>
               </h1>
@@ -671,24 +671,24 @@ function StudentDash() {
         </div>
 
         {/* Enhanced Motivational Quote */}
-        <div className="motivational-quote">
+        {/* <div className="motivational-quote">
           <FontAwesomeIcon icon={faMagic} className="quote-icon" />
           <div className="quote-content">
             <h3>"Mathematics is not about numbers, equations, or algorithms: it is about understanding!"</h3>
             <p>— William Paul Thurston</p>
           </div>
-        </div>
+        </div> */}
 
-        <Container className="py-4">
+        <Container className="py-1">
           {/* Enhanced Learning Adventure Section */}
           <div className="learning-adventure-section">
-            <div className="section-header">
+            {/* <div className="section-header">
               <h2>
                 <FontAwesomeIcon icon={faRocket} className="me-2" />
                 🚀 Start Your Learning Adventure
               </h2>
               <p>Select your preferences and let's begin this exciting mathematical journey!</p>
-            </div>
+            </div> */}
 
             <div className="form-container">
               <Form onSubmit={handleSubmit}>
@@ -879,7 +879,7 @@ function StudentDash() {
       
       {/* Enhanced action buttons */}
       <div className="mt-2 d-flex gap-2 flex-wrap">
-        <Button
+        {/* <Button
           variant="outline-primary"
           size="sm"
           onClick={() => setSelectedChapters(chapters.map(ch => ch.topic_code))}
@@ -887,7 +887,7 @@ function StudentDash() {
           style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '6px' }}
         >
           Select All ({chapters.length})
-        </Button>
+        </Button> */}
         <Button
           variant="outline-secondary"
           size="sm"
