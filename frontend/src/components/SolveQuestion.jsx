@@ -508,7 +508,7 @@ function SolveQuestion() {
   const handleBackClick = () => {
     // Stop the timer before navigating back
     stopTimer();
-    navigate(-1);
+    navigate("/student-dash");
   };
 
   // Determine if a specific button is processing

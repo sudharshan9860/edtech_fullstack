@@ -425,7 +425,7 @@ const ResultPage = () => {
             )}
             {formated_concepts_used && (
               <div className="result-question">
-                <p><strong>Concepts Required:</strong> {formated_concepts_used}</p>
+                <p><strong>Concepts Required:</strong> <MarkdownWithMath content={formated_concepts_used} /></p>
               </div>
             )}
           </>
@@ -445,8 +445,17 @@ const ResultPage = () => {
                       <p className="concept-title"><strong>{conceptItem.concept}</strong></p>
                       <p className="chapter-name"><strong>Chapter Name:</strong> {conceptItem.chapter}</p>
                       <div className="example-section">
+                      {console.log('Concept Item:', conceptItem)}
                         <p className="example-header"><strong>Example:</strong></p>
-                        {formatExampleContent(conceptItem['example'])}
+                        {/* {formatExampleContent(conceptItem['example'])} */}
+                        {conceptItem.example && (
+                          <div className="example-content">
+                            <MarkdownWithMath content={conceptItem.example.problem} />
+                            <strong className='example-header'>Solution:</strong>
+                            <MarkdownWithMath content={conceptItem.example.solution} />
+                          </div>
+                          
+                        )}
                       </div>
                       <p className="explanation"><strong>Explanation:</strong> <MarkdownWithMath content={conceptItem.explanation} /></p>
                       
@@ -457,7 +466,8 @@ const ResultPage = () => {
             )}
             {comment && (
               <div className="result-question">
-                <p><strong>Comments:</strong> {comment}</p>
+                <p><strong>Comments:</strong> </p>
+                <MarkdownWithMath content={comment} />
               </div>
             )}
             {formated_concepts_used && (
