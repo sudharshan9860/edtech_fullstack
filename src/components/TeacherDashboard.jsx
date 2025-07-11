@@ -11,6 +11,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [worksheetFile, setWorksheetFile] = useState(null);
+  const [worksheetAssignmentType, setWorksheetAssignmentType] = useState("homework"); // New state for worksheet assignment type
   const [dueDate, setDueDate] = useState("");
   const [submissionType, setSubmissionType] = useState("text");
   const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
@@ -140,7 +141,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
     }
   };
 
-  // Separate function to handle worksheet upload
+  // Modified worksheet upload function to include assignment type and preview mode
   const handleWorksheetUpload = async (preview = true) => {
     try {
       setIsSubmitting(true);
@@ -180,6 +181,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       formData.append('subject_code', selectedSubject);
       formData.append('topic_code', selectedChapter);
       formData.append('worksheet_name', worksheetName.trim());
+      formData.append('assignment_type', worksheetAssignmentType); // Add assignment type
       
       // Add due_date if provided
       if (dueDate) {
@@ -193,7 +195,8 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
           selectedSubject,
           selectedChapter,
           worksheetName: worksheetName.trim(),
-          dueDate
+          dueDate,
+          worksheetAssignmentType
         });
       }
 
@@ -208,12 +211,12 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       
       if (response.data.success) {
         if (preview) {
-          setSuccess(`Successfully processed worksheet! Extracted ${response.data.total_questions} questions. Please select questions to include.`);
+          setSuccess(`Successfully processed ${worksheetAssignmentType} worksheet! Extracted ${response.data.total_questions} questions. Please select questions to include.`);
           
           // Display questions for selection without resetting form
           displayWorksheetQuestions(response.data);
         } else {
-          setSuccess(`Successfully created worksheet assignment with ${selectedQuestions.length} selected questions!`);
+          setSuccess(`Successfully created ${worksheetAssignmentType} worksheet assignment with ${selectedQuestions.length} selected questions!`);
           
           // Reset worksheet form after final submission
           setSelectedClass('');
@@ -222,6 +225,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
           setWorksheetName('');
           setWorksheetFile(null);
           setDueDate('');
+          setWorksheetAssignmentType('homework'); // Reset to default
           setSelectedQuestions([]);
           setWorksheetUploadData(null);
           
@@ -439,7 +443,6 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
             <div className="form-group">
               <label className="form-label">Assignment Type</label>
               <div className="type-buttons">
-              
                 <button
                   type="button"
                   className={`type-btn ${submissionType === "worksheet" ? 'active' : ''}`}
@@ -620,6 +623,69 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
 
             {submissionType === "worksheet" && (
               <>
+                {/* Worksheet Assignment Type Selection - Add this above Due Date */}
+                <div className="form-group">
+                  <label className="form-label">Assignment Type *</label>
+                  <div className="worksheet-type-buttons" style={{
+                    display: 'flex',
+                    gap: '12px',
+                    marginBottom: '16px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => setWorksheetAssignmentType('homework')}
+                      style={{
+                        flex: 1,
+                        padding: '12px 16px',
+                        border: `2px solid ${worksheetAssignmentType === 'homework' ? '#3b82f6' : '#e5e7eb'}`,
+                        backgroundColor: worksheetAssignmentType === 'homework' ? '#eff6ff' : 'white',
+                        color: worksheetAssignmentType === 'homework' ? '#1e40af' : '#6b7280',
+                        borderRadius: '8px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <line x1="10" y1="9" x2="8" y2="9"/>
+                      </svg>
+                      Homework
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWorksheetAssignmentType('classwork')}
+                      style={{
+                        flex: 1,
+                        padding: '12px 16px',
+                        border: `2px solid ${worksheetAssignmentType === 'classwork' ? '#3b82f6' : '#e5e7eb'}`,
+                        backgroundColor: worksheetAssignmentType === 'classwork' ? '#eff6ff' : 'white',
+                        color: worksheetAssignmentType === 'classwork' ? '#1e40af' : '#6b7280',
+                        borderRadius: '8px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                      </svg>
+                      Classwork
+                    </button>
+                  </div>
+                </div>
+
                 <div className="form-group">
                   <label htmlFor="due-date-worksheet" className="form-label">Due Date (Optional)</label>
                   <input
@@ -760,13 +826,15 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
                 submissionType === 'worksheet' ? (
                   <>
                     <span className="loading-spinner"></span>
-                    {isPreviewMode ? "Processing Worksheet..." : "Creating Assignment..."}
+                    {isPreviewMode ? `Processing ${worksheetAssignmentType} Worksheet...` : `Creating ${worksheetAssignmentType} Assignment...`}
                   </>
                 ) : (
                   "Creating..."
                 )
               ) : (
-                submissionType === 'worksheet' ? "📤 Process & Preview Worksheet" : "Create Assignment"
+                submissionType === 'worksheet' ? 
+                  `📤 Process & Preview ${worksheetAssignmentType.charAt(0).toUpperCase() + worksheetAssignmentType.slice(1)} Worksheet` : 
+                  "Create Assignment"
               )}
             </button>
           </form>
