@@ -31,12 +31,12 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // State for classwork PDF upload
+  // State for classwork image upload (UPDATED: changed from PDF to images)
   const [classworkTitle, setClassworkTitle] = useState("");
   const [classworkCode, setClassworkCode] = useState("");
   const [classworkDescription, setClassworkDescription] = useState("");
   const [classworkDueDate, setClassworkDueDate] = useState("");
-  const [classworkPDF, setClassworkPDF] = useState(null);
+  const [classworkImages, setClassworkImages] = useState([]); // UPDATED: changed from classworkPDF
   const [isClassworkSubmitting, setIsClassworkSubmitting] = useState(false);
   const [classworkError, setClassworkError] = useState(null);
   const [showClassworkForm, setShowClassworkForm] = useState(false);
@@ -292,47 +292,71 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     }
   };
 
-  // Classwork PDF upload handler (after questions are selected)
+  // UPDATED: Handle multiple image uploads for classwork
+  const handleClassworkImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setClassworkImages(files);
+  };
+
+  // UPDATED: Classwork submission handler (after questions are selected)
   const handleClassworkSubmit = async (e) => {
     e.preventDefault();
     setClassworkError(null);
     setIsClassworkSubmitting(true);
-    if (!classworkTitle.trim() || !classworkCode.trim() || !classworkDueDate || !classworkPDF) {
-      setClassworkError("Please fill in all required fields and upload a PDF file.");
+    
+    if (!classworkTitle.trim() || !classworkCode.trim() || !classworkDueDate) {
+      setClassworkError("Please fill in all required fields.");
       setIsClassworkSubmitting(false);
       return;
     }
+    
+    if (!classworkImages || classworkImages.length === 0) {
+      setClassworkError("Please upload at least one image of student work.");
+      setIsClassworkSubmitting(false);
+      return;
+    }
+    
     if (!selectedQuestions || selectedQuestions.length === 0) {
       setClassworkError("Please select at least one question.");
       setIsClassworkSubmitting(false);
       return;
     }
+    
     try {
       const formData = new FormData();
-      formData.append("classwork_code", classworkCode.trim());
-      formData.append("title", classworkTitle.trim());
-      formData.append("description", classworkDescription.trim());
-      formData.append("due_date", new Date(classworkDueDate).toISOString());
-      formData.append("date_assigned", new Date().toISOString());
-      formData.append("pdf_file", classworkPDF);
-      if (selectedClass) formData.append("classId", selectedClass);
-      if (selectedSubject) formData.append("subjectId", selectedSubject);
-      if (selectedChapters && selectedChapters.length > 0) formData.append("chapterIds", JSON.stringify(selectedChapters));
-      // Attach selected questions as JSON
-      formData.append("questions", JSON.stringify(selectedQuestions));
-      await onCreateHomework(formData, true); // true = isFormData
+      
+      // Append all images
+      classworkImages.forEach((image) => {
+        formData.append('image_response', image);
+      });
+      
+      // Append classwork information
+      formData.append('class_work_code', classworkCode.trim());
+      formData.append('worksheet_name', classworkTitle.trim());
+      
+      // Append questions data
+      formData.append('questions', JSON.stringify(selectedQuestions));
+      
+      // Make API call to classwork-submission endpoint
+      const response = await axiosInstance.post('/classwork-submission/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
       // Reset form and state
       setClassworkTitle("");
       setClassworkCode("");
       setClassworkDescription("");
       setClassworkDueDate("");
-      setClassworkPDF(null);
+      setClassworkImages([]);
       setSelectedQuestions([]);
       setShowClassworkForm(false);
-      alert("Classwork PDF and questions uploaded successfully!");
+      
+      alert("Classwork images and questions uploaded successfully!");
     } catch (error) {
-      setClassworkError(error.response?.data?.message || "Failed to upload classwork PDF");
-      console.error("Error uploading classwork PDF:", error);
+      setClassworkError(error.response?.data?.error || "Failed to upload classwork");
+      console.error("Error uploading classwork:", error);
     } finally {
       setIsClassworkSubmitting(false);
     }
@@ -434,10 +458,10 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     );
   };
 
-  // Render classwork PDF upload form (after questions are selected)
+  // UPDATED: Render classwork image upload form (changed from PDF)
   const renderClassworkForm = () => (
     <div className="homework-form-container">
-      <h3>Upload Classwork PDF & Submit Questions</h3>
+      <h3>Upload Classwork Images & Submit Questions</h3>
       {classworkError && <div className="error-message">{classworkError}</div>}
       <Form onSubmit={handleClassworkSubmit}>
         <Row className="mb-3">
@@ -485,20 +509,24 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
             placeholder="Enter any additional instructions"
           />
         </Form.Group>
-        <Form.Group controlId="classworkPDF" className="mb-3">
-          <Form.Label>Upload PDF File</Form.Label>
+        
+        {/* UPDATED: Changed PDF upload to multiple image upload */}
+        <Form.Group controlId="classworkImages" className="mb-3">
+          <Form.Label>Upload Student Work Images</Form.Label>
           <Form.Control
             type="file"
-            accept="application/pdf"
-            onChange={(e) => setClassworkPDF(e.target.files[0])}
+            accept="image/*"
+            multiple
+            onChange={handleClassworkImageChange}
             required
           />
-          {classworkPDF && (
+          {classworkImages && classworkImages.length > 0 && (
             <div style={{ marginTop: 8 }}>
-              <span>Selected file: {classworkPDF.name}</span>
+              <span>Selected files: {classworkImages.length} images</span>
             </div>
           )}
         </Form.Group>
+        
         {/* Preview selected questions */}
         <div className="selected-questions-preview mb-3">
           <h5>Selected Questions ({selectedQuestions.length})</h5>
@@ -531,7 +559,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
             type="submit"
             disabled={isClassworkSubmitting}
           >
-            {isClassworkSubmitting ? "Uploading..." : "Upload Classwork PDF & Questions"}
+            {isClassworkSubmitting ? "Uploading..." : "Upload Classwork Images & Questions"}
           </Button>
         </div>
       </Form>

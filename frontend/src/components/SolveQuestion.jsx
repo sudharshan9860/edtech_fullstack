@@ -387,6 +387,7 @@ function SolveQuestion() {
     formData.append("subject_id", subject_id);
     formData.append("topic_ids", topic_ids);
     formData.append("question", currentQuestion.question);
+    formData.append("ques_img", currentQuestion.image || "");
     formData.append("subtopic", subtopic);
 
     Object.entries(flags).forEach(([key, value]) => {
