@@ -22,6 +22,9 @@ import SessionDetails from './SessionDetails';
 // Make sure to import your CSS
 import './UnifiedSessions.css';
 
+import HomeworkDetailsModal from './HomeworkDetailsModal';
+
+
 const UnifiedSessions = () => {
   // State for active tab
   const [activeTab, setActiveTab] = useState('self');
@@ -40,7 +43,9 @@ const UnifiedSessions = () => {
   const [error, setError] = useState(null);
   const [selectedSession, setSelectedSession] = useState(null);
   const [showSessionDetails, setShowSessionDetails] = useState(false);
-  
+  const [selectedHomework, setSelectedHomework] = useState(null);
+  const [showHomeworkModal, setShowHomeworkModal] = useState(false);
+
   const navigate = useNavigate();
 
   // Add this useEffect to detect dark mode changes
@@ -123,9 +128,10 @@ const UnifiedSessions = () => {
               score: item.score,
               student: item.student,
               // Placeholder data for null feedback
+              result_json:item.result_json,
               worksheet_id: item.homework || `HW-${item.id}`,
               total_score: item.score || 0,
-              max_total_score: 100, // default value
+              max_total_score: item.max_possible_socre, // default value
               overall_percentage: item.score || 0,
               grade: item.score >= 80 ? 'A' : item.score >= 60 ? 'B' : 'C',
               board: 'N/A',
@@ -159,7 +165,7 @@ const UnifiedSessions = () => {
               score: item.score,
               worksheet_id: item.homework || `HW-${item.id}`,
               total_score: item.score || 0,
-              max_total_score: 100,
+              max_total_score: 10,
               overall_percentage: item.score || 0,
               grade: 'N/A',
               board: 'N/A',
@@ -364,7 +370,7 @@ const UnifiedSessions = () => {
       <Col key={index} md={4} sm={6} className="mb-3">
         <Card 
           className={`submission-card ${isDarkMode ? 'dark-card' : ''}`}
-          onClick={() => navigate(`/homework-details/${worksheetId}`, { state: { submission } })}
+          // onClick={() => navigate(`/homework-details/${worksheetId}`, { state: { submission } })}
           style={{ borderColor: statusInfo.color }}
         >
           <Card.Body>
@@ -377,34 +383,11 @@ const UnifiedSessions = () => {
                   <small className="text-muted d-block">
                     {formatDate(submission.submission_date)}
                   </small>
-                  <small className="text-muted">
+                  {/* <small className="text-muted">
                     {submission.board || 'N/A'} | Class {submission.class || 'N/A'}
-                  </small>
+                  </small> */}
                 </div>
                 
-                <div className={`submission-stats ${isDarkMode ? 'dark-stats' : ''}`}>
-                  <div className="d-flex justify-content-between mb-1">
-                    <span>Score</span>
-                    <strong>{submission.total_score || submission.score || 0}/{submission.max_total_score || 100}</strong>
-                  </div>
-                  <div className="d-flex justify-content-between mb-1">
-                    <span>Percentage</span>
-                    <strong>{(submission.overall_percentage || 0).toFixed(1)}%</strong>
-                  </div>
-                  <div className="d-flex justify-content-between mb-1">
-                    <span>Grade</span>
-                    <Badge bg={statusInfo.color === '#34A853' ? 'success' : 
-                              statusInfo.color === '#FBBC05' ? 'warning' : 'danger'}>
-                      {submission.grade || 'N/A'}
-                    </Badge>
-                  </div>
-                  {submission.questions_attempted !== undefined && (
-                    <div className="d-flex justify-content-between">
-                      <span>Questions</span>
-                      <span>{submission.questions_attempted || 0}/{submission.total_questions || 0}</span>
-                    </div>
-                  )}
-                </div>
                 
                 <div className="mt-3 d-flex gap-2">
                   <Button
@@ -413,7 +396,8 @@ const UnifiedSessions = () => {
                     className="view-details-btn"
                     onClick={e => {
                       e.stopPropagation();
-                      navigate(`/homework-details/${worksheetId}`, { state: { submission } });
+                      setSelectedHomework(submission);
+                      setShowHomeworkModal(true);
                     }}
                   >
                     View Details
@@ -424,14 +408,14 @@ const UnifiedSessions = () => {
                     className="gap-analysis-btn"
                     onClick={e => {
                       e.stopPropagation();
-                      navigate(`/homework-gap-analysis/${worksheetId}`, { state: { submission } });
+                      // navigate(`/homework-gap-analysis/${worksheetId}`, { state: { submission } });
                     }}
                   >
                     Gap Analysis
                   </Button>
                 </div>
               </div>
-              <FontAwesomeIcon icon={faChevronRight} className="submission-arrow" />
+              {/* <FontAwesomeIcon icon={faChevronRight} className="submission-arrow" /> */}
             </div>
           </Card.Body>
         </Card>
@@ -547,6 +531,14 @@ const UnifiedSessions = () => {
           session={selectedSession}
         />
       )}
+      {selectedHomework && (
+        <HomeworkDetailsModal
+          show={showHomeworkModal}
+          onHide={() => setShowHomeworkModal(false)}
+          submission={selectedHomework}
+        />
+      )}
+
     </Container>
   );
 };
