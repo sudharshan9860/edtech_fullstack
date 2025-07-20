@@ -13,23 +13,25 @@ export const LeaderboardProvider = ({ children }) => {
   // Fetch leaderboard data from backend
   const fetchLeaderboardData = async () => {
     try {
-      const response = await axiosInstance.get('/leaderboard/');
-      const fetchedEntries = response.data.map(entry => 
-        LeaderboardEntry.fromJSON(entry)
-      );
+
+      console.log('hi')
+      // const response = await axiosInstance.get('/leaderboard/');
+      // const fetchedEntries = response.data.map(entry => 
+      //   LeaderboardEntry.fromJSON(entry)
+      // );
       
-      const updatedLeaderboard = new Leaderboard();
-      fetchedEntries.forEach(entry => 
-        updatedLeaderboard.addOrUpdateEntry(entry)
-      );
+      // const updatedLeaderboard = new Leaderboard();
+      // fetchedEntries.forEach(entry => 
+      //   updatedLeaderboard.addOrUpdateEntry(entry)
+      // );
       
-      setLeaderboard(updatedLeaderboard);
+      // setLeaderboard(updatedLeaderboard);
       
-      // Find current user's entry
-      const userEntry = updatedLeaderboard.entries.find(
-        entry => entry.userId === userId
-      );
-      setCurrentUserEntry(userEntry);
+      // // Find current user's entry
+      // const userEntry = updatedLeaderboard.entries.find(
+      //   entry => entry.userId === userId
+      // );
+      // setCurrentUserEntry(userEntry);
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
     }
@@ -72,9 +74,9 @@ export const LeaderboardProvider = ({ children }) => {
   };
 
   // Effect to fetch leaderboard on component mount
-  useEffect(() => {
-    fetchLeaderboardData();
-  }, [userId]);
+  // useEffect(() => {
+  //   fetchLeaderboardData();
+  // }, [userId]);
 
   return (
     <LeaderboardContext.Provider value={{

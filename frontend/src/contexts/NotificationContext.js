@@ -44,12 +44,13 @@ export const NotificationProvider = ({ children }) => {
   };
 
   // Initial fetch and polling setup
+  if(user){
   useEffect(() => {
     fetchNotifications(); // Initial fetch
     const interval = setInterval(fetchNotifications, 10000);
     return () => clearInterval(interval); // Cleanup
   }, []);
-
+  }
   // Create a new notification (used by TeacherDashboard)
   const createNotification = async (notificationData) => {
     try {
