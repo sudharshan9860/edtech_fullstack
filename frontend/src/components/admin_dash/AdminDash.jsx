@@ -17,8 +17,22 @@ import {
   faChartLine
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthContext } from '../AuthContext';
+
+// Import all existing modules
 import Overview from './modules/Overview';
 import Settings from './modules/Settings';
+import StudentManagement from './modules/StudentManagement';
+import TeacherManagement from './modules/TeacherManagement';
+import ClassManagement from './modules/ClassManagement';
+import ReportsAnalytics from './modules/ReportsAnalytics';
+import AcademicRecords from './modules/AcademicRecords';
+
+// Import the 4 new modules we just created
+import SubjectManagement from './modules/SubjectManagement';
+import AssignmentManagement from './modules/AssignmentManagement';
+import ScheduleManagement from './modules/ScheduleManagement';
+import NotificationManagement from './modules/NotificationManagement';
+
 // Import CSS (use relative path since we're in admin_dash folder)
 import './styles/AdminDash.css';
 
@@ -33,11 +47,12 @@ const AdminDash = () => {
     { key: 'students', label: 'Student Management', icon: faUserGraduate },
     { key: 'teachers', label: 'Teacher Management', icon: faChalkboardTeacher },
     { key: 'classes', label: 'Class Management', icon: faSchool },
+    { key: 'academic', label: 'Academic Records', icon: faDatabase },
     { key: 'subjects', label: 'Subject Management', icon: faBookOpen },
+    { key: 'assignments', label: 'Assignment Management', icon: faFileAlt },
+    { key: 'schedule', label: 'Schedule Management', icon: faCalendarAlt },
+    { key: 'notifications', label: 'Notification Management', icon: faBell },
     { key: 'reports', label: 'Reports & Analytics', icon: faChartBar },
-    { key: 'assignments', label: 'Assignments', icon: faFileAlt },
-    { key: 'schedule', label: 'Schedule', icon: faCalendarAlt },
-    { key: 'notifications', label: 'Notifications', icon: faBell },
     { key: 'settings', label: 'Settings', icon: faCog }
   ];
 
@@ -51,62 +66,29 @@ const AdminDash = () => {
         return <Overview />;
       case 'settings':
         return <Settings />;
+      
+      // ✅ ALL WORKING MODULES (11 total)
       case 'students':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Student Management</h2>
-            <p>Student management functionality will be implemented here.</p>
-          </div>
-        );
+        return <StudentManagement />;
       case 'teachers':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Teacher Management</h2>
-            <p>Teacher management functionality will be implemented here.</p>
-          </div>
-        );
+        return <TeacherManagement />;
       case 'classes':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Class Management</h2>
-            <p>Class management functionality will be implemented here.</p>
-          </div>
-        );
-      case 'subjects':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Subject Management</h2>
-            <p>Subject management functionality will be implemented here.</p>
-          </div>
-        );
+        return <ClassManagement />;
+      case 'academic':
+        return <AcademicRecords />;
       case 'reports':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Reports & Analytics</h2>
-            <p>Reports and analytics functionality will be implemented here.</p>
-          </div>
-        );
+        return <ReportsAnalytics />;
+      
+      // ✅ NEW MODULES WE JUST CREATED
+      case 'subjects':
+        return <SubjectManagement />;
       case 'assignments':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Assignment Management</h2>
-            <p>Assignment management functionality will be implemented here.</p>
-          </div>
-        );
+        return <AssignmentManagement />;
       case 'schedule':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Schedule Management</h2>
-            <p>Schedule management functionality will be implemented here.</p>
-          </div>
-        );
+        return <ScheduleManagement />;
       case 'notifications':
-        return (
-          <div className="admin-content-placeholder">
-            <h2>Notification Management</h2>
-            <p>Notification management functionality will be implemented here.</p>
-          </div>
-        );
+        return <NotificationManagement />;
+      
       default:
         return <Overview />;
     }
