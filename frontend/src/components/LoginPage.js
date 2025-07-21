@@ -69,7 +69,10 @@ function LoginPage() {
         
         // Update auth context
         login(username, token, role, class_name);
-        if (role === "teacher") {
+        // Role-based navigation - FIXED
+        if (role === "admin") {
+          navigate("/admin-dash");
+        } else if (role === "teacher") {
           navigate("/teacher-dash");
         } else {
           navigate("/student-dash");

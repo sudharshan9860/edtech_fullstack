@@ -648,3 +648,25 @@
     display: none;
   }
 }
+
+.admin-layout {
+  background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-layout .brand-text {
+  color: #00c1d4 !important;
+}
+
+.admin-content {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.admin-layout .search-container {
+  display: none;
+}
+
+.admin-layout .navbar-content {
+  padding: 0.5rem 1rem;
+}

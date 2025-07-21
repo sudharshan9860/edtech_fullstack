@@ -18,6 +18,7 @@ import TeacherDash from '../components/EnhancedTeacherDash';
 import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';
 import StudentGapAnalysisReport from '../components/StudentGapAnalysisReport';
 import WorksheetSubmission from '../components/WorksheetSubmission';
+import AdminDash from '../components/admin_dash/AdminDash';
 
 // In your routes
 
@@ -49,6 +50,17 @@ const AppRoutes = () => {
             </Layout>
           </PrivateRoute>
         }
+      />
+
+      <Route 
+        path="/admin-dash" 
+        element={
+          <PrivateRoute>
+            <Layout>
+              <AdminDash />
+            </Layout>
+          </PrivateRoute>
+        } 
       />
 
       <Route path="/worksheet-submission" element={<PrivateRoute>

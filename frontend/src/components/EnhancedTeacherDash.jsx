@@ -1,4 +1,4 @@
-// Complete Updated EnhancedTeacherDash.jsx with Class Analysis Sub-Tabs - Fixed Syntax
+// Complete Enhanced Teacher Dashboard with Student Analysis - EnhancedTeacherDash.jsx
 
 import React, { useState, useEffect } from 'react';
 import { 
@@ -25,14 +25,11 @@ const ERROR_COLORS = {
 const classesData = {
   1: {
     id: 1,
-    name: "Class 12th",
+    name: "Class 6th",
     students: [
-      { id: 1, name: "Vikram Singh", class: "12th", efficiency: 88 },
-      { id: 2, name: "Meera Patel", class: "12th", efficiency: 92 },
-      { id: 3, name: "Sanjay Kumar", class: "12th", efficiency: 78 },
-      { id: 4, name: "Priya Sharma", class: "12th", efficiency: 73 },
-      { id: 5, name: "Ahmed Khan", class: "12th", efficiency: 85 },
-      { id: 6, name: "Rahul Verma", class: "12th", efficiency: 55 }
+      { id: 1, name: "Arjun Patel", class: "6th", efficiency: 78 },
+      { id: 2, name: "Sneha Gupta", class: "6th", efficiency: 82 },
+      { id: 3, name: "Rohit Sharma", class: "6th", efficiency: 75 }
     ],
     analytics: {
       weeklyEfficiency: [
@@ -43,19 +40,126 @@ const classesData = {
         { week: 'May 29 - May 29', date: 'May 29', efficiency: 74, tasksCompleted: 42, avgTime: 2.5 }
       ],
       studentProgressComparison: [
-        { student: 'Rahul Verma', efficiencyImprovement: 10.7, regularScoreImprovement: -13.5, currentEfficiency: 82 },
-        { student: 'Ahmed Khan', efficiencyImprovement: 14.5, regularScoreImprovement: 0, currentEfficiency: 85 },
-        { student: 'Sanjay Kumar', efficiencyImprovement: 13.5, regularScoreImprovement: -0.5, currentEfficiency: 78 },
-        { student: 'Priya Sharma', efficiencyImprovement: 7.8, regularScoreImprovement: -1.6, currentEfficiency: 73 },
-        { student: 'Meera Patel', efficiencyImprovement: 9.2, regularScoreImprovement: -1.8, currentEfficiency: 71 },
-        { student: 'Vikram Singh', efficiencyImprovement: 16.0, regularScoreImprovement: 0, currentEfficiency: 88 }
+        { student: 'Arjun Patel', efficiencyImprovement: 10.7, regularScoreImprovement: -13.5, currentEfficiency: 78 },
+        { student: 'Sneha Gupta', efficiencyImprovement: 14.5, regularScoreImprovement: 0, currentEfficiency: 82 },
+        { student: 'Rohit Sharma', efficiencyImprovement: 13.5, regularScoreImprovement: -0.5, currentEfficiency: 75 }
       ],
       learningGapAnalysis: [
-        { topic: 'Algebraic Expressions', 'Students with High Gap': 15, 'Students with Medium Gap': 25, 'Students with Low Gap': 35, 'Students with No Gap': 25 },
-        { topic: 'Linear Equations', 'Students with High Gap': 20, 'Students with Medium Gap': 30, 'Students with Low Gap': 25, 'Students with No Gap': 25 },
-        { topic: 'Quadratic Functions', 'Students with High Gap': 25, 'Students with Medium Gap': 35, 'Students with Low Gap': 20, 'Students with No Gap': 20 },
+        { topic: 'Basic Arithmetic', 'Students with High Gap': 15, 'Students with Medium Gap': 25, 'Students with Low Gap': 35, 'Students with No Gap': 25 },
+        { topic: 'Fractions', 'Students with High Gap': 20, 'Students with Medium Gap': 30, 'Students with Low Gap': 25, 'Students with No Gap': 25 },
+        { topic: 'Geometry Basics', 'Students with High Gap': 25, 'Students with Medium Gap': 35, 'Students with Low Gap': 20, 'Students with No Gap': 20 },
+        { topic: 'Decimals', 'Students with High Gap': 10, 'Students with Medium Gap': 20, 'Students with Low Gap': 40, 'Students with No Gap': 30 },
+        { topic: 'Percentages', 'Students with High Gap': 30, 'Students with Medium Gap': 25, 'Students with Low Gap': 25, 'Students with No Gap': 20 }
+      ]
+    }
+  },
+  2: {
+    id: 2,
+    name: "Class 7th",
+    students: [
+      { id: 4, name: "Kavya Singh", class: "7th", efficiency: 85 },
+      { id: 5, name: "Amit Kumar", class: "7th", efficiency: 79 },
+      { id: 6, name: "Riya Jain", class: "7th", efficiency: 88 }
+    ],
+    analytics: {
+      learningGapAnalysis: [
+        { topic: 'Integers', 'Students with High Gap': 12, 'Students with Medium Gap': 28, 'Students with Low Gap': 35, 'Students with No Gap': 25 },
+        { topic: 'Algebra Introduction', 'Students with High Gap': 18, 'Students with Medium Gap': 32, 'Students with Low Gap': 25, 'Students with No Gap': 25 },
+        { topic: 'Ratios and Proportions', 'Students with High Gap': 22, 'Students with Medium Gap': 33, 'Students with Low Gap': 25, 'Students with No Gap': 20 }
+      ]
+    }
+  },
+  3: {
+    id: 3,
+    name: "Class 8th",
+    students: [
+      { id: 7, name: "Dev Agarwal", class: "8th", efficiency: 90 },
+      { id: 8, name: "Ananya Reddy", class: "8th", efficiency: 83 },
+      { id: 9, name: "Karan Mehta", class: "8th", efficiency: 77 }
+    ],
+    analytics: {
+      learningGapAnalysis: [
+        { topic: 'Linear Equations', 'Students with High Gap': 14, 'Students with Medium Gap': 26, 'Students with Low Gap': 35, 'Students with No Gap': 25 },
+        { topic: 'Mensuration', 'Students with High Gap': 19, 'Students with Medium Gap': 31, 'Students with Low Gap': 25, 'Students with No Gap': 25 },
+        { topic: 'Exponents', 'Students with High Gap': 21, 'Students with Medium Gap': 34, 'Students with Low Gap': 25, 'Students with No Gap': 20 }
+      ]
+    }
+  },
+  4: {
+    id: 4,
+    name: "Class 9th",
+    students: [
+      { id: 10, name: "Ishita Bansal", class: "9th", efficiency: 92 },
+      { id: 11, name: "Varun Kapoor", class: "9th", efficiency: 86 },
+      { id: 12, name: "Pooja Nair", class: "9th", efficiency: 81 }
+    ],
+    analytics: {
+      learningGapAnalysis: [
+        { topic: 'Polynomials', 'Students with High Gap': 16, 'Students with Medium Gap': 24, 'Students with Low Gap': 35, 'Students with No Gap': 25 },
+        { topic: 'Coordinate Geometry', 'Students with High Gap': 22, 'Students with Medium Gap': 28, 'Students with Low Gap': 25, 'Students with No Gap': 25 },
+        { topic: 'Statistics', 'Students with High Gap': 18, 'Students with Medium Gap': 32, 'Students with Low Gap': 30, 'Students with No Gap': 20 }
+      ]
+    }
+  },
+  5: {
+    id: 5,
+    name: "Class 10th",
+    students: [
+      { id: 13, name: "Aryan Shah", class: "10th", efficiency: 89 },
+      { id: 14, name: "Sakshi Tiwari", class: "10th", efficiency: 94 },
+      { id: 15, name: "Harsh Yadav", class: "10th", efficiency: 76 }
+    ],
+    analytics: {
+      learningGapAnalysis: [
+        { topic: 'Quadratic Equations', 'Students with High Gap': 20, 'Students with Medium Gap': 25, 'Students with Low Gap': 30, 'Students with No Gap': 25 },
+        { topic: 'Trigonometry', 'Students with High Gap': 25, 'Students with Medium Gap': 30, 'Students with Low Gap': 25, 'Students with No Gap': 20 },
+        { topic: 'Circles', 'Students with High Gap': 15, 'Students with Medium Gap': 35, 'Students with Low Gap': 30, 'Students with No Gap': 20 }
+      ]
+    }
+  },
+  6: {
+    id: 6,
+    name: "Class 11th",
+    students: [
+      { id: 16, name: "Nisha Chawla", class: "11th", efficiency: 87 },
+      { id: 17, name: "Siddharth Roy", class: "11th", efficiency: 91 },
+      { id: 18, name: "Deepika Sinha", class: "11th", efficiency: 84 }
+    ],
+    analytics: {
+      learningGapAnalysis: [
+        { topic: 'Sets and Functions', 'Students with High Gap': 18, 'Students with Medium Gap': 27, 'Students with Low Gap': 30, 'Students with No Gap': 25 },
+        { topic: 'Limits and Derivatives', 'Students with High Gap': 28, 'Students with Medium Gap': 32, 'Students with Low Gap': 25, 'Students with No Gap': 15 },
+        { topic: 'Permutations', 'Students with High Gap': 22, 'Students with Medium Gap': 28, 'Students with Low Gap': 30, 'Students with No Gap': 20 }
+      ]
+    }
+  },
+  7: {
+    id: 7,
+    name: "Class 12th",
+    students: [
+      { id: 19, name: "Vikram Singh", class: "12th", efficiency: 88 },
+      { id: 20, name: "Meera Patel", class: "12th", efficiency: 92 },
+      { id: 21, name: "Sanjay Kumar", class: "12th", efficiency: 78 }
+    ],
+    analytics: {
+      weeklyEfficiency: [
+        { week: 'May 01 - May 01', date: 'May 01', efficiency: 76, tasksCompleted: 45, avgTime: 2.1 },
+        { week: 'May 08 - May 08', date: 'May 08', efficiency: 82, tasksCompleted: 52, avgTime: 1.8 },
+        { week: 'May 15 - May 15', date: 'May 15', efficiency: 84, tasksCompleted: 58, avgTime: 1.7 },
+        { week: 'May 22 - May 22', date: 'May 22', efficiency: 78, tasksCompleted: 48, avgTime: 2.2 },
+        { week: 'May 29 - May 29', date: 'May 29', efficiency: 74, tasksCompleted: 42, avgTime: 2.5 }
+      ],
+      studentProgressComparison: [
+        { student: 'Vikram Singh', efficiencyImprovement: 16.0, regularScoreImprovement: 0, currentEfficiency: 88 },
+        { student: 'Meera Patel', efficiencyImprovement: 9.2, regularScoreImprovement: -1.8, currentEfficiency: 92 },
+        { student: 'Sanjay Kumar', efficiencyImprovement: 13.5, regularScoreImprovement: -0.5, currentEfficiency: 78 }
+      ],
+      learningGapAnalysis: [
+        { topic: 'Calculus Applications', 'Students with High Gap': 15, 'Students with Medium Gap': 25, 'Students with Low Gap': 35, 'Students with No Gap': 25 },
+        { topic: 'Vector Algebra', 'Students with High Gap': 20, 'Students with Medium Gap': 30, 'Students with Low Gap': 25, 'Students with No Gap': 25 },
+        { topic: 'Probability', 'Students with High Gap': 25, 'Students with Medium Gap': 35, 'Students with Low Gap': 20, 'Students with No Gap': 20 },
         { topic: 'Matrices', 'Students with High Gap': 10, 'Students with Medium Gap': 20, 'Students with Low Gap': 40, 'Students with No Gap': 30 },
-        { topic: 'Trigonometry', 'Students with High Gap': 30, 'Students with Medium Gap': 25, 'Students with Low Gap': 25, 'Students with No Gap': 20 }
+        { topic: 'Differential Equations', 'Students with High Gap': 30, 'Students with Medium Gap': 25, 'Students with Low Gap': 25, 'Students with No Gap': 20 }
       ]
     }
   }
@@ -76,6 +180,10 @@ const EnhancedTeacherDash = () => {
   const [submissions, setSubmissions] = useState([]);
   const [teacherData, setTeacherData] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // New state for student analysis
+  const [studentAnalysisType, setStudentAnalysisType] = useState('homework');
+  const [studentAnalysisSubTab, setStudentAnalysisSubTab] = useState('progression');
 
   // Sample data matching the images provided
   const progressTrendsData = [
@@ -146,26 +254,49 @@ const EnhancedTeacherDash = () => {
   ];
 
   const classPerformanceData = [
-    { 
-      className: '10HPS17', 
-      homeworkAverage: 12, 
-      classworkAverage: 20 
-    },
-    { 
-      className: '10HPS18', 
-      homeworkAverage: 18, 
-      classworkAverage: 18 
-    },
-    { 
-      className: '10HPS19', 
-      homeworkAverage: 28, 
-      classworkAverage: 65 
-    }
+    { className: '10HPS17', homeworkAverage: 12, classworkAverage: 20 },
+    { className: '10HPS18', homeworkAverage: 18, classworkAverage: 18 },
+    { className: '10HPS19', homeworkAverage: 28, classworkAverage: 65 }
   ];
 
   const overallStatsData = [
-    { type: 'Homework', average: 19 },
-    { type: 'Classwork', average: 30 }
+    { type: 'Homework', average: 19, color: '#3b82f6' },
+    { type: 'Classwork', average: 30, color: '#a855f7' }
+  ];
+
+  // Enhanced Student Analysis Data
+  const studentScoreProgressionData = [
+    { date: 'Week 1', homework: 85, classwork: 78 },
+    { date: 'Week 2', homework: 88, classwork: 82 },
+    { date: 'Week 3', homework: 92, classwork: 85 },
+    { date: 'Week 4', homework: 87, classwork: 88 },
+    { date: 'Week 5', homework: 94, classwork: 91 },
+    { date: 'Week 6', homework: 89, classwork: 87 }
+  ];
+
+  const studentQuestionPerformanceData = [
+    { question: 'Q1', correct: 85, incorrect: 15, topic: 'Algebra' },
+    { question: 'Q2', correct: 92, incorrect: 8, topic: 'Geometry' },
+    { question: 'Q3', correct: 78, incorrect: 22, topic: 'Calculus' },
+    { question: 'Q4', correct: 88, incorrect: 12, topic: 'Statistics' },
+    { question: 'Q5', correct: 95, incorrect: 5, topic: 'Trigonometry' }
+  ];
+
+  const studentTopicAnalysisData = [
+    { topic: 'Algebra', homework: 88, classwork: 85, average: 86.5 },
+    { topic: 'Geometry', homework: 92, classwork: 89, average: 90.5 },
+    { topic: 'Calculus', homework: 78, classwork: 82, average: 80 },
+    { topic: 'Statistics', homework: 85, classwork: 87, average: 86 },
+    { topic: 'Trigonometry', homework: 91, classwork: 88, average: 89.5 }
+  ];
+
+  const dateWiseComparisonData = [
+    { date: '2024-01-15', homework: 85, classwork: 78, difference: 7 },
+    { date: '2024-01-22', homework: 88, classwork: 82, difference: 6 },
+    { date: '2024-01-29', homework: 92, classwork: 85, difference: 7 },
+    { date: '2024-02-05', homework: 87, classwork: 88, difference: -1 },
+    { date: '2024-02-12', homework: 94, classwork: 91, difference: 3 },
+    { date: '2024-02-19', homework: 89, classwork: 87, difference: 2 }
   ];
 
   useEffect(() => {
@@ -176,12 +307,28 @@ const EnhancedTeacherDash = () => {
     try {
       const response = await axiosInstance.get('/teacher-dashboard/');
       console.log('teacher-data', response.data);
+      
+      // Debug the student data structure
+      if (response.data.students && response.data.students.length > 0) {
+        console.log('📊 Student data structure debug:');
+        console.log('Total students:', response.data.students.length);
+        console.log('First student object:', response.data.students[0]);
+        console.log('Available fields in first student:', Object.keys(response.data.students[0]));
+        
+        // Check if any students have undefined names
+        const studentsWithoutNames = response.data.students.filter(student => !student.name && !student.username && !student.student_name);
+        if (studentsWithoutNames.length > 0) {
+          console.warn('⚠️ Students without name field:', studentsWithoutNames.length);
+          console.log('Example student without name:', studentsWithoutNames[0]);
+        }
+      }
+      
       setTeacherData(response.data);
       
       if (response.data.students && response.data.students.length > 0) {
         setSelectedClass({
           id: 1,
-          name: "Class 12th",
+          name: "Class 6th",
           students: response.data.students
         });
       }
@@ -193,12 +340,11 @@ const EnhancedTeacherDash = () => {
   };
 
   const getAnalyticsData = () => {
-    // Return mock data if selectedClass doesn't have analytics or if it's incomplete
     if (!selectedClass.analytics || !selectedClass.analytics.learningGapAnalysis) {
       return {
         weeklyEfficiency: progressTrendsData,
         studentProgressComparison: selectedClass.students ? selectedClass.students.map(student => ({
-          student: student.name,
+          student: student.name || student.username || student.student_name || 'Unknown Student',
           efficiencyImprovement: Math.random() * 20 - 5,
           regularScoreImprovement: Math.random() * 10 - 5,
           currentEfficiency: student.efficiency || Math.random() * 40 + 60
@@ -215,12 +361,10 @@ const EnhancedTeacherDash = () => {
     return selectedClass.analytics;
   };
 
-  // Generate student data function (for student analysis)
   const generateStudentData = (studentName, classId) => {
-    const baseEfficiency = Math.floor(Math.random() * 30) + 60; // 60-90%
+    const baseEfficiency = Math.floor(Math.random() * 30) + 60;
     
     return {
-      // Weekly Efficiency Progress
       weeklyEfficiency: [
         { week: 'May 01 - May 01', efficiency: baseEfficiency - 5 + Math.random() * 10 },
         { week: 'May 08 - May 08', efficiency: baseEfficiency - 3 + Math.random() * 10 },
@@ -228,8 +372,6 @@ const EnhancedTeacherDash = () => {
         { week: 'May 22 - May 22', efficiency: baseEfficiency - 2 + Math.random() * 10 },
         { week: 'May 29 - May 29', efficiency: baseEfficiency + 2 + Math.random() * 8 }
       ],
-      
-      // Error Type Analysis
       errorAnalysis: [
         { week: 'May 01 - May 01', Conceptual: 80, Computational: 15, Careless: 5, 'No Error': 20 },
         { week: 'May 08 - May 08', Conceptual: 75, Computational: 18, Careless: 7, 'No Error': 25 },
@@ -237,8 +379,6 @@ const EnhancedTeacherDash = () => {
         { week: 'May 22 - May 22', Conceptual: 85, Computational: 10, Careless: 5, 'No Error': 18 },
         { week: 'May 29 - May 29', Conceptual: 70, Computational: 15, Careless: 8, 'No Error': 38 }
       ],
-      
-      // Chapter-wise Performance Over Time
       chapterPerformance: [
         { week: 'Week 1', 'Chapter 1': 90, 'Chapter 2': 67, 'Chapter 3': 70, 'Chapter 4': 85, 'Chapter 5': 88, 'Chapter 6': 93, 'Chapter 7': 80, 'Chapter 8': 75, 'Chapter 9': 70, overallAverage: 78 },
         { week: 'Week 2', 'Chapter 1': 92, 'Chapter 2': 70, 'Chapter 3': 72, 'Chapter 4': 87, 'Chapter 5': 90, 'Chapter 6': 95, 'Chapter 7': 82, 'Chapter 8': 77, 'Chapter 9': 72, overallAverage: 80 },
@@ -251,7 +391,7 @@ const EnhancedTeacherDash = () => {
 
   const handleStudentSelect = (student) => {
     setSelectedStudent(student);
-    const data = generateStudentData(student.name, selectedClass.id);
+    const data = generateStudentData(student.name || student.username || student.student_name || 'Unknown Student', selectedClass.id);
     setStudentData(data);
   };
 
@@ -279,16 +419,10 @@ const EnhancedTeacherDash = () => {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div style={{
-          backgroundColor: 'white',
-          padding: '12px',
-          border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}>
-          <p style={{ margin: 0, fontWeight: 'bold', color: '#374151' }}>{label}</p>
+        <div className="custom-tooltip">
+          <p className="tooltip-label">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} style={{ margin: '4px 0', color: entry.color, fontSize: '14px' }}>
+            <p key={index} className="tooltip-entry" style={{ color: entry.color }}>
               {entry.name}: {entry.value}%
             </p>
           ))}
@@ -301,94 +435,29 @@ const EnhancedTeacherDash = () => {
   // Render Class Analysis Sub-Tabs
   const renderClassAnalysisSubTabs = () => {
     return (
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px 12px 0 0',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        marginBottom: '0'
-      }}>
-        <div style={{
-          display: 'flex',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '0 20px'
-        }}>
+      <div className="sub-tabs-container">
+        <div className="sub-tabs">
           <button
             onClick={() => setClassAnalysisTab('overview')}
-            style={{
-              padding: '16px 24px',
-              backgroundColor: classAnalysisTab === 'overview' ? '#f0f9ff' : 'transparent',
-              color: classAnalysisTab === 'overview' ? '#0369a1' : '#6b7280',
-              border: 'none',
-              borderRadius: '0',
-              borderBottom: classAnalysisTab === 'overview' ? '3px solid #0369a1' : '3px solid transparent',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
+            className={`sub-tab-button ${classAnalysisTab === 'overview' ? 'active' : ''}`}
           >
             📊 Class Overview
           </button>
           <button
             onClick={() => setClassAnalysisTab('trends')}
-            style={{
-              padding: '16px 24px',
-              backgroundColor: classAnalysisTab === 'trends' ? '#f0f9ff' : 'transparent',
-              color: classAnalysisTab === 'trends' ? '#0369a1' : '#6b7280',
-              border: 'none',
-              borderRadius: '0',
-              borderBottom: classAnalysisTab === 'trends' ? '3px solid #0369a1' : '3px solid transparent',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
+            className={`sub-tab-button ${classAnalysisTab === 'trends' ? 'active' : ''}`}
           >
             📈 Class Progress Trends
           </button>
           <button
             onClick={() => setClassAnalysisTab('topics')}
-            style={{
-              padding: '16px 24px',
-              backgroundColor: classAnalysisTab === 'topics' ? '#f0f9ff' : 'transparent',
-              color: classAnalysisTab === 'topics' ? '#0369a1' : '#6b7280',
-              border: 'none',
-              borderRadius: '0',
-              borderBottom: classAnalysisTab === 'topics' ? '3px solid #0369a1' : '3px solid transparent',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
+            className={`sub-tab-button ${classAnalysisTab === 'topics' ? 'active' : ''}`}
           >
             🎯 Topic Analysis
           </button>
           <button
             onClick={() => setClassAnalysisTab('summary')}
-            style={{
-              padding: '16px 24px',
-              backgroundColor: classAnalysisTab === 'summary' ? '#f0f9ff' : 'transparent',
-              color: classAnalysisTab === 'summary' ? '#0369a1' : '#6b7280',
-              border: 'none',
-              borderRadius: '0',
-              borderBottom: classAnalysisTab === 'summary' ? '3px solid #0369a1' : '3px solid transparent',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
+            className={`sub-tab-button ${classAnalysisTab === 'summary' ? 'active' : ''}`}
           >
             📋 Summary
           </button>
@@ -397,208 +466,76 @@ const EnhancedTeacherDash = () => {
     );
   };
 
-  // Class Overview Content (matching your image)
+  // Class Overview Content
   const renderClassOverview = () => {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '0 0 12px 12px',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ 
-              margin: 0, 
-              fontSize: '20px', 
-              fontWeight: 'bold', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              color: '#1f2937'
-            }}>
-              📊 Class Overview Dashboard
-            </h3>
-            <p style={{ margin: '8px 0 0 0', color: '#666', fontSize: '14px' }}>
-              Comprehensive performance analysis for all classes
-            </p>
+      <div className="flex-column-gap">
+        <div className="rounded-bottom-card">
+          <div className="mb-20">
+            <h3 className="section-title">📊 Class Overview Dashboard</h3>
+            <p className="section-subtitle">Comprehensive performance analysis for {selectedClass.name}</p>
           </div>
 
-          {/* Two-column layout matching your image */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
-            gap: '32px',
-            marginTop: '24px'
-          }}>
-            
-            {/* Student Performance Comparison */}
+          <div className="two-column-grid">
             <div>
-              <h4 style={{ 
-                fontSize: '16px', 
-                fontWeight: '600', 
-                color: '#374151', 
-                marginBottom: '16px' 
-              }}>
-                Student Performance Comparison
-              </h4>
-              <div style={{ height: '300px' }}>
+              <h4 className="subsection-title">Student Performance Comparison</h4>
+              <div className="chart-height-300">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={classPerformanceData}
-                    margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
-                  >
+                  <BarChart data={classPerformanceData} margin={{ top: 20, right: 20, left: 20, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis 
-                      dataKey="className" 
-                      fontSize={12}
-                      color="#6b7280"
-                    />
-                    <YAxis 
-                      fontSize={12}
-                      color="#6b7280"
-                      domain={[0, 80]}
-                    />
+                    <XAxis dataKey="className" fontSize={12} color="#6b7280" />
+                    <YAxis fontSize={12} color="#6b7280" domain={[0, 80]} />
                     <Tooltip 
                       formatter={(value, name) => [value, name === 'homeworkAverage' ? 'Homework Average' : 'Classwork Average']}
                       labelFormatter={(label) => `Class: ${label}`}
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        fontSize: '12px'
-                      }}
                     />
                     <Legend />
-                    <Bar 
-                      dataKey="homeworkAverage" 
-                      fill="#3b82f6" 
-                      name="Homework Average"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar 
-                      dataKey="classworkAverage" 
-                      fill="#a855f7" 
-                      name="Classwork Average"
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="homeworkAverage" fill="#3b82f6" name="Homework Average" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="classworkAverage" fill="#a855f7" name="Classwork Average" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* Overall Class Statistics and Performance Comparison */}
             <div>
-              <h4 style={{ 
-                fontSize: '16px', 
-                fontWeight: '600', 
-                color: '#374151', 
-                marginBottom: '16px' 
-              }}>
-                Overall Class Statistics and Performance Comparison
-              </h4>
-              <div style={{ height: '300px' }}>
+              <h4 className="subsection-title">Overall Class Statistics and Performance Comparison</h4>
+              <div className="chart-height-300">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={overallStatsData}
-                    margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
-                  >
+                  <BarChart data={overallStatsData} margin={{ top: 20, right: 20, left: 20, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis 
-                      dataKey="type" 
-                      fontSize={12}
-                      color="#6b7280"
-                    />
-                    <YAxis 
-                      fontSize={12}
-                      color="#6b7280"
-                      domain={[0, 70]}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [value, 'Average Score']}
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Bar 
-                      dataKey="average" 
-                      fill="#06b6d4"
-                      radius={[8, 8, 0, 0]}
-                    />
+                    <XAxis dataKey="type" fontSize={12} color="#6b7280" />
+                    <YAxis fontSize={12} color="#6b7280" domain={[0, 70]} />
+                    <Tooltip formatter={(value) => [value, 'Average Score']} />
+                    <Bar dataKey="average" radius={[8, 8, 0, 0]}>
+                      {overallStatsData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
 
-          {/* Performance Metrics Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px',
-            marginTop: '32px'
-          }}>
-            <div style={{
-              backgroundColor: '#f0f9ff',
-              padding: '20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '2px solid #e0f2fe'
-            }}>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0369a1' }}>
-                19%
-              </div>
-              <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
-                Overall Homework Average
-              </div>
+          <div className="four-column-grid">
+            <div className="metric-card-blue">
+              <div className="metric-value-blue">19%</div>
+              <div className="metric-label">Overall Homework Average</div>
             </div>
             
-            <div style={{
-              backgroundColor: '#f0fdf4',
-              padding: '20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '2px solid #dcfce7'
-            }}>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>
-                30%
-              </div>
-              <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
-                Overall Classwork Average
-              </div>
+            <div className="metric-card-green">
+              <div className="metric-value-green">30%</div>
+              <div className="metric-label">Overall Classwork Average</div>
             </div>
             
-            <div style={{
-              backgroundColor: '#fef7cd',
-              padding: '20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '2px solid #fde047'
-            }}>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ca8a04' }}>
-                3
-              </div>
-              <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
-                Total Classes
-              </div>
+            <div className="metric-card-yellow">
+              <div className="metric-value-yellow">{selectedClass.students ? selectedClass.students.length : 0}</div>
+              <div className="metric-label">Total Students</div>
             </div>
             
-            <div style={{
-              backgroundColor: '#fdf2f8',
-              padding: '20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '2px solid #f9a8d4'
-            }}>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#be185d' }}>
-                11%
-              </div>
-              <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
-                Performance Gap
-              </div>
+            <div className="metric-card-pink">
+              <div className="metric-value-pink">11%</div>
+              <div className="metric-label">Performance Gap</div>
             </div>
           </div>
         </div>
@@ -609,153 +546,48 @@ const EnhancedTeacherDash = () => {
   // Class Progress Trends Content
   const renderClassProgressTrends = () => {
     return (
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '0 0 12px 12px',
-        padding: '24px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📈 Class Progress Trends
-          </h3>
-          <p style={{ margin: '8px 0 0 0', color: '#666', fontSize: '14px' }}>
-            Assignment Progress and Top Performers
-          </p>
+      <div className="rounded-bottom-card">
+        <div className="mb-20">
+          <h3 className="section-title">📈 Class Progress Trends</h3>
+          <p className="section-subtitle">Assignment Progress and Top Performers</p>
         </div>
 
-        {/* Filter Buttons */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '8px', 
-          marginBottom: '20px',
-          flexWrap: 'wrap'
-        }}>
-          {['10', '50', '100', '150', '1M', 'MAX'].map((filter) => (
-            <button
-              key={filter}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: filter === '1M' ? '#3b82f6' : '#f1f5f9',
-                color: filter === '1M' ? 'white' : '#64748b',
-                border: '1px solid #e2e8f0',
-                borderRadius: '4px',
-                fontSize: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
+        <div className="filter-buttons">
+          {['1D', '5D', '10D', '15D', '1M', 'MAX'].map((filter) => (
+            <button key={filter} className={`filter-button ${filter === '1M' ? 'active' : ''}`}>
               {filter}
             </button>
           ))}
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '2fr 1fr', 
-          gap: '32px',
-          marginTop: '24px'
-        }}>
-          
-          {/* Assignment-wise Class Average */}
+        <div className="two-column-grid">
           <div>
-            <h4 style={{ 
-              fontSize: '16px', 
-              fontWeight: '600', 
-              color: '#374151', 
-              marginBottom: '16px' 
-            }}>
-              Assignment-wise Class Average
-            </h4>
-            <div style={{ height: '300px' }}>
+            <h4 className="subsection-title">Assignment-wise Class Average</h4>
+            <div className="chart-height-300">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                  data={progressTrendsData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-                >
+                <LineChart data={progressTrendsData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="date" 
-                    fontSize={12}
-                    color="#6b7280"
-                  />
-                  <YAxis 
-                    fontSize={12}
-                    color="#6b7280"
-                    domain={[0, 100]}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '12px'
-                    }}
-                  />
+                  <XAxis dataKey="date" fontSize={12} color="#6b7280" />
+                  <YAxis fontSize={12} color="#6b7280" domain={[0, 100]} />
+                  <Tooltip />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="hwAverage" 
-                    stroke="#3b82f6" 
-                    strokeWidth={3}
-                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
-                    name="HW Class Average"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="cwAverage" 
-                    stroke="#e11d48" 
-                    strokeWidth={3}
-                    dot={{ fill: '#e11d48', strokeWidth: 2, r: 6 }}
-                    name="CW Class Average"
-                  />
+                  <Line type="monotone" dataKey="hwAverage" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }} name="HW Class Average" />
+                  <Line type="monotone" dataKey="cwAverage" stroke="#e11d48" strokeWidth={3} dot={{ fill: '#e11d48', strokeWidth: 2, r: 6 }} name="CW Class Average" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Top Performers */}
           <div>
-            <h4 style={{ 
-              fontSize: '16px', 
-              fontWeight: '600', 
-              color: '#374151', 
-              marginBottom: '16px' 
-            }}>
-              Top Performers
-            </h4>
-            <div style={{ height: '300px' }}>
+            <h4 className="subsection-title">Top Performers</h4>
+            <div className="chart-height-300">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={topPerformersData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                >
+                <BarChart data={topPerformersData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="student" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    fontSize={12}
-                  />
-                  <YAxis 
-                    fontSize={12}
-                    domain={[0, 70]}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [value + '%', 'Overall Average']}
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="average" 
-                    fill="#fbbf24"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <XAxis dataKey="student" angle={-45} textAnchor="end" height={60} fontSize={12} />
+                  <YAxis fontSize={12} domain={[0, 70]} />
+                  <Tooltip formatter={(value) => [value + '%', 'Overall Average']} />
+                  <Bar dataKey="average" fill="#fbbf24" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -767,7 +599,6 @@ const EnhancedTeacherDash = () => {
 
   // Topic Analysis Content  
   const renderTopicAnalysis = () => {
-    // Ensure data is available, use fallback if needed
     const safeStrugglingTopicsData = strugglingTopicsData || [];
     const safeExcellingTopicsData = excellingTopicsData || [];
     const safeTopicComparisonData = topicComparisonData || [];
@@ -775,326 +606,129 @@ const EnhancedTeacherDash = () => {
     const safeDetailedTopicStats = detailedTopicStats || [];
 
     return (
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '0 0 12px 12px',
-        padding: '24px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🎯 Class Topic Analysis
-          </h3>
-          <p style={{ margin: '8px 0 0 0', color: '#666', fontSize: '14px' }}>
-            Across All Students
-          </p>
+      <div className="rounded-bottom-card">
+        <div className="mb-20">
+          <h3 className="section-title">🎯 Class Topic Analysis</h3>
+          <p className="section-subtitle">Across All Students</p>
         </div>
 
-        {/* First Row: Struggling vs Excelling Topics */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 1fr', 
-          gap: '32px',
-          marginBottom: '32px'
-        }}>
-          
-          {/* Topics Class Struggles With Most */}
+        <div className="two-column-grid mb-32">
           <div>
-            <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ 
-                fontSize: '16px', 
-                fontWeight: '600', 
-                color: '#374151', 
-                marginBottom: '8px' 
-              }}>
-                Topics Class Struggles With Most
-              </h4>
-              <div style={{ fontSize: '12px', color: '#6b7280' }}>
+            <div className="mb-16">
+              <h4 className="subsection-title">Topics Class Struggles With Most</h4>
+              <div className="topic-stats-text">
                 Topic Statistics<br/>
                 Class Average: 56.4%<br/>
                 Submissions: 30
               </div>
             </div>
-            <div style={{ height: '250px' }}>
+            <div className="chart-height-250">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={safeStrugglingTopicsData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                >
+                <BarChart data={safeStrugglingTopicsData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="topic" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                    fontSize={10}
-                    interval={0}
-                  />
-                  <YAxis 
-                    fontSize={12}
-                    domain={[0, 70]}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [value + '%', 'Average Score']}
-                    labelFormatter={(label, payload) => {
-                      const item = safeStrugglingTopicsData.find(d => d.topic === label);
-                      return item ? item.fullName || item.topic : label;
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="score" 
-                    fill="#ef4444"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <XAxis dataKey="topic" angle={-45} textAnchor="end" height={80} fontSize={10} interval={0} />
+                  <YAxis fontSize={12} domain={[0, 70]} />
+                  <Tooltip formatter={(value) => [value + '%', 'Average Score']} labelFormatter={(label, payload) => {
+                    const item = safeStrugglingTopicsData.find(d => d.topic === label);
+                    return item ? item.fullName || item.topic : label;
+                  }} />
+                  <Bar dataKey="score" fill="#ef4444" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Topics Class Excels In */}
           <div>
-            <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ 
-                fontSize: '16px', 
-                fontWeight: '600', 
-                color: '#374151', 
-                marginBottom: '8px' 
-              }}>
-                Topics Class Excels In
-              </h4>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '16px', 
-                fontSize: '12px',
-                color: '#6b7280'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '12px', height: '12px', backgroundColor: '#ef4444', borderRadius: '2px' }}></div>
+            <div className="mb-16">
+              <h4 className="subsection-title">Topics Class Excels In</h4>
+              <div className="legend-flex">
+                <div className="legend-item">
+                  <div className="legend-dot" style={{ backgroundColor: '#ef4444' }}></div>
                   Struggling Topics
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '12px', height: '12px', backgroundColor: '#22c55e', borderRadius: '2px' }}></div>
+                <div className="legend-item">
+                  <div className="legend-dot" style={{ backgroundColor: '#22c55e' }}></div>
                   Excelling Topics
                 </div>
               </div>
             </div>
-            <div style={{ height: '250px' }}>
+            <div className="chart-height-250">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={safeExcellingTopicsData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                >
+                <BarChart data={safeExcellingTopicsData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="topic" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                    fontSize={10}
-                    interval={0}
-                  />
-                  <YAxis 
-                    fontSize={12}
-                    domain={[0, 80]}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [value + '%', 'Average Score']}
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="score" 
-                    fill="#22c55e"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <XAxis dataKey="topic" angle={-45} textAnchor="end" height={80} fontSize={10} interval={0} />
+                  <YAxis fontSize={12} domain={[0, 80]} />
+                  <Tooltip formatter={(value) => [value + '%', 'Average Score']} />
+                  <Bar dataKey="score" fill="#22c55e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        {/* Second Row: HW vs CW Comparison and Performance Distribution */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 1fr', 
-          gap: '32px',
-          marginBottom: '32px'
-        }}>
-          
-          {/* Topic-wise HW vs CW Comparison */}
+        <div className="two-column-grid mb-32">
           <div>
-            <h4 style={{ 
-              fontSize: '16px', 
-              fontWeight: '600', 
-              color: '#374151', 
-              marginBottom: '16px' 
-            }}>
-              Topic-wise HW vs CW Comparison
-            </h4>
-            <div style={{ height: '350px' }}>
+            <h4 className="subsection-title">Topic-wise HW vs CW Comparison</h4>
+            <div className="chart-height-350">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={safeTopicComparisonData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
-                >
+                <BarChart data={safeTopicComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="topic" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={100}
-                    fontSize={10}
-                    interval={0}
-                  />
-                  <YAxis 
-                    fontSize={12}
-                    domain={[0, 100]}
-                  />
-                  <Tooltip 
-                    formatter={(value, name) => [value + '%', name === 'hw' ? 'Homework' : 'Classwork']}
-                    labelFormatter={(label, payload) => {
-                      const item = safeTopicComparisonData.find(d => d.topic === label);
-                      return item ? item.fullName || item.topic : label;
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '12px'
-                    }}
-                  />
+                  <XAxis dataKey="topic" angle={-45} textAnchor="end" height={100} fontSize={10} interval={0} />
+                  <YAxis fontSize={12} domain={[0, 100]} />
+                  <Tooltip formatter={(value, name) => [value + '%', name === 'hw' ? 'Homework' : 'Classwork']} labelFormatter={(label, payload) => {
+                    const item = safeTopicComparisonData.find(d => d.topic === label);
+                    return item ? item.fullName || item.topic : label;
+                  }} />
                   <Legend />
-                  <Bar 
-                    dataKey="hw" 
-                    fill="#06b6d4"
-                    name="Homework"
-                    radius={[2, 2, 0, 0]}
-                  />
-                  <Bar 
-                    dataKey="cw" 
-                    fill="#a855f7"
-                    name="Classwork"
-                    radius={[2, 2, 0, 0]}
-                  />
+                  <Bar dataKey="hw" fill="#06b6d4" name="Homework" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="cw" fill="#a855f7" name="Classwork" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Topic Performance Distribution */}
           <div>
-            <h4 style={{ 
-              fontSize: '16px', 
-              fontWeight: '600', 
-              color: '#374151', 
-              marginBottom: '16px' 
-            }}>
-              Topic Performance Distribution
-            </h4>
-            <div style={{ height: '350px' }}>
+            <h4 className="subsection-title">Topic Performance Distribution</h4>
+            <div className="chart-height-350">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={safeTopicPerformanceDistribution}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
-                >
+                <BarChart data={safeTopicPerformanceDistribution} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="topic" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={100}
-                    fontSize={10}
-                    interval={0}
-                  />
-                  <YAxis 
-                    fontSize={12}
-                    domain={[0, 100]}
-                  />
-                  <Tooltip 
-                    formatter={(value, name) => [value + '%', 'Performance Range']}
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="q3" 
-                    fill="#fbbf24"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <XAxis dataKey="topic" angle={-45} textAnchor="end" height={100} fontSize={10} interval={0} />
+                  <YAxis fontSize={12} domain={[0, 100]} />
+                  <Tooltip formatter={(value, name) => [value + '%', 'Performance Range']} />
+                  <Bar dataKey="q3" fill="#fbbf24" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        {/* Detailed Topic Statistics Table */}
-        <div style={{ marginTop: '24px' }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            📊 Detailed Topic Statistics
-          </h4>
-          <div style={{
-            overflow: 'auto',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px'
-          }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: '14px'
-            }}>
+        <div className="mt-24">
+          <h4 className="subsection-title">📊 Detailed Topic Statistics</h4>
+          <div className="data-table-container">
+            <table className="enhanced-data-table">
               <thead>
-                <tr style={{ backgroundColor: '#f8fafc' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>Topic</th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>Overall Avg (%)</th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>HW Avg (%)</th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>CW Avg (%)</th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>Total Questions</th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>Std Deviation</th>
+                <tr className="table-header-row">
+                  <th className="table-header-enhanced">Topic</th>
+                  <th className="table-header-enhanced table-header-center">Overall Avg (%)</th>
+                  <th className="table-header-enhanced table-header-center">HW Avg (%)</th>
+                  <th className="table-header-enhanced table-header-center">CW Avg (%)</th>
+                  <th className="table-header-enhanced table-header-center">Total Questions</th>
+                  <th className="table-header-enhanced table-header-center">Std Deviation</th>
                 </tr>
               </thead>
               <tbody>
                 {safeDetailedTopicStats.map((row, index) => (
-                  <tr key={row.id || index} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb' }}>
-                    <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
-                      <span style={{ 
-                        display: 'inline-block', 
-                        width: '20px', 
-                        textAlign: 'center', 
-                        marginRight: '8px',
-                        color: '#6b7280',
-                        fontSize: '12px'
-                      }}>
-                        {row.id}
-                      </span>
+                  <tr key={row.id || index} className={index % 2 === 0 ? 'table-row-even' : 'table-row-odd'}>
+                    <td className="table-cell-enhanced">
+                      <span className="table-id-cell">{row.id}</span>
                       {row.topic}
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>{row.overallAvg}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>{row.hwAvg}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>{row.cwAvg}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>{row.totalQuestions}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>{row.stdDev}</td>
+                    <td className="table-cell-enhanced table-cell-center">{row.overallAvg}</td>
+                    <td className="table-cell-enhanced table-cell-center">{row.hwAvg}</td>
+                    <td className="table-cell-enhanced table-cell-center">{row.cwAvg}</td>
+                    <td className="table-cell-enhanced table-cell-center">{row.totalQuestions}</td>
+                    <td className="table-cell-enhanced table-cell-center">{row.stdDev}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1108,71 +742,24 @@ const EnhancedTeacherDash = () => {
   // Summary Content
   const renderSummary = () => {
     return (
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '0 0 12px 12px',
-        padding: '24px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ 
-            margin: 0, 
-            fontSize: '20px', 
-            fontWeight: 'bold', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            color: '#1f2937'
-          }}>
-            📋 CLASSROOM PERFORMANCE SUMMARY
-          </h3>
+      <div className="rounded-bottom-card">
+        <div className="mb-20">
+          <h3 className="section-title">📋 CLASSROOM PERFORMANCE SUMMARY</h3>
         </div>
 
-        {/* Class Overview Section */}
-        <div style={{ marginBottom: '32px' }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            👥 Class Overview: ↗️
-          </h4>
-          <ul style={{ 
-            listStyle: 'disc', 
-            paddingLeft: '20px', 
-            color: '#4b5563',
-            lineHeight: '1.6'
-          }}>
-            <li><strong>Total Students:</strong> 5</li>
-            <li><strong>Students with Homework Data:</strong> 5</li>
-            <li><strong>Students with Classwork Data:</strong> 5</li>
+        <div className="summary-section">
+          <h4 className="subsection-title">👥 Class Overview: ↗️</h4>
+          <ul className="summary-list">
+            <li><strong>Total Students:</strong> {selectedClass.students ? selectedClass.students.length : 0}</li>
+            <li><strong>Students with Homework Data:</strong> {selectedClass.students ? selectedClass.students.length : 0}</li>
+            <li><strong>Students with Classwork Data:</strong> {selectedClass.students ? selectedClass.students.length : 0}</li>
             <li><strong>Total Assignments Analyzed:</strong> 60</li>
           </ul>
         </div>
 
-        {/* Performance Statistics */}
-        <div style={{ marginBottom: '32px' }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            📊 Performance Statistics:
-          </h4>
-          <ul style={{ 
-            listStyle: 'disc', 
-            paddingLeft: '20px', 
-            color: '#4b5563',
-            lineHeight: '1.6'
-          }}>
+        <div className="summary-section">
+          <h4 className="subsection-title">📊 Performance Statistics:</h4>
+          <ul className="summary-list">
             <li><strong>Overall Class Average:</strong> 56.5%</li>
             <li><strong>Homework Class Average:</strong> 61.6%</li>
             <li><strong>Classwork Class Average:</strong> 51.4%</li>
@@ -1180,41 +767,12 @@ const EnhancedTeacherDash = () => {
           </ul>
         </div>
 
-        {/* Grade Distribution */}
-        <div style={{ marginBottom: '32px' }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            🎯 Grade Distribution:
-          </h4>
-          <div style={{
-            backgroundColor: '#f8fafc',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb',
-            marginBottom: '16px'
-          }}>
-            <div style={{ 
-              fontFamily: 'monospace', 
-              fontSize: '14px',
-              color: '#1f2937',
-              marginBottom: '12px'
-            }}>
-              ★★F (&lt;60%):★★ 27 assignments (45.0%)
-            </div>
+        <div className="summary-section">
+          <h4 className="subsection-title">🎯 Grade Distribution:</h4>
+          <div className="highlight-box highlight-box-blue">
+            <div className="highlight-text-blue">★★F (&lt;60%):★★ 27 assignments (45.0%)</div>
           </div>
-          <ul style={{ 
-            listStyle: 'disc', 
-            paddingLeft: '20px', 
-            color: '#4b5563',
-            lineHeight: '1.6'
-          }}>
+          <ul className="summary-list">
             <li><strong>C (70-79%):</strong> 13 assignments (21.7%)</li>
             <li><strong>B (80-89%):</strong> 13 assignments (21.7%)</li>
             <li><strong>A (90-100%):</strong> 1 assignments (1.7%)</li>
@@ -1222,189 +780,46 @@ const EnhancedTeacherDash = () => {
           </ul>
         </div>
 
-        {/* Top Performers */}
-        <div style={{ marginBottom: '32px' }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            🏆 Top Performers: ↗️
-          </h4>
-          <div style={{
-            backgroundColor: '#f0f9ff',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '1px solid #bfdbfe',
-            marginBottom: '16px'
-          }}>
-            <div style={{ 
-              fontFamily: 'monospace', 
-              fontSize: '14px',
-              color: '#1e40af',
-              fontWeight: 'bold'
-            }}>
-              1. ★★10HPS21:★★ 69.0%
-            </div>
+        <div className="summary-section">
+          <h4 className="subsection-title">🏆 Top Performers: ↗️</h4>
+          <div className="highlight-box highlight-box-blue">
+            <div className="highlight-text-blue">1. ★★10HPS21:★★ 69.0%</div>
           </div>
-          <ul style={{ 
-            listStyle: 'none', 
-            paddingLeft: '0', 
-            color: '#4b5563',
-            lineHeight: '1.6'
-          }}>
+          <ul className="summary-list-none">
             <li>2. <strong>10HPS19:</strong> 66.8% 3. <strong>10HPS20:</strong> 52.2%</li>
           </ul>
           
-          <div style={{
-            backgroundColor: '#fef3c7',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '1px solid #fbbf24',
-            marginTop: '16px'
-          }}>
-            <div style={{ 
-              fontSize: '14px',
-              color: '#92400e'
-            }}>
-              ### 📚 ★★Students Needing Support:★★
-            </div>
-            <div style={{ 
-              fontFamily: 'monospace', 
-              fontSize: '14px',
-              color: '#92400e',
-              marginTop: '8px'
-            }}>
-              1. ★★10HPS18:★★ 44.0%
-            </div>
+          <div className="highlight-box highlight-box-yellow">
+            <div className="highlight-text-yellow">### 📚 ★★Students Needing Support:★★</div>
+            <div className="highlight-text-yellow">1. ★★10HPS18:★★ 44.0%</div>
           </div>
-          <ul style={{ 
-            listStyle: 'none', 
-            paddingLeft: '0', 
-            color: '#4b5563',
-            lineHeight: '1.6',
-            marginTop: '8px'
-          }}>
+          <ul className="summary-list-none">
             <li>2. <strong>10HPS17:</strong> 50.1% 3. <strong>10HPS20:</strong> 52.2%</li>
           </ul>
         </div>
 
-        {/* Strongest Topics */}
-        <div style={{ marginBottom: '32px' }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            💪 Strongest Topics:
-          </h4>
-          <div style={{
-            backgroundColor: '#f0fdf4',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '1px solid #bbf7d0',
-            marginBottom: '16px'
-          }}>
-            <div style={{ 
-              fontFamily: 'monospace', 
-              fontSize: '14px',
-              color: '#15803d',
-              fontWeight: 'bold'
-            }}>
-              1. ★★Coordinate Geometry:★★ 71.4%
-            </div>
+        <div className="summary-section">
+          <h4 className="subsection-title">💪 Strongest Topics:</h4>
+          <div className="highlight-box highlight-box-green">
+            <div className="highlight-text-green">1. ★★Coordinate Geometry:★★ 71.4%</div>
           </div>
-          <div style={{ 
-            color: '#4b5563',
-            lineHeight: '1.6',
-            fontSize: '14px'
-          }}>
-            2. <strong>Algebra - Rational Functions:</strong> 64.0% 3. <strong>Probability:</strong> 60.8%
-          </div>
+          <div className="topic-text">2. <strong>Algebra - Rational Functions:</strong> 64.0% 3. <strong>Probability:</strong> 60.8%</div>
         </div>
 
-        {/* Topics Needing Attention */}
-        <div style={{ marginBottom: '32px' }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            🔍 Topics Needing Attention:
-          </h4>
-          <div style={{
-            backgroundColor: '#fef2f2',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '1px solid #fecaca',
-            marginBottom: '16px'
-          }}>
-            <div style={{ 
-              fontFamily: 'monospace', 
-              fontSize: '14px',
-              color: '#dc2626',
-              fontWeight: 'bold'
-            }}>
-              1. ★★Algebra - Linear Equations:★★ 46.7%
-            </div>
+        <div className="summary-section">
+          <h4 className="subsection-title">🔍 Topics Needing Attention:</h4>
+          <div className="highlight-box highlight-box-red">
+            <div className="highlight-text-red">1. ★★Algebra - Linear Equations:★★ 46.7%</div>
           </div>
-          <div style={{ 
-            color: '#4b5563',
-            lineHeight: '1.6',
-            fontSize: '14px'
-          }}>
-            2. <strong>Calculus - Derivatives:</strong> 52.2% 3. <strong>Statistics:</strong> 56.4%
-          </div>
+          <div className="topic-text">2. <strong>Calculus - Derivatives:</strong> 52.2% 3. <strong>Statistics:</strong> 56.4%</div>
         </div>
 
-        {/* Recommendations */}
         <div>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#374151', 
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            💡 Recommendations:
-          </h4>
-          
-          <div style={{
-            backgroundColor: '#e0f2fe',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '1px solid #0ea5e9',
-            marginBottom: '16px'
-          }}>
-            <div style={{ 
-              fontSize: '14px',
-              color: '#0c4a6e'
-            }}>
-              - 📝 ★★Focus on Classwork:★★ Class performs 10.2% better on homework. Consider reinforcing classwork concepts.
-            </div>
+          <h4 className="subsection-title">💡 Recommendations:</h4>
+          <div className="highlight-box highlight-box-cyan">
+            <div className="highlight-text-cyan">- 📝 ★★Focus on Classwork:★★ Class performs 10.2% better on homework. Consider reinforcing classwork concepts.</div>
           </div>
-
-          <ul style={{ 
-            listStyle: 'disc', 
-            paddingLeft: '20px', 
-            color: '#4b5563',
-            lineHeight: '1.6',
-            fontSize: '14px'
-          }}>
+          <ul className="summary-list">
             <li>🎯 <strong>Priority Topics:</strong> Focus additional instruction on Algebra - Linear Equations, Calculus - Derivatives, Statistics.</li>
             <li>⚠️ <strong>Support Needed:</strong> 33 assignments show grades D or F. Consider additional support strategies.</li>
           </ul>
@@ -1417,16 +832,9 @@ const EnhancedTeacherDash = () => {
   const renderLearningGapAnalysis = () => {
     const analyticsData = getAnalyticsData();
     
-    // Ensure learningGapAnalysis exists
     if (!analyticsData || !analyticsData.learningGapAnalysis) {
       return (
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          textAlign: 'center'
-        }}>
+        <div className="empty-state">
           <h3>Learning Gap Analysis</h3>
           <p>No data available for learning gap analysis.</p>
         </div>
@@ -1434,100 +842,43 @@ const EnhancedTeacherDash = () => {
     }
     
     return (
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '24px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        marginBottom: '24px'
-      }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🎯 Class-wide Learning Gap Analysis
-          </h3>
-          <p style={{ margin: '8px 0 0 0', color: '#666', fontSize: '14px' }}>
-            Percentage of Students with Learning Gaps by Topic - {selectedClass.name}
-          </p>
+      <div className="dashboard-card mb-24">
+        <div className="mb-20">
+          <h3 className="section-title">🎯 Class-wide Learning Gap Analysis</h3>
+          <p className="section-subtitle">Percentage of Students with Learning Gaps by Topic - {selectedClass.name}</p>
         </div>
-        <div style={{height: '600px'}}>
+        <div className="chart-height-600">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={analyticsData.learningGapAnalysis}
-              margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-            >
+            <BarChart data={analyticsData.learningGapAnalysis} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="topic" 
-                angle={-45}
-                textAnchor="end"
-                height={80}
-                interval={0}
-                fontSize={12}
-              />
-              <YAxis 
-                label={{ value: 'Percentage of Students (%)', angle: -90, position: 'insideLeft' }}
-                domain={[0, 100]}
-              />
-              <Tooltip 
-                formatter={(value, name) => [`${value}%`, name]}
-                labelFormatter={(label) => `Topic: ${label}`}
-              />
+              <XAxis dataKey="topic" angle={-45} textAnchor="end" height={80} interval={0} fontSize={12} />
+              <YAxis label={{ value: 'Percentage of Students (%)', angle: -90, position: 'insideLeft' }} domain={[0, 100]} />
+              <Tooltip formatter={(value, name) => [`${value}%`, name]} labelFormatter={(label) => `Topic: ${label}`} />
               <Legend />
-              <Bar 
-                dataKey="Students with High Gap" 
-                stackId="a" 
-                fill="#dc2626" 
-                name="High Gap (Critical)"
-                radius={[0, 0, 0, 0]}
-              />
-              <Bar 
-                dataKey="Students with Medium Gap" 
-                stackId="a" 
-                fill="#f59e0b" 
-                name="Medium Gap (Moderate)"
-                radius={[0, 0, 0, 0]}
-              />
-              <Bar 
-                dataKey="Students with Low Gap" 
-                stackId="a" 
-                fill="#eab308" 
-                name="Low Gap (Minor)"
-                radius={[0, 0, 0, 0]}
-              />
-              <Bar 
-                dataKey="Students with No Gap" 
-                stackId="a" 
-                fill="#22c55e" 
-                name="No Gap (Proficient)"
-                radius={[4, 4, 0, 0]}
-              />
+              <Bar dataKey="Students with High Gap" stackId="a" fill="#dc2626" name="High Gap (Critical)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Students with Medium Gap" stackId="a" fill="#f59e0b" name="Medium Gap (Moderate)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Students with Low Gap" stackId="a" fill="#eab308" name="Low Gap (Minor)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Students with No Gap" stackId="a" fill="#22c55e" name="No Gap (Proficient)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
         
-        {/* Learning Gap Analysis Legend */}
-        <div style={{
-          marginTop: '20px',
-          padding: '16px',
-          backgroundColor: '#f8fafc',
-          borderRadius: '8px',
-          fontSize: '13px'
-        }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '14px', height: '14px', backgroundColor: '#dc2626', borderRadius: '2px' }}></div>
+        <div className="legend-container">
+          <div className="legend-grid">
+            <div className="legend-item">
+              <div className="legend-dot" style={{ backgroundColor: '#dc2626' }}></div>
               <span><strong>High Gap (Critical)</strong> - Needs immediate attention</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '2px' }}></div>
+            <div className="legend-item">
+              <div className="legend-dot" style={{ backgroundColor: '#f59e0b' }}></div>
               <span><strong>Medium Gap (Moderate)</strong> - Requires support</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '14px', height: '14px', backgroundColor: '#eab308', borderRadius: '2px' }}></div>
+            <div className="legend-item">
+              <div className="legend-dot" style={{ backgroundColor: '#eab308' }}></div>
               <span><strong>Low Gap (Minor)</strong> - Monitor progress</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '2px' }}></div>
+            <div className="legend-item">
+              <div className="legend-dot" style={{ backgroundColor: '#22c55e' }}></div>
               <span><strong>No Gap (Proficient)</strong> - On track</span>
             </div>
           </div>
@@ -1536,41 +887,20 @@ const EnhancedTeacherDash = () => {
     );
   };
 
-  // Render class sidebar (existing function - keep as is)
+  // Render class sidebar
   const renderClassSidebar = () => {
     return (
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '20px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        height: 'fit-content'
-      }}>
-        <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
-          Select Class
-        </h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="sidebar-card">
+        <h4 className="sidebar-title">Select Class</h4>
+        <div className="sidebar-list">
           {Object.values(classesData).map((classItem) => (
             <div
               key={classItem.id}
               onClick={() => setSelectedClass(classItem)}
-              style={{
-                padding: '16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                backgroundColor: selectedClass.id === classItem.id ? '#e0f2fe' : '#f8fafc',
-                border: selectedClass.id === classItem.id ? '2px solid #0277bd' : '1px solid #e5e7eb',
-                transition: 'all 0.3s ease',
-                transform: selectedClass.id === classItem.id ? 'translateY(-2px)' : 'none',
-                boxShadow: selectedClass.id === classItem.id ? '0 4px 8px rgba(2,119,189,0.2)' : '0 1px 3px rgba(0,0,0,0.1)'
-              }}
+              className={`class-item ${selectedClass.id === classItem.id ? 'active' : ''}`}
             >
-              <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#1f2937' }}>
-                {classItem.name}
-              </div>
-              <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
-                {classItem.students.length} students
-              </div>
+              <div className="class-item-name">{classItem.name}</div>
+              <div className="class-item-count">{classItem.students.length} students</div>
             </div>
           ))}
         </div>
@@ -1578,106 +908,170 @@ const EnhancedTeacherDash = () => {
     );
   };
 
-  // Render student list (for Student Analysis tab)
+  // FIXED: Render student list with class selection dropdown
   const renderStudentList = () => {
-    const filteredStudents = selectedClass.students?.filter(student =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
+    // Get all students from the selected class for analysis
+    const currentClassStudents = selectedClass.students || [];
+    
+    // Filter students based on search term
+    const filteredStudents = currentClassStudents.filter(student => {
+      const studentName = student.name || student.username || student.student_name || '';
+      return studentName.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
+    // Sample student data for demonstration (replace with actual API data)
+    const sampleStudents = [
+      { id: 1, name: 'Sanjay Kumar', class: 'Class 12th', efficiency: 78 },
+      { id: 2, name: 'Priya Sharma', class: 'Class 12th', efficiency: 73 },
+      { id: 3, name: 'Ahmed Khan', class: 'Class 12th', efficiency: 85 },
+      { id: 4, name: 'Rahul Verma', class: 'Class 12th', efficiency: 58 },
+      { id: 5, name: 'Anita Singh', class: 'Class 11th', efficiency: 92 },
+      { id: 6, name: 'Vikas Gupta', class: 'Class 11th', efficiency: 67 },
+      { id: 7, name: 'Neha Patel', class: 'Class 10th', efficiency: 89 },
+      { id: 8, name: 'Rohit Sharma', class: 'Class 10th', efficiency: 74 },
+      { id: 9, name: 'Kavya Reddy', class: 'Class 9th', efficiency: 81 },
+      { id: 10, name: 'Arjun Kumar', class: 'Class 9th', efficiency: 76 }
+    ];
+
+    // Filter sample students by selected class and search term
+    const displayStudents = sampleStudents
+      .filter(student => student.class === selectedClass.name)
+      .filter(student => student.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '20px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        height: 'fit-content'
-      }}>
-        <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
-          Select Student
-        </h4>
+      <div className="sidebar-card">
+        <h4 className="sidebar-title">Students List</h4>
+        <p style={{ fontSize: '12px', color: '#666', marginBottom: '16px' }}>
+          Select a class and student to view detailed analysis
+        </p>
         
-        {/* Search Input */}
-        <input
-          type="text"
-          placeholder="Search students..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '10px',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px',
-            marginBottom: '16px',
-            fontSize: '14px'
-          }}
-        />
+        {/* Class Selection Dropdown */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ fontSize: '14px', fontWeight: '600', color: '#374151', display: 'block', marginBottom: '8px' }}>
+            Select Class:
+          </label>
+          <select
+            value={selectedClass.name}
+            onChange={(e) => {
+              const classData = Object.values(classesData).find(cls => cls.name === e.target.value);
+              if (classData) {
+                setSelectedClass(classData);
+                setSelectedStudent(null); // Reset selected student when class changes
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px',
+              backgroundColor: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="Class 6th">Class 6th</option>
+            <option value="Class 7th">Class 7th</option>
+            <option value="Class 8th">Class 8th</option>
+            <option value="Class 9th">Class 9th</option>
+            <option value="Class 10th">Class 10th</option>
+            <option value="Class 11th">Class 11th</option>
+            <option value="Class 12th">Class 12th</option>
+          </select>
+        </div>
+
+        {/* Search Student Input */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ fontSize: '14px', fontWeight: '600', color: '#374151', display: 'block', marginBottom: '8px' }}>
+            Search Student:
+          </label>
+          <input
+            type="text"
+            placeholder="Type student name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
         
-        {/* Student List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '500px', overflowY: 'auto' }}>
-          {filteredStudents.map((student) => (
-            <div
-              key={student.id}
-              onClick={() => handleStudentSelect(student)}
-              style={{
-                padding: '12px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                backgroundColor: selectedStudent?.id === student.id ? '#e0f2fe' : '#f8fafc',
-                border: selectedStudent?.id === student.id ? '2px solid #0277bd' : '1px solid #e5e7eb',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}
-            >
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                backgroundColor: '#0284c7',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                fontSize: '14px'
-              }}>
-                {student.name.split(' ').map(n => n[0]).join('')}
-              </div>
-              <div>
-                <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#1f2937' }}>
-                  {student.name}
+        {/* Students List */}
+        <div className="sidebar-list-scrollable" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+          {displayStudents.length > 0 ? (
+            displayStudents.map((student) => (
+              <div
+                key={student.id}
+                onClick={() => handleStudentSelect(student)}
+                className={`student-item-enhanced ${selectedStudent?.id === student.id ? 'active' : ''}`}
+                style={{
+                  padding: '12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  border: '1px solid #e5e7eb',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  backgroundColor: selectedStudent?.id === student.id ? '#e0f2fe' : '#f8fafc',
+                  borderColor: selectedStudent?.id === student.id ? '#0277bd' : '#e5e7eb',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#0284c7',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}>
+                  {student.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                 </div>
-                <div style={{ fontSize: '12px', color: '#666' }}>
-                  {student.class} - {student.efficiency}% efficiency
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#1f2937' }}>
+                    {student.name}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>
+                    {student.class}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>
+                    Efficiency: {student.efficiency}%
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '20px',
+              color: '#666',
+              fontSize: '14px'
+            }}>
+              {searchTerm ? 'No students found matching your search.' : `No students available in ${selectedClass.name}.`}
             </div>
-          ))}
+          )}
         </div>
       </div>
     );
   };
 
-  // Render student analysis (for Student Analysis tab)
+  // Render student analysis (Enhanced with radio buttons and sub-tabs)
   const renderStudentAnalysis = () => {
     if (!selectedStudent) {
       return (
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          padding: '60px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          textAlign: 'center',
-          minHeight: '400px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        <div className="empty-state">
           <div>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>👤</div>
-            <h3 style={{ margin: '0 0 8px 0', color: '#374151' }}>Select a Student</h3>
-            <p style={{ color: '#666', fontSize: '16px', margin: 0 }}>
+            <div className="empty-state-icon">👤</div>
+            <h3 className="empty-state-title">Select a Student</h3>
+            <p className="empty-state-text">
               Choose a student from {selectedClass.name} to view their detailed analysis and performance metrics
             </p>
           </div>
@@ -1686,106 +1080,352 @@ const EnhancedTeacherDash = () => {
     }
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="flex-column-gap">
         {/* Student Info Card */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              📊 Student Analysis: {selectedStudent.name}
-            </h3>
-            <p style={{ margin: '8px 0 0 0', color: '#666', fontSize: '14px' }}>
-              Individual performance metrics for {selectedClass.name}
-            </p>
+        <div className="dashboard-card">
+          <div className="mb-20">
+            <h3 className="section-title">📊 Student Analysis: {selectedStudent.name || 'Unknown Student'}</h3>
+            <p className="section-subtitle">Individual performance metrics for {selectedClass.name}</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
-            <div style={{
-              backgroundColor: '#f0f9ff',
-              padding: '20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '2px solid #e0f2fe'
-            }}>
-              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#0369a1' }}>
-                {selectedStudent.efficiency}%
-              </div>
-              <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>Current Efficiency</div>
+          <div className="two-column-grid">
+            <div className="metric-card-blue">
+              <div className="metric-value-blue">{selectedStudent.efficiency || 75}%</div>
+              <div className="metric-label">Current Efficiency</div>
             </div>
-            <div style={{
-              backgroundColor: '#f0fdf4',
-              padding: '20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '2px solid #dcfce7'
-            }}>
-              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#16a34a' }}>
-                {selectedClass.name}
-              </div>
-              <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>Class Level</div>
+            <div className="metric-card-green">
+              <div className="metric-value-green">{selectedClass.name}</div>
+              <div className="metric-label">Class Level</div>
             </div>
           </div>
         </div>
 
-        {/* Weekly Efficiency Progress */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}>
-          <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
-            Weekly Efficiency Progress
-          </h4>
-          <div style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart 
-                data={studentData?.weeklyEfficiency || []}
-                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="week" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px'
+        {/* Analysis Type Selection */}
+        <div className="dashboard-card">
+          <div className="analysis-type-container">
+            <div className="radio-group">
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="analysisType"
+                  value="homework"
+                  checked={studentAnalysisType === 'homework'}
+                  onChange={(e) => {
+                    setStudentAnalysisType(e.target.value);
+                    setStudentAnalysisSubTab('progression');
                   }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="efficiency" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
+                <span className="radio-label">📝 Homework</span>
+              </label>
+              
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="analysisType"
+                  value="classwork"
+                  checked={studentAnalysisType === 'classwork'}
+                  onChange={(e) => {
+                    setStudentAnalysisType(e.target.value);
+                    setStudentAnalysisSubTab('progression');
+                  }}
                 />
-              </LineChart>
-            </ResponsiveContainer>
+                <span className="radio-label">📚 Classwork</span>
+              </label>
+              
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="analysisType"
+                  value="comparison"
+                  checked={studentAnalysisType === 'comparison'}
+                  onChange={(e) => {
+                    setStudentAnalysisType(e.target.value);
+                    setStudentAnalysisSubTab('datewise');
+                  }}
+                />
+                <span className="radio-label">📊 HW vs CW Comparison</span>
+              </label>
+            </div>
           </div>
+        </div>
+
+        {/* Sub-tabs based on analysis type */}
+        <div className="sub-tabs-container">
+          <div className="sub-tabs">
+            {studentAnalysisType === 'homework' || studentAnalysisType === 'classwork' ? (
+              <>
+                <button
+                  onClick={() => setStudentAnalysisSubTab('progression')}
+                  className={`sub-tab-button ${studentAnalysisSubTab === 'progression' ? 'active' : ''}`}
+                >
+                  📈 Score Progression
+                </button>
+                <button
+                  onClick={() => setStudentAnalysisSubTab('questions')}
+                  className={`sub-tab-button ${studentAnalysisSubTab === 'questions' ? 'active' : ''}`}
+                >
+                  📋 Question Performance
+                </button>
+                <button
+                  onClick={() => setStudentAnalysisSubTab('topics')}
+                  className={`sub-tab-button ${studentAnalysisSubTab === 'topics' ? 'active' : ''}`}
+                >
+                  ⏱️ Topic Analysis
+                </button>
+                <button
+                  onClick={() => setStudentAnalysisSubTab('summary')}
+                  className={`sub-tab-button ${studentAnalysisSubTab === 'summary' ? 'active' : ''}`}
+                >
+                  📋 Summary
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setStudentAnalysisSubTab('datewise')}
+                  className={`sub-tab-button ${studentAnalysisSubTab === 'datewise' ? 'active' : ''}`}
+                >
+                  📅 Date-wise Comparison
+                </button>
+                <button
+                  onClick={() => setStudentAnalysisSubTab('topicwise')}
+                  className={`sub-tab-button ${studentAnalysisSubTab === 'topicwise' ? 'active' : ''}`}
+                >
+                  🎯 Topic-wise Comparison
+                </button>
+                <button
+                  onClick={() => setStudentAnalysisSubTab('compsummary')}
+                  className={`sub-tab-button ${studentAnalysisSubTab === 'compsummary' ? 'active' : ''}`}
+                >
+                  📊 Comparison Summary
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Content based on selected sub-tab */}
+        <div className="rounded-bottom-card">
+          {renderStudentAnalysisContent()}
         </div>
       </div>
     );
   };
 
+  // Render content based on selected analysis type and sub-tab
+  const renderStudentAnalysisContent = () => {
+    const analysisTitle = studentAnalysisType === 'homework' ? 'Homework' : 
+                         studentAnalysisType === 'classwork' ? 'Classwork' : 'HW vs CW Comparison';
+
+    if (studentAnalysisType === 'homework' || studentAnalysisType === 'classwork') {
+      switch (studentAnalysisSubTab) {
+        case 'progression':
+          return (
+            <div>
+              <h4 className="subsection-title">📈 {analysisTitle} Score Progression</h4>
+              <div className="chart-height-400">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={studentScoreProgressionData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" fontSize={12} />
+                    <YAxis fontSize={12} domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey={studentAnalysisType} 
+                      stroke="#3b82f6" 
+                      strokeWidth={3}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
+                      name={`${analysisTitle} Score`}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+
+        case 'questions':
+          return (
+            <div>
+              <h4 className="subsection-title">📋 {analysisTitle} Question Performance</h4>
+              <div className="chart-height-400">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={studentQuestionPerformanceData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="question" fontSize={12} />
+                    <YAxis fontSize={12} domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="correct" fill="#22c55e" name="Correct %" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="incorrect" fill="#ef4444" name="Incorrect %" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+
+        case 'topics':
+          return (
+            <div>
+              <h4 className="subsection-title">⏱️ {analysisTitle} Topic Analysis</h4>
+              <div className="chart-height-400">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={studentTopicAnalysisData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="topic" fontSize={12} />
+                    <YAxis fontSize={12} domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar 
+                      dataKey={studentAnalysisType} 
+                      fill="#3b82f6" 
+                      name={`${analysisTitle} Performance`}
+                      radius={[4, 4, 0, 0]} 
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+
+        case 'summary':
+          return (
+            <div>
+              <h4 className="subsection-title">📋 {analysisTitle} Summary</h4>
+              <div className="summary-cards-grid">
+                <div className="metric-card-blue">
+                  <div className="metric-value-blue">
+                    {studentAnalysisType === 'homework' ? '87%' : '85%'}
+                  </div>
+                  <div className="metric-label">Average Score</div>
+                </div>
+                <div className="metric-card-green">
+                  <div className="metric-value-green">
+                    {studentAnalysisType === 'homework' ? '24' : '22'}
+                  </div>
+                  <div className="metric-label">Assignments Completed</div>
+                </div>
+                <div className="metric-card-yellow">
+                  <div className="metric-value-yellow">
+                    {studentAnalysisType === 'homework' ? '92%' : '89%'}
+                  </div>
+                  <div className="metric-label">Best Topic Score</div>
+                </div>
+                <div className="metric-card-pink">
+                  <div className="metric-value-pink">
+                    {studentAnalysisType === 'homework' ? '78%' : '82%'}
+                  </div>
+                  <div className="metric-label">Needs Improvement</div>
+                </div>
+              </div>
+              
+              <div className="mt-24">
+                <h5 className="subsection-title">Performance Insights</h5>
+                <ul className="summary-list">
+                  <li><strong>Strongest Topic:</strong> {studentAnalysisType === 'homework' ? 'Geometry (92%)' : 'Algebra (89%)'}</li>
+                  <li><strong>Needs Focus:</strong> {studentAnalysisType === 'homework' ? 'Calculus (78%)' : 'Statistics (82%)'}</li>
+                  <li><strong>Consistency:</strong> {studentAnalysisType === 'homework' ? 'Good - steady improvement' : 'Very Good - stable performance'}</li>
+                  <li><strong>Recommendation:</strong> {studentAnalysisType === 'homework' ? 'Focus on problem-solving techniques' : 'Maintain current pace'}</li>
+                </ul>
+              </div>
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    } else {
+      // Comparison analysis
+      switch (studentAnalysisSubTab) {
+        case 'datewise':
+          return (
+            <div>
+              <h4 className="subsection-title">📅 Date-wise HW vs CW Comparison</h4>
+              <div className="chart-height-400">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dateWiseComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" fontSize={12} />
+                    <YAxis fontSize={12} domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="homework" stroke="#3b82f6" strokeWidth={3} name="Homework" />
+                    <Line type="monotone" dataKey="classwork" stroke="#ef4444" strokeWidth={3} name="Classwork" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+
+        case 'topicwise':
+          return (
+            <div>
+              <h4 className="subsection-title">🎯 Topic-wise HW vs CW Comparison</h4>
+              <div className="chart-height-400">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={studentTopicAnalysisData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="topic" fontSize={12} />
+                    <YAxis fontSize={12} domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="homework" fill="#3b82f6" name="Homework" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="classwork" fill="#ef4444" name="Classwork" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+
+        case 'compsummary':
+          return (
+            <div>
+              <h4 className="subsection-title">📊 HW vs CW Comparison Summary</h4>
+              <div className="summary-cards-grid">
+                <div className="metric-card-blue">
+                  <div className="metric-value-blue">87%</div>
+                  <div className="metric-label">Homework Average</div>
+                </div>
+                <div className="metric-card-green">
+                  <div className="metric-value-green">85%</div>
+                  <div className="metric-label">Classwork Average</div>
+                </div>
+                <div className="metric-card-yellow">
+                  <div className="metric-value-yellow">+2%</div>
+                  <div className="metric-label">HW Advantage</div>
+                </div>
+                <div className="metric-card-pink">
+                  <div className="metric-value-pink">86%</div>
+                  <div className="metric-label">Overall Average</div>
+                </div>
+              </div>
+              
+              <div className="mt-24">
+                <h5 className="subsection-title">Comparison Insights</h5>
+                <ul className="summary-list">
+                  <li><strong>Overall Performance:</strong> Homework slightly better than Classwork</li>
+                  <li><strong>Consistency:</strong> More consistent in Homework assignments</li>
+                  <li><strong>Best HW Topic:</strong> Geometry (92%)</li>
+                  <li><strong>Best CW Topic:</strong> Statistics (87%)</li>
+                  <li><strong>Recommendation:</strong> Focus on improving classwork performance</li>
+                </ul>
+              </div>
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    }
+  };
+
   // Updated main Class Analysis render function
   const renderClassAnalysisContent = () => {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '20px', maxWidth: '100%' }}>
-        {/* Left Sidebar - Classes */}
+      <div className="grid-layout-main">
+        <div>{renderClassSidebar()}</div>
         <div>
-          {renderClassSidebar()}
-        </div>
-
-        {/* Main Content Area with Sub-Tabs */}
-        <div>
-          {/* Sub-Tab Navigation */}
           {renderClassAnalysisSubTabs()}
-          
-          {/* Sub-Tab Content */}
           <div>
             {classAnalysisTab === 'overview' && renderClassOverview()}
             {classAnalysisTab === 'trends' && renderClassProgressTrends()}
@@ -1797,140 +1437,84 @@ const EnhancedTeacherDash = () => {
     );
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <div className="dashboard-wrapper">
+          <div className="empty-state">
+            <div>
+              <div className="empty-state-icon">⏳</div>
+              <h3 className="empty-state-title">Loading Dashboard</h3>
+              <p className="empty-state-text">Please wait while we fetch your data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Main render function
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
-        {/* Header */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          marginBottom: '20px'
-        }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '28px', fontWeight: 'bold', color: '#1f2937' }}>
-            Enhanced Teacher Dashboard
-          </h2>
+    <div className="dashboard-container">
+      <div className="dashboard-wrapper">
+        <div className="main-header">
+          <h2 className="main-title">Enhanced Teacher Dashboard</h2>
           
-          {/* Main Tab Navigation */}
-          <div style={{ display: 'flex', gap: '4px', marginTop: '20px' }}>
+          <div className="main-tabs">
             <button 
               onClick={() => setActiveTab('class')}
-              style={{
-                padding: '16px 32px',
-                backgroundColor: activeTab === 'class' ? '#3b82f6' : 'transparent',
-                color: activeTab === 'class' ? 'white' : '#666',
-                border: 'none',
-                borderRadius: '0',
-                borderBottom: activeTab === 'class' ? '3px solid #3b82f6' : '3px solid transparent',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
+              className={`main-tab-button ${activeTab === 'class' ? 'active' : ''}`}
             >
               Class Analysis
             </button>
             <button 
               onClick={() => setActiveTab('student')}
-              style={{
-                padding: '16px 32px',
-                backgroundColor: activeTab === 'student' ? '#3b82f6' : 'transparent',
-                color: activeTab === 'student' ? 'white' : '#666',
-                border: 'none',
-                borderRadius: '0',
-                borderBottom: activeTab === 'student' ? '3px solid #3b82f6' : '3px solid transparent',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
+              className={`main-tab-button ${activeTab === 'student' ? 'active' : ''}`}
             >
               Student Analysis
             </button>
             <button 
               onClick={() => setActiveTab('homework')}
-              style={{
-                padding: '16px 32px',
-                backgroundColor: activeTab === 'homework' ? '#3b82f6' : 'transparent',
-                color: activeTab === 'homework' ? 'white' : '#666',
-                border: 'none',
-                borderRadius: '0',
-                borderBottom: activeTab === 'homework' ? '3px solid #3b82f6' : '3px solid transparent',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
+              className={`main-tab-button ${activeTab === 'homework' ? 'active' : ''}`}
             >
               Worksheets
             </button>
             <button 
               onClick={() => setActiveTab('exercise')}
-              style={{
-                padding: '16px 32px',
-                backgroundColor: activeTab === 'exercise' ? '#3b82f6' : 'transparent',
-                color: activeTab === 'exercise' ? 'white' : '#666',
-                border: 'none',
-                borderRadius: '0',
-                borderBottom: activeTab === 'exercise' ? '3px solid #3b82f6' : '3px solid transparent',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
+              className={`main-tab-button ${activeTab === 'exercise' ? 'active' : ''}`}
             >
               Homework
             </button>
             <button 
               onClick={() => setActiveTab('classwork')}
-              style={{
-                padding: '16px 32px',
-                backgroundColor: activeTab === 'classwork' ? '#3b82f6' : 'transparent',
-                color: activeTab === 'classwork' ? 'white' : '#666',
-                border: 'none',
-                borderRadius: '0',
-                borderBottom: activeTab === 'classwork' ? '3px solid #3b82f6' : '3px solid transparent',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
+              className={`main-tab-button ${activeTab === 'classwork' ? 'active' : ''}`}
             >
               Classwork
             </button>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div style={{ padding: '20px' }}>
+        <div className="content-with-padding">
           {activeTab === 'class' ? (
             renderClassAnalysisContent()
           ) : activeTab === 'student' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '20px', maxWidth: '100%' }}>
-              {/* Left Sidebar - Student Selection */}
-              <div>
-                {renderStudentList()}
-              </div>
-              
-              {/* Main Content Area - Student Analysis */}
-              <div>
-                {renderStudentAnalysis()}
-              </div>
+            <div className="grid-layout-student">
+              <div>{renderStudentList()}</div>
+              <div>{renderStudentAnalysis()}</div>
             </div>
           ) : activeTab === 'classwork' ? (
             <QuickExerciseComponent onCreateHomework={(assignment) => handleAssignmentSubmit(assignment, "classwork")} mode="classwork" />
-          ) : activeTab === 'exercise' ? (
+          ) : activeTab === 'homework' ? (
             <TeacherDashboard 
               user={selectedClass}
               assignments={assignments}
               submissions={submissions}
               onAssignmentSubmit={(assignment) => handleAssignmentSubmit(assignment, "homework")}
             />
-          ) : (
+          ) : activeTab === 'exercise' ? (
             <QuickExerciseComponent onCreateHomework={(assignment) => handleAssignmentSubmit(assignment, "quiz")} />
-          )}
+          ) : null}
         </div>
       </div>
     </div>

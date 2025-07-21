@@ -17,8 +17,8 @@
   background: linear-gradient(135deg, #2c3e50, #34495e);
   color: white;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  position: sticky; /* Changed from fixed to sticky */
-  top: 0; /* Stick to top when scrolling */
+  position: sticky;
+  top: 0;
   height: 100vh;
   overflow-y: auto;
   z-index: 1000;
@@ -177,6 +177,23 @@
 .admin-loading p {
   margin-top: 1rem;
   font-size: 1rem;
+}
+
+/* Placeholder styles for content sections */
+.admin-content-placeholder {
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  margin: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  color: #6b7280;
+}
+
+.admin-content-placeholder h2 {
+  color: #374151;
+  margin-bottom: 1rem;
 }
 
 /* Responsive Design */
