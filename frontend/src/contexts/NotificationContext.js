@@ -6,11 +6,23 @@ export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [lastFetchAttempt, setLastFetchAttempt] = useState(null);
   const { user } = useContext(AuthContext);
 
-  // Fetch notifications from the server
+  // Fetch notifications from the server with error handling
   const fetchNotifications = async () => {
     try {
+      setLastFetchAttempt(new Date());
+      
+      // Check if backend is available first
+      const healthCheck = await axiosInstance.get('/health');
+      if (!healthCheck.data) {
+        throw new Error('Backend not responding');
+      }
+      
+      setIsConnected(true);
+      
       // Get notifications from the endpoint
       const res = await axiosInstance.get('/studentnotifications/');
       const item = res.data.homework;
@@ -28,7 +40,7 @@ export const NotificationProvider = ({ children }) => {
         message: res.data.message || 'You have a new homework update.',
         timestamp: item.date_assigned || new Date().toISOString(),
         read: false,
-        type: 'homework', // Changed to 'homework' to match the expected type in NotificationDropdown
+        type: 'homework',
         homework: item,
       };
 
@@ -40,15 +52,71 @@ export const NotificationProvider = ({ children }) => {
 
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      setIsConnected(false);
+      
+      // Handle specific error cases
+      if (error.response?.status === 404) {
+        console.warn('Notification endpoint not found. Backend may not be running.');
+      } else if (error.code === 'ECONNABORTED' || error.code === 'ECONNREFUSED') {
+        console.warn('Cannot connect to backend server. Is it running on port 8000?');
+      }
+      
+      // Add a system notification about the connection issue
+      const errorNotification = {
+        id: `error_${Date.now()}`,
+        title: 'Connection Issue',
+        message: 'Unable to fetch latest notifications. Check if backend server is running.',
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'system',
+        isError: true
+      };
+      
+      setNotifications((prev) => {
+        const hasErrorNotification = prev.some(n => n.type === 'system' && n.isError);
+        return hasErrorNotification ? prev : [errorNotification, ...prev];
+      });
+    }
+  };
+
+  // Check backend connection
+  const checkConnection = async () => {
+    try {
+      const response = await axiosInstance.get('/health');
+      setIsConnected(!!response.data);
+      return !!response.data;
+    } catch (error) {
+      setIsConnected(false);
+      return false;
     }
   };
 
   // Initial fetch and polling setup
   useEffect(() => {
     fetchNotifications(); // Initial fetch
-    const interval = setInterval(fetchNotifications, 10000);
-    return () => clearInterval(interval); // Cleanup
-  }, []);
+    
+    // Set up polling with exponential backoff when disconnected
+    const setupPolling = () => {
+      const baseInterval = isConnected ? 10000 : 30000; // 10s when connected, 30s when not
+      const interval = setInterval(() => {
+        if (!isConnected) {
+          // Try to reconnect less frequently
+          checkConnection().then(connected => {
+            if (connected) {
+              fetchNotifications();
+            }
+          });
+        } else {
+          fetchNotifications();
+        }
+      }, baseInterval);
+      
+      return interval;
+    };
+    
+    const interval = setupPolling();
+    return () => clearInterval(interval);
+  }, [isConnected]);
 
   // Create a new notification (used by TeacherDashboard)
   const createNotification = async (notificationData) => {
@@ -62,82 +130,82 @@ export const NotificationProvider = ({ children }) => {
         notificationData.read = false;
       }
       
-      // You can send to server if you have an endpoint for creating notifications
-      // For now, just add to local state
+      // Try to send to server if connected
+      if (isConnected) {
+        try {
+          await axiosInstance.post('/notifications/', notificationData);
+        } catch (error) {
+          console.warn('Could not save notification to server:', error);
+        }
+      }
+      
+      // Add to local state
       setNotifications(prev => {
         const exists = prev.some(n => n.id === notificationData.id);
         return exists ? prev : [notificationData, ...prev];
       });
       
-      // // Try to send to server if you have an endpoint
-      // try {
-      //   await axiosInstance.post('/create-notification/', notificationData);
-      // } catch (serverError) {
-      //   console.warn('Could not save notification to server:', serverError);
-      //   // Continue anyway since we've already updated local state
-      // }
-      
-      return true;
+      return notificationData.id;
     } catch (error) {
       console.error('Error creating notification:', error);
-      return false;
+      throw error;
     }
   };
 
-  // Mark a notification as read
-  const markNotificationAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === id ? { ...notif, read: true } : notif
+  // Mark notification as read
+  const markAsRead = (notificationId) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, read: true }
+          : notification
       )
     );
-    
-    // Optionally update on server if you have an endpoint
-    // try {
-    //   axiosInstance.put(`/notifications/${id}/read`);
-    // } catch (error) {
-    //   console.warn('Could not mark notification as read on server:', error);
-    // }
+  };
+
+  // Remove notification
+  const removeNotification = (notificationId) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  };
+
+  // Get unread count
+  const getUnreadCount = () => {
+    return notifications.filter(n => !n.read && !n.isError).length;
   };
 
   // Clear all notifications
   const clearAllNotifications = () => {
-    console.log('Clearing all notifications');
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    
-    // Optionally clear on server if you have an endpoint
-    try {
-      if (user && user.id) {
-        axiosInstance.delete(`/notifications/${user.id}/all`);
-      }
-    } catch (error) {
-      console.warn('Could not clear notifications on server:', error);
-    }
+    setNotifications([]);
   };
 
-  // Get count of unread notifications
-  const getUnreadCount = () =>
-    notifications.filter((notif) => !notif.read).length;
+  // Retry connection
+  const retryConnection = async () => {
+    const connected = await checkConnection();
+    if (connected) {
+      // Clear any error notifications
+      setNotifications(prev => prev.filter(n => !n.isError));
+      fetchNotifications();
+    }
+    return connected;
+  };
 
-  // Manually refresh notifications
-  const refreshNotifications = () => {
-    fetchNotifications();
+  const value = {
+    notifications,
+    createNotification,
+    markAsRead,
+    removeNotification,
+    getUnreadCount,
+    clearAllNotifications,
+    isConnected,
+    lastFetchAttempt,
+    retryConnection
   };
 
   return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        markNotificationAsRead,
-        clearAllNotifications,
-        getUnreadCount,
-        createNotification, // Added for teacher dashboard
-        refreshNotifications // Added for manual refresh
-      }}
-    >
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );
 };
 
-export default NotificationProvider;
+export default NotificationContext;

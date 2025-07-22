@@ -39,4 +39,18 @@ export default defineConfig({
       },
     },
   },
+  // ✅ Fix for 'process is not defined' error
+  define: {
+    global: 'globalThis',
+    'process.env': {},
+  },
+  // ✅ Alternative polyfill approach
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+    },
+  },
 });
