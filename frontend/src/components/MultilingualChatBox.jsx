@@ -465,7 +465,7 @@ What would you like help with today?`,
       }
 
       // Process image with solve command
-      const commandResponse = await fetch(`${API_URL}/image_command`, {
+      const commandResponse = await fetch(`${API_URL}/image`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -674,9 +674,9 @@ What would you like help with today?`,
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          position: "fixed",
+          position: "fixed !important",
           bottom: "20px",
-          right: "20px",
+          left: "1620px",
           width: "60px",
           height: "60px",
           borderRadius: "50%",

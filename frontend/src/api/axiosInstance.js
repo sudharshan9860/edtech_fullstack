@@ -5,7 +5,7 @@ import { getErrorMessage } from "../utils/errorHandling";
 function getCSRFToken() {
   const name = 'csrftoken';
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  console.log("CSRF Token:", match ? match[2] : null); // Debugging line to check CSRF token
+  // console.log("CSRF Token:", match ? match[2] : null); // Debugging line to check CSRF token
   return match ? match[2] : null;
 }
 
