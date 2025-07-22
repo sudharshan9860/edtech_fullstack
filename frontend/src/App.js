@@ -9,7 +9,9 @@ import { LeaderboardProvider } from "./contexts/LeaderboardContext";
 import { QuestProvider } from "./contexts/QuestContext";
 import { CurrentQuestionProvider } from "./contexts/CurrentQuestionContext";
 import AppRoutes from "./routing/Routing";
-import ChatBox from "./components/ChatBox";
+import MultilingualChatBox from "./components/MultilingualChatBox";
+import "./styles/multilingualChat.css";
+// import EnhancedChatBoxWithIntegration from "./components/EnhancedChatBoxWithIntegration";
 import "./styles/theme.css";
 import { TimerProvider } from "./contexts/TimerContext";
 
@@ -24,8 +26,8 @@ function AppContent() {
   return (
     <>
       <AppRoutes />
-      {!isAuthPage && <ChatBox />}
-    </>
+        {!isAuthPage && <MultilingualChatBox />}    
+      </>
   );
 }
 
