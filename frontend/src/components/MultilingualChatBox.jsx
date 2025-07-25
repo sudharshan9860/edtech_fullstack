@@ -12,7 +12,8 @@ import {
   faSpinner,
   faTrash,
   faStop,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faEye
 } from "@fortawesome/free-solid-svg-icons";
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
@@ -68,90 +69,156 @@ const MultilingualChatBox = () => {
   // Initialize session when component loads
   useEffect(() => {
     createSession();
-    return () => {
-      // Cleanup
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
-    };
   }, []);
 
-  // Auto scroll to bottom
+  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Check API connection
-  const checkConnection = async () => {
+  // Helper function to convert AudioBuffer to WAV
+  const audioBufferToWav = (buffer) => {
+    const length = buffer.length;
+    const sampleRate = buffer.sampleRate;
+    const arrayBuffer = new ArrayBuffer(44 + length * 2);
+    const view = new DataView(arrayBuffer);
+    
+    // WAV header
+    const writeString = (offset, string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + length * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, 1, true); // mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, length * 2, true);
+    
+    // Convert float samples to 16-bit PCM
+    const floatSamples = buffer.getChannelData(0);
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      const sample = Math.max(-1, Math.min(1, floatSamples[i]));
+      view.setInt16(offset, sample * 0x7FFF, true);
+      offset += 2;
+    }
+    
+    return arrayBuffer;
+  };
+
+  // Convert WebM to WAV using Web Audio API
+  const convertToWav = async (audioBlob) => {
     try {
-      const response = await fetch(`${API_URL}/`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
+      console.log('Converting audio to WAV format...');
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      // Convert to WAV format
+      const wavBuffer = audioBufferToWav(audioBuffer);
+      const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+      
+      console.log('WAV conversion successful:', {
+        originalSize: audioBlob.size,
+        convertedSize: wavBlob.size,
+        originalType: audioBlob.type,
+        convertedType: wavBlob.type
       });
       
-      if (response.ok) {
-        setConnectionStatus('connected');
-        return true;
-      } else {
-        setConnectionStatus('disconnected');
-        return false;
-      }
+      return wavBlob;
     } catch (error) {
-      console.error("Connection check failed:", error);
-      setConnectionStatus('disconnected');
-      return false;
+      console.error('WAV conversion failed:', error);
+      // Return original blob if conversion fails
+      return audioBlob;
     }
   };
 
-  // Create session with API
+  // Create session with enhanced error handling
   const createSession = async () => {
+    setIsLoading(true);
+    setConnectionStatus('checking');
+    
     try {
-      setIsLoading(true);
-      setConnectionStatus('checking');
+      console.log('Attempting to create session with API:', API_URL);
       
-      // First check if API is accessible
-      const isConnected = await checkConnection();
-      if (!isConnected) {
-        setError("Unable to connect to the AI service. Please check your internet connection.");
-        setConnectionStatus('disconnected');
-        return;
-      }
-
       const response = await fetch(`${API_URL}/create_session`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Accept": "application/json"
-        }
+        },
+        body: JSON.stringify({})
       });
 
+      console.log('Session creation response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Session creation error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
-      const sessionIdValue = data.session_id || data;
-      setSessionId(sessionIdValue);
-      setConnectionStatus('connected');
+      console.log('Session creation response data:', data);
       
-      // Welcome message
-      addMessage({
-        text: `Hello! I'm your multilingual AI assistant. I can help you with:
+      if (data.session_id || data.id || (typeof data === 'string' && data.length > 0)) {
+        const sessionIdValue = data.session_id || data.id || data;
+        setSessionId(sessionIdValue);
+        setConnectionStatus('connected');
+        console.log('Session created successfully:', sessionIdValue);
+        
+        // Add welcome message
+        addMessage({
+          text: `🎉 **Welcome to Multilingual AI Assistant!**
+
+I'm your multilingual AI assistant. I can help you with:
         
 • 📝 Math problems with step-by-step solutions
 • 🎤 Voice messages in ${languages.find(l => l.code === currentLanguage)?.name}
 • 📸 Image analysis and problem solving
-• 🌐 Communication in 20+ languages
+• 🌐 Communication in 9 languages
 
 What would you like help with today?`,
-        sender: "ai",
-        canSpeak: true
-      });
+          sender: "ai",
+          canSpeak: true
+        });
+      } else {
+        throw new Error('No session ID received from server');
+      }
 
     } catch (error) {
       console.error("Session creation error:", error);
-      setError(`Failed to start chat: ${error.message}. The AI service might be temporarily unavailable.`);
+      setError(`Failed to start chat: ${error.message}. Please check if the AI service is running on ${API_URL}.`);
       setConnectionStatus('disconnected');
+      
+      // Add fallback message
+      addMessage({
+        text: `⚠️ **Connection Issue**
+
+I'm having trouble connecting to the AI service. This might be because:
+
+• The AI server is currently offline
+• Network connectivity issues
+• Service is temporarily unavailable
+
+**You can still try:**
+• Refreshing the page
+• Checking your internet connection
+• Trying again in a few moments
+
+I apologize for the inconvenience!`,
+        sender: "ai"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -161,19 +228,18 @@ What would you like help with today?`,
   const addMessage = (message) => {
     messageCounter.current += 1;
     const newMsg = {
-      id: `msg_${Date.now()}_${messageCounter.current}`, // Unique key
+      id: `msg_${Date.now()}_${messageCounter.current}`,
       timestamp: new Date(),
       ...message
     };
     setMessages(prev => [...prev, newMsg]);
   };
 
-  // Send text message with enhanced math processing
+  // Send text message
   const sendTextMessage = async (e) => {
     e?.preventDefault();
     if (!newMessage.trim() || !sessionId) return;
 
-    // Add user message
     addMessage({ text: newMessage, sender: "user" });
     const messageText = newMessage;
     setNewMessage("");
@@ -198,11 +264,8 @@ What would you like help with today?`,
       }
       
       const data = await response.json();
-      
-      // Handle different response formats
       let responseText = data.response || data.message || data.step_by_step_solution || "I received your message!";
       
-      // If it's an array (step-by-step solution), format it properly
       if (Array.isArray(responseText)) {
         responseText = responseText.join('\n\n');
       }
@@ -225,7 +288,7 @@ What would you like help with today?`,
     }
   };
 
-  // Change language with better error handling
+  // Change language
   const changeLanguage = async (langCode) => {
     if (!sessionId) {
       setError("Please wait for the session to initialize first.");
@@ -267,13 +330,13 @@ What would you like help with today?`,
     }
   };
 
-  // Fixed voice recording with better browser support
+  // Voice recording with enhanced format support
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 44100,
-          channelCount: 1,
+          sampleRate: 16000,  // Standard rate for speech recognition
+          channelCount: 1,    // Mono
           volume: 1.0,
           echoCancellation: true,
           noiseSuppression: true
@@ -288,7 +351,11 @@ What would you like help with today?`,
         mimeType = 'audio/mp4';
       } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
         mimeType = 'audio/ogg;codecs=opus';
+      } else if (MediaRecorder.isTypeSupported('audio/wav')) {
+        mimeType = 'audio/wav';
       }
+
+      console.log('Recording with MIME type:', mimeType);
 
       const recorder = new MediaRecorder(stream, { mimeType });
       const audioChunks = [];
@@ -299,9 +366,23 @@ What would you like help with today?`,
         }
       };
 
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: mimeType });
-        setAudioBlob(audioBlob);
+        console.log('Recording stopped, blob created:', {
+          size: audioBlob.size,
+          type: audioBlob.type,
+          actualMimeType: mimeType
+        });
+        
+        // Always convert to WAV for backend compatibility
+        try {
+          const wavBlob = await convertToWav(audioBlob);
+          setAudioBlob(wavBlob);
+        } catch (conversionError) {
+          console.warn('WAV conversion failed, using original format:', conversionError);
+          setAudioBlob(audioBlob);
+        }
+        
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -316,10 +397,9 @@ What would you like help with today?`,
       setIsRecording(true);
       setRecordingTime(0);
 
-      // Timer with max duration
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime(prev => {
-          if (prev >= 60) { // 60 second max
+          if (prev >= 60) {
             stopRecording();
             return prev;
           }
@@ -358,37 +438,75 @@ What would you like help with today?`,
     }
   };
 
-  // Send voice message with better error handling
+  // Send voice message with proper WAV conversion
   const sendVoiceMessage = async () => {
-    if (!audioBlob || !sessionId) return;
+    if (!audioBlob || !sessionId) {
+      console.error('Missing required data:', { audioBlob: !!audioBlob, sessionId });
+      return;
+    }
 
     addMessage({ 
       text: `🎵 Voice message (${formatTime(recordingTime)})`, 
-      sender: "user",
-      type: "voice"
+      sender: "user", 
+      type: "voice" 
     });
     setIsLoading(true);
 
     try {
+      console.log('=== PROCESSING VOICE WITH WAV CONVERSION ===');
+      
+      // Check original audio format
+      console.log('Original audio:', {
+        size: audioBlob.size,
+        type: audioBlob.type
+      });
+
+      // Ensure we have a proper WAV file
+      let finalAudioBlob = audioBlob;
+      if (!audioBlob.type.includes('wav')) {
+        console.log('Converting to WAV format...');
+        finalAudioBlob = await convertToWav(audioBlob);
+        console.log('Converted audio:', {
+          size: finalAudioBlob.size,
+          type: finalAudioBlob.type
+        });
+      }
+
+      // Create FormData with proper WAV file
       const formData = new FormData();
       formData.append('session_id', sessionId);
       formData.append('language', currentLanguage);
-      formData.append('audio', audioBlob, `voice_${Date.now()}.webm`);
+      
+      // Create proper WAV file
+      const audioFile = new File([finalAudioBlob], `voice_${Date.now()}.wav`, { 
+        type: 'audio/wav' 
+      });
+      formData.append('audio', audioFile);
+
+      console.log('Sending WAV file:', {
+        name: audioFile.name,
+        size: audioFile.size,
+        type: audioFile.type
+      });
 
       const response = await fetch(`${API_URL}/chat/voice`, {
         method: "POST",
         body: formData
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
       
       const data = await response.json();
+      console.log('✅ Success response:', data);
       
-      let responseText = data.response || data.message || data.transcription || "I heard your voice message!";
+      let responseText = data.response || data.message || data.transcription || "Voice message processed!";
       
-      // Include transcription if available
       if (data.transcription && data.transcription !== responseText) {
         responseText = `I heard: "${data.transcription}"\n\n${responseText}`;
       }
@@ -401,10 +519,26 @@ What would you like help with today?`,
         transcription: data.transcription
       });
 
+      console.log('=== VOICE MESSAGE SUCCESS ===');
+
     } catch (error) {
-      console.error("Voice message error:", error);
+      console.error('=== VOICE MESSAGE ERROR ===');
+      console.error('Error details:', error);
+      
+      let userFriendlyMessage = "Sorry, I couldn't process your voice message.";
+      
+      if (error.message.includes('Invalid audio format')) {
+        userFriendlyMessage += " There was an issue with the audio format.";
+      } else if (error.message.includes('Audio too short')) {
+        userFriendlyMessage += " The recording was too short.";
+      } else if (error.message.includes('No speech detected')) {
+        userFriendlyMessage += " No speech was detected.";
+      } else if (error.message.includes('HTTP 500')) {
+        userFriendlyMessage += " There's a server processing error.";
+      }
+      
       addMessage({
-        text: `Sorry, I couldn't process your voice message. Error: ${error.message}. Please try again or use text instead.`,
+        text: userFriendlyMessage + `\n\nTechnical details: ${error.message}`,
         sender: "ai"
       });
     } finally {
@@ -419,14 +553,12 @@ What would you like help with today?`,
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      setError('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+      setError('Please select a valid image file (PNG preferred, JPEG, GIF, or WebP also supported)');
       return;
     }
 
-    // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       setError('Image must be smaller than 10MB. Please compress or select a smaller image.');
       return;
@@ -437,190 +569,215 @@ What would you like help with today?`,
     setShowImageModal(true);
   };
 
-  // Send image with enhanced processing
-  const sendImage = async () => {
+  // Send image with command selection
+  const sendImage = async (selectedCommand = null) => {
     if (!selectedImage || !sessionId) return;
 
     setShowImageModal(false);
     addMessage({ 
-      text: "📸 Image uploaded for analysis", 
+      text: `📸 Image uploaded for ${selectedCommand || "analysis"}`, 
       sender: "user",
       imageUrl: imagePreview
     });
     setIsLoading(true);
 
     try {
-      // Upload image first
+      // Step 1: Upload image first
       const uploadData = new FormData();
       uploadData.append('session_id', sessionId);
       uploadData.append('image', selectedImage);
+
+      console.log('Uploading image:', {
+        session_id: sessionId,
+        image_size: selectedImage.size,
+        image_type: selectedImage.type,
+        image_name: selectedImage.name,
+        command: selectedCommand
+      });
 
       const uploadResponse = await fetch(`${API_URL}/upload_image`, {
         method: "POST",
         body: uploadData
       });
 
+      console.log('Image upload response status:', uploadResponse.status);
+
       if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error('Image upload error:', errorText);
         throw new Error(`Upload failed: HTTP ${uploadResponse.status}`);
       }
 
-      // Process image with solve command
-      const commandResponse = await fetch(`${API_URL}/image`, {
+      const uploadResult = await uploadResponse.json();
+      console.log('Upload result:', uploadResult);
+
+      // Step 2: Use the selected command
+      const commandToUse = selectedCommand || "solve it";
+      
+      const commandResponse = await fetch(`${API_URL}/image_command`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          command: "solve",
+          command: commandToUse,
           session_id: sessionId,
           language: currentLanguage
         })
       });
 
+      console.log(`Command "${commandToUse}" response status:`, commandResponse.status);
+
       if (!commandResponse.ok) {
+        const errorText = await commandResponse.text();
+        console.error('Command error response:', errorText);
         throw new Error(`Processing failed: HTTP ${commandResponse.status}`);
       }
 
       const data = await commandResponse.json();
+      console.log('Command response data:', data);
       
-      let responseText = data.response || data.solution || "I analyzed your image!";
+      // Handle different response formats
+      let responseText = data.response || data.solution || data.step_by_step_solution || "I analyzed your image!";
       
       // Handle array responses (step-by-step solutions)
       if (Array.isArray(responseText)) {
         responseText = responseText.join('\n\n');
       }
       
+      // Add appropriate emoji and label based on command
+      const commandEmoji = commandToUse === "solve it" ? "🧮" : "✅";
+      const commandLabel = commandToUse === "solve it" ? "Solution" : "Correction";
+      
       // Add detected text if available
+      let finalResponse = responseText;
       if (data.detected_text) {
-        responseText = `📝 **Detected Text:** ${data.detected_text}\n\n🧮 **Solution:**\n\n${responseText}`;
+        finalResponse = `📝 **Detected Text:** ${data.detected_text}\n\n${commandEmoji} **${commandLabel}:**\n\n${responseText}`;
+      } else {
+        finalResponse = `${commandEmoji} **${commandLabel} Complete:**\n\n${responseText}`;
       }
       
       addMessage({
-        text: responseText,
+        text: finalResponse,
         sender: "ai",
         canSpeak: true,
         confidence: data.confidence,
-        detectedText: data.detected_text
+        detectedText: data.detected_text,
+        commandUsed: commandToUse
       });
 
     } catch (error) {
       console.error("Image processing error:", error);
+      const commandText = selectedCommand ? ` using "${selectedCommand}"` : "";
       addMessage({
-        text: `Sorry, I couldn't process your image. Error: ${error.message}. Please try again with a clearer image or check your connection.`,
+        text: `❌ **Image Analysis Failed**
+
+Sorry, I couldn't process your image${commandText}. Error: ${error.message}
+
+🔧 **Please try:**
+• Using a clearer, high-resolution image
+• Ensuring the image shows the problem clearly  
+• Uploading a PNG or JPEG format (PNG preferred)
+• Checking your internet connection
+• Describing the problem in text instead
+
+💡 **Alternative:** Type your math question and I'll solve it step-by-step!
+
+Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`,
         sender: "ai"
       });
     } finally {
       setIsLoading(false);
-      clearImageSelection();
+      setSelectedImage(null);
+      setImagePreview(null);
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
     }
   };
 
   // Clear image selection
   const clearImageSelection = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setSelectedImage(null);
     setImagePreview(null);
     setShowImageModal(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
-  // Enhanced text-to-speech
-  const playTextToSpeech = async (text) => {
-    if (!sessionId || !text || isPlayingAudio) return;
-
+  // Clear chat
+  const clearChat = async () => {
+    if (!sessionId) return;
+    
     try {
-      setIsPlayingAudio(true);
-      
-      // Clean text for TTS (remove markdown and special characters)
-      const cleanText = text.replace(/[*#`_~]/g, '').replace(/\$[^$]*\$/g, 'mathematical expression');
-      
-      const response = await fetch(
-        `${API_URL}/tts/${sessionId}?text=${encodeURIComponent(cleanText)}&language=${currentLanguage}`,
-        { method: "GET" }
-      );
+      setMessages([]);
+      await createSession(); // Create new session
+    } catch (error) {
+      console.error("Clear chat error:", error);
+      setError("Failed to clear chat. Please refresh the page.");
+    }
+  };
 
-      if (!response.ok) {
-        throw new Error(`TTS failed: HTTP ${response.status}`);
+  // Play AI response as audio
+  const playResponseAudio = async (text, messageId) => {
+    if (!sessionId || isPlayingAudio) return;
+    
+    setIsPlayingAudio(true);
+    
+    try {
+      const response = await fetch(`${API_URL}/text_to_speech`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "audio/mpeg"
+        },
+        body: JSON.stringify({
+          text: text.replace(/\*\*/g, '').replace(/\*/g, ''), // Remove markdown
+          session_id: sessionId,
+          language: currentLanguage
+        })
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        audio.onended = () => {
+          setIsPlayingAudio(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audio.onerror = () => {
+          setIsPlayingAudio(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        await audio.play();
+      } else {
+        throw new Error('TTS service unavailable');
       }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      
-      audio.onended = () => {
-        setIsPlayingAudio(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      audio.onerror = (e) => {
-        console.error("Audio playback error:", e);
-        setIsPlayingAudio(false);
-        URL.revokeObjectURL(audioUrl);
-        setError("Failed to play audio");
-      };
-      
-      await audio.play();
-
     } catch (error) {
       console.error("TTS error:", error);
       setIsPlayingAudio(false);
-      setError(`Text-to-speech failed: ${error.message}`);
+      setError("Text-to-speech is currently unavailable.");
     }
   };
 
-  // Clear chat with confirmation
-  const clearChat = async () => {
-    if (!window.confirm("Are you sure you want to clear the chat history?")) return;
-    
-    if (!sessionId) return;
-
-    try {
-      setIsLoading(true);
-      await fetch(`${API_URL}/clear_chat`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId })
-      });
-
-      setMessages([]);
-      addMessage({
-        text: "🧹 Chat cleared! I'm ready to help you with new questions. Try asking about math, uploading images, or speaking in any language!",
-        sender: "ai",
-        canSpeak: true
-      });
-    } catch (error) {
-      console.error("Clear chat error:", error);
-      setError(`Failed to clear chat: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Enhanced message formatting with better math rendering
-  const formatMessage = (text) => {
-    if (!text) return null;
-
-    if (Array.isArray(text)) {
-      return (
-        <div>
-          {text.map((paragraph, index) => (
-            <p key={index} style={{ marginBottom: '10px' }}>
-              {formatMessage(paragraph)}
-            </p>
-          ))}
-        </div>
-      );
-    }
+  // Format message text with math support
+  const formatMessageText = (text) => {
+    if (typeof text !== 'string') return text;
 
     // Handle step-by-step solutions
-    if (text.includes('Step') && text.includes('\n')) {
-      const steps = text.split('\n').filter(line => line.trim());
+    if (text.includes('**Step') || text.includes('Step ')) {
+      const steps = text.split(/(?=\*\*Step|\nStep)/);
       return (
-        <div>
+        <div style={{ lineHeight: "1.6" }}>
           {steps.map((step, index) => (
-            <div key={index} style={{ 
-              marginBottom: '8px',
-              paddingLeft: step.toLowerCase().includes('step') ? '0' : '15px',
+            <div key={index} style={{
+              marginBottom: index < steps.length - 1 ? '10px' : '0',
               fontWeight: step.toLowerCase().includes('step') ? 'bold' : 'normal'
             }}>
               {formatMathInText(step)}
@@ -674,9 +831,9 @@ What would you like help with today?`,
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          position: "fixed !important",
+          position: "fixed",
           bottom: "20px",
-          left: "1620px",
+          right: "20px",
           width: "60px",
           height: "60px",
           borderRadius: "50%",
@@ -688,8 +845,7 @@ What would you like help with today?`,
           fontSize: "24px",
           cursor: "pointer",
           zIndex: 1000,
-          boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-          position: "relative"
+          boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
         }}
       >
         <FontAwesomeIcon icon={isOpen ? faTimes : faCommentDots} />
@@ -697,19 +853,19 @@ What would you like help with today?`,
         {/* Connection status indicator */}
         <div style={{
           position: "absolute",
-          top: "2px",
-          right: "2px",
-          width: "12px",
-          height: "12px",
+          top: "-5px",
+          right: "-5px",
+          width: "15px",
+          height: "15px",
           borderRadius: "50%",
-          backgroundColor: getConnectionStatusColor(),
+          background: getConnectionStatusColor(),
           border: "2px solid white"
         }} />
       </button>
 
       {/* Chat Window */}
       {isOpen && (
-        <div style={{
+        <div className="chat-box" style={{
           position: "fixed",
           bottom: "90px",
           right: "20px",
@@ -718,44 +874,56 @@ What would you like help with today?`,
           background: "white",
           borderRadius: "15px",
           boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+          zIndex: 1001,
           display: "flex",
           flexDirection: "column",
-          zIndex: 999
+          overflow: "hidden"
         }}>
           {/* Header */}
           <div style={{
-            background: connectionStatus === 'connected' 
-              ? "linear-gradient(45deg, #00b8d4, #013788)"
-              : "linear-gradient(45deg, #f44336, #d32f2f)",
+            background: "linear-gradient(45deg, #00b8d4, #013788)",
             color: "white",
-            padding: "15px",
+            padding: "15px 20px",
             borderRadius: "15px 15px 0 0",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
+            alignItems: "center"
           }}>
             <div>
-              <h5 style={{ margin: 0, fontSize: "16px" }}>
-                AI Assistant {connectionStatus !== 'connected' && <FontAwesomeIcon icon={faExclamationTriangle} />}
-              </h5>
-              <span style={{ fontSize: "12px", opacity: 0.8 }}>
-                {connectionStatus === 'connected' 
-                  ? languages.find(l => l.code === currentLanguage)?.name
-                  : `Connection: ${connectionStatus}`
-                }
-              </span>
+              <h4 style={{ margin: 0, fontSize: "16px" }}>
+                🤖 AI Assistant
+              </h4>
+              <small style={{ 
+                opacity: 0.9,
+                fontSize: "12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px"
+              }}>
+                <div style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: getConnectionStatusColor()
+                }} />
+                {connectionStatus === 'connected' && `Speaking ${languages.find(l => l.code === currentLanguage)?.name}`}
+                {connectionStatus === 'checking' && 'Connecting...'}
+                {connectionStatus === 'disconnected' && 'Disconnected'}
+              </small>
             </div>
-            
-            <div style={{ display: "flex", gap: "10px" }}>
-              {/* Language Button */}
+
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              {/* Language Selector */}
               <div style={{ position: "relative" }}>
                 <button
                   onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
                   disabled={connectionStatus !== 'connected'}
                   style={{
                     background: "transparent",
-                    border: "none",
+                    border: "1px solid rgba(255,255,255,0.3)",
                     color: "white",
+                    borderRadius: "5px",
+                    padding: "5px 8px",
                     cursor: connectionStatus === 'connected' ? "pointer" : "not-allowed",
                     opacity: connectionStatus === 'connected' ? 1 : 0.5
                   }}
@@ -810,155 +978,108 @@ What would you like help with today?`,
                   cursor: (connectionStatus === 'connected' && sessionId) ? "pointer" : "not-allowed",
                   opacity: (connectionStatus === 'connected' && sessionId) ? 1 : 0.5
                 }}
+                title="Clear chat"
               >
                 <FontAwesomeIcon icon={faTrash} />
-              </button>
-
-              {/* Close Button */}
-              <button
-                onClick={() => setIsOpen(false)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "white",
-                  cursor: "pointer"
-                }}
-              >
-                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error Display */}
           {error && (
             <div style={{
-              background: "#ffebee",
-              color: "#c62828",
-              padding: "10px",
-              margin: "10px",
-              borderRadius: "4px",
-              fontSize: "14px",
-              borderLeft: "4px solid #f44336"
+              background: "#ffe6e6",
+              color: "#d8000c",
+              padding: "10px 15px",
+              fontSize: "12px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: "1px solid #ffcccb"
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: "8px" }} />
-                  {error}
-                </div>
-                <button
-                  onClick={() => setError(null)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#c62828",
-                    cursor: "pointer",
-                    fontSize: "16px",
-                    padding: "0"
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Connection Status */}
-          {connectionStatus === 'disconnected' && (
-            <div style={{
-              background: "#fff3e0",
-              color: "#e65100",
-              padding: "10px",
-              margin: "10px",
-              borderRadius: "4px",
-              fontSize: "14px",
-              textAlign: "center",
-              borderLeft: "4px solid #ff9800"
-            }}>
-              <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: "8px" }} />
-              AI service is currently unavailable. Please check your connection and try again.
+              <span><FontAwesomeIcon icon={faExclamationTriangle} /> {error}</span>
               <button
-                onClick={createSession}
+                onClick={() => setError(null)}
                 style={{
-                  background: "#ff9800",
-                  color: "white",
+                  background: "none",
                   border: "none",
-                  padding: "5px 10px",
-                  borderRadius: "3px",
-                  marginLeft: "10px",
+                  color: "#d8000c",
                   cursor: "pointer",
-                  fontSize: "12px"
+                  padding: "0 5px"
                 }}
               >
-                Retry
+                ×
               </button>
             </div>
           )}
 
-          {/* Messages */}
+          {/* Messages Area */}
           <div style={{
             flex: 1,
             padding: "15px",
             overflowY: "auto",
-            display: "flex",
-            flexDirection: "column"
+            background: "#f8f9fa"
           }}>
             {messages.map((message) => (
               <div
                 key={message.id}
                 style={{
-                  marginBottom: "15px",
                   alignSelf: message.sender === "user" ? "flex-end" : "flex-start",
-                  maxWidth: "85%"
+                  background: message.sender === "user" 
+                    ? "linear-gradient(45deg, #00b8d4, #013788)" 
+                    : "#ffffff",
+                  color: message.sender === "user" ? "white" : "#333",
+                  borderRadius: "15px",
+                  padding: "12px 16px",
+                  marginBottom: "15px",
+                  maxWidth: "85%",
+                  wordBreak: "break-word",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                  display: "block"
                 }}
               >
-                <div style={{
-                  padding: "12px 16px",
-                  borderRadius: "15px",
-                  background: message.sender === "user" 
-                    ? "linear-gradient(45deg, #00b8d4, #0052cc)"
-                    : "#f0f0f0",
-                  color: message.sender === "user" ? "white" : "#333",
-                  borderBottomRightRadius: message.sender === "user" ? "5px" : "15px",
-                  borderBottomLeftRadius: message.sender === "ai" ? "5px" : "15px",
-                  wordWrap: "break-word"
-                }}>
-                  {/* Image if present */}
-                  {message.imageUrl && (
-                    <img
-                      src={message.imageUrl}
-                      alt="Uploaded"
-                      style={{
-                        maxWidth: "100%",
-                        borderRadius: "8px",
-                        marginBottom: "8px"
-                      }}
-                    />
-                  )}
-                  
-                  {/* Message text */}
-                  {formatMessage(message.text)}
-                  
-                  {/* Confidence indicator */}
-                  {message.confidence && (
-                    <div style={{ fontSize: "11px", opacity: 0.7, marginTop: "5px" }}>
-                      Confidence: {Math.round(message.confidence * 100)}%
-                    </div>
-                  )}
-                  
-                  {/* Play button for AI messages */}
+                {/* Image preview if available */}
+                {message.imageUrl && (
+                  <img 
+                    src={message.imageUrl} 
+                    alt="Uploaded" 
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "200px",
+                      borderRadius: "8px",
+                      marginBottom: "10px"
+                    }}
+                  />
+                )}
+                
+                <div style={{ fontSize: "14px", lineHeight: "1.4" }}>
+                  {formatMessageText(message.text)}
+                </div>
+
+                {/* Voice confidence and transcription info */}
+                {message.confidence && (
+                  <div style={{
+                    fontSize: "11px",
+                    opacity: 0.7,
+                    marginTop: "5px"
+                  }}>
+                    Confidence: {Math.round(message.confidence * 100)}%
+                  </div>
+                )}
+
+                {/* Play audio button for AI responses */}
+                <div style={{ marginTop: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   {message.sender === "ai" && message.canSpeak && (
                     <button
-                      onClick={() => playTextToSpeech(message.text)}
+                      onClick={() => playResponseAudio(message.text, message.id)}
                       disabled={isPlayingAudio || connectionStatus !== 'connected'}
                       style={{
-                        background: "none",
-                        border: "1px solid #00b8d4",
-                        color: "#00b8d4",
-                        borderRadius: "10px",
+                        background: "transparent",
+                        border: "1px solid #ddd",
+                        borderRadius: "15px",
                         padding: "4px 8px",
-                        fontSize: "12px",
+                        fontSize: "11px",
                         cursor: (isPlayingAudio || connectionStatus !== 'connected') ? "not-allowed" : "pointer",
-                        marginTop: "8px",
                         opacity: (isPlayingAudio || connectionStatus !== 'connected') ? 0.5 : 1
                       }}
                     >
@@ -1137,7 +1258,7 @@ What would you like help with today?`,
                 type="file"
                 ref={fileInputRef}
                 onChange={handleImageSelect}
-                accept="image/*"
+                accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
                 style={{ display: 'none' }}
               />
               <button
@@ -1152,7 +1273,7 @@ What would you like help with today?`,
                   cursor: (isLoading || connectionStatus !== 'connected') ? "not-allowed" : "pointer",
                   opacity: (isLoading || connectionStatus !== 'connected') ? 0.5 : 1
                 }}
-                title="Upload image"
+                title="Upload image (PNG/JPEG preferred)"
               >
                 <FontAwesomeIcon icon={faImage} />
               </button>
@@ -1195,26 +1316,25 @@ What would you like help with today?`,
                 }}
                 title="Send message"
               >
-                {isLoading ? (
-                  <FontAwesomeIcon icon={faSpinner} spin />
-                ) : (
+                {isLoading ? 
+                  <FontAwesomeIcon icon={faSpinner} spin /> : 
                   <FontAwesomeIcon icon={faPaperPlane} />
-                )}
+                }
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Image Modal */}
-      {showImageModal && (
+      {/* Image Preview Modal */}
+      {showImageModal && selectedImage && (
         <div style={{
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: "rgba(0,0,0,0.5)",
+          background: "rgba(0,0,0,0.8)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -1222,96 +1342,144 @@ What would you like help with today?`,
         }}>
           <div style={{
             background: "white",
-            borderRadius: "12px",
+            borderRadius: "15px",
             padding: "20px",
-            maxWidth: "500px",
-            width: "90%",
-            maxHeight: "80vh",
-            overflowY: "auto"
+            maxWidth: "90%",
+            maxHeight: "90%",
+            overflow: "auto",
+            minWidth: "400px"
           }}>
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px"
-            }}>
-              <h3 style={{ margin: 0 }}>📸 Process Image</h3>
-              <button
-                onClick={clearImageSelection}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: "18px",
-                  cursor: "pointer",
-                  color: "#999"
-                }}
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
+            <h3 style={{ marginTop: 0, marginBottom: "15px", textAlign: "center" }}>
+              📸 Choose Analysis Type
+            </h3>
             
-            {imagePreview && (
-              <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: "300px",
-                    borderRadius: "8px",
-                    border: "2px solid #ddd"
-                  }}
-                />
-              </div>
-            )}
+            <img 
+              src={imagePreview} 
+              alt="Preview" 
+              style={{
+                maxWidth: "100%",
+                maxHeight: "300px",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                display: "block",
+                margin: "0 auto 15px"
+              }}
+            />
             
             <div style={{
-              background: "#f0f8ff",
+              background: "#f8f9fa",
               padding: "15px",
               borderRadius: "8px",
               marginBottom: "20px",
               fontSize: "14px"
             }}>
-              <strong>📚 I can help with:</strong>
-              <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
-                <li>Math problems and equations</li>
-                <li>Geometry and diagrams</li>
-                <li>Physics problems</li>
-                <li>Chemistry equations</li>
-                <li>Text extraction and translation</li>
-              </ul>
+              <strong style={{ color: "#333" }}>🤖 What should I do with this image?</strong>
+              
+              <div style={{ marginTop: "15px" }}>
+                <div style={{
+                  padding: "12px",
+                  border: "2px solid #2196F3",
+                  borderRadius: "8px",
+                  marginBottom: "10px",
+                  background: "#f0f8ff",
+                  cursor: "pointer"
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+                    <span style={{ fontSize: "20px", marginRight: "8px" }}>🧮</span>
+                    <strong style={{ color: "#1976D2" }}>Solve It</strong>
+                  </div>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#666", paddingLeft: "28px" }}>
+                    I'll analyze and solve the math problems or questions in your image
+                  </p>
+                </div>
+                
+                <div style={{
+                  padding: "12px",
+                  border: "2px solid #4CAF50",
+                  borderRadius: "8px",
+                  background: "#f0fff0",
+                  cursor: "pointer"
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+                    <span style={{ fontSize: "20px", marginRight: "8px" }}>✅</span>
+                    <strong style={{ color: "#388E3C" }}>Correct It</strong>
+                  </div>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#666", paddingLeft: "28px" }}>
+                    I'll check and correct the answers or solutions shown in your image
+                  </p>
+                </div>
+              </div>
             </div>
             
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
               <button
                 onClick={clearImageSelection}
                 style={{
                   background: "#6c757d",
                   color: "white",
                   border: "none",
-                  padding: "10px 20px",
+                  padding: "12px 20px",
                   borderRadius: "20px",
-                  cursor: "pointer"
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  minWidth: "100px"
                 }}
               >
                 Cancel
               </button>
+              
               <button
-                onClick={sendImage}
+                onClick={() => sendImage("solve it")}
                 disabled={connectionStatus !== 'connected'}
                 style={{
                   background: connectionStatus === 'connected' 
-                    ? "linear-gradient(45deg, #00b8d4, #013788)"
+                    ? "linear-gradient(45deg, #2196F3, #1976D2)"
                     : "#cccccc",
                   color: "white",
                   border: "none",
-                  padding: "10px 20px",
+                  padding: "12px 20px",
                   borderRadius: "20px",
-                  cursor: connectionStatus === 'connected' ? "pointer" : "not-allowed"
+                  cursor: connectionStatus === 'connected' ? "pointer" : "not-allowed",
+                  fontSize: "14px",
+                  minWidth: "120px",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
                 }}
               >
-                <FontAwesomeIcon icon={faPaperPlane} /> Analyze Image
+                🧮 Solve It
               </button>
+              
+              <button
+                onClick={() => sendImage("correct it")}
+                disabled={connectionStatus !== 'connected'}
+                style={{
+                  background: connectionStatus === 'connected' 
+                    ? "linear-gradient(45deg, #4CAF50, #388E3C)"
+                    : "#cccccc",
+                  color: "white",
+                  border: "none",
+                  padding: "12px 20px",
+                  borderRadius: "20px",
+                  cursor: connectionStatus === 'connected' ? "pointer" : "not-allowed",
+                  fontSize: "14px",
+                  minWidth: "120px",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+                }}
+              >
+                ✅ Correct It
+              </button>
+            </div>
+            
+            <div style={{
+              marginTop: "15px",
+              fontSize: "12px",
+              color: "#666",
+              textAlign: "center",
+              padding: "10px",
+              background: "#fff3e0",
+              borderRadius: "8px"
+            }}>
+              💡 <strong>Tip:</strong> Choose "Solve It" for questions you need help with, 
+              or "Correct It" to check your existing answers
             </div>
           </div>
         </div>
