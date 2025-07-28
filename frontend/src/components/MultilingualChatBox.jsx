@@ -15,8 +15,17 @@ import {
   faExclamationTriangle,
   faEye
 } from "@fortawesome/free-solid-svg-icons";
-import "katex/dist/katex.min.css";
-import { InlineMath, BlockMath } from "react-katex";
+
+/**
+ * ENHANCED MultilingualChatBox with Proper Step-by-Step Solutions
+ * 
+ * Key Improvements:
+ * ✅ Proper step-by-step solution formatting with numbered steps
+ * ✅ Visual distinction between "Solve It" (step-by-step) vs "Correct It" (analysis)
+ * ✅ Color-coded feedback and proper alignment
+ * ✅ Enhanced visual hierarchy with cards and borders
+ * ✅ Better markdown processing and text formatting
+ */
 
 const MultilingualChatBox = () => {
   // Basic State
@@ -49,6 +58,8 @@ const MultilingualChatBox = () => {
   const fileInputRef = useRef(null);
   const recordingIntervalRef = useRef(null);
   const messageCounter = useRef(0);
+  const hasInitialized = useRef(false);
+  const isCreatingSession = useRef(false);
 
   // API URL
   const API_URL = process.env.REACT_APP_MULTILINGUAL_API_URL || "http://139.59.71.57";
@@ -66,9 +77,13 @@ const MultilingualChatBox = () => {
     { code: "ar", name: "Arabic", flag: "🇸🇦" }
   ];
 
-  // Initialize session when component loads
+  // Initialize session only once with multiple safeguards
   useEffect(() => {
-    createSession();
+    if (!hasInitialized.current && !isCreatingSession.current) {
+      hasInitialized.current = true;
+      isCreatingSession.current = true;
+      createSession();
+    }
   }, []);
 
   // Auto-scroll to latest message
@@ -138,13 +153,17 @@ const MultilingualChatBox = () => {
       return wavBlob;
     } catch (error) {
       console.error('WAV conversion failed:', error);
-      // Return original blob if conversion fails
       return audioBlob;
     }
   };
 
-  // Create session with enhanced error handling
+  // Create session with multiple safeguards against duplicates
   const createSession = async () => {
+    if (sessionId || isLoading) {
+      console.log('Session already exists or creating, skipping...');
+      return;
+    }
+
     setIsLoading(true);
     setConnectionStatus('checking');
     
@@ -177,21 +196,14 @@ const MultilingualChatBox = () => {
         setConnectionStatus('connected');
         console.log('Session created successfully:', sessionIdValue);
         
-        // Add welcome message
-        addMessage({
-          text: `🎉 **Welcome to Multilingual AI Assistant!**
-
-I'm your multilingual AI assistant. I can help you with:
-        
-• 📝 Math problems with step-by-step solutions
-• 🎤 Voice messages in ${languages.find(l => l.code === currentLanguage)?.name}
-• 📸 Image analysis and problem solving
-• 🌐 Communication in 9 languages
-
-What would you like help with today?`,
+        // Clear any existing messages and add only one welcome message
+        setMessages([{
+          id: 'welcome_single',
+          text: `👋 Hi there! I'm your AI assistant. How can I help you today?`,
           sender: "ai",
-          canSpeak: true
-        });
+          canSpeak: true,
+          timestamp: new Date()
+        }]);
       } else {
         throw new Error('No session ID received from server');
       }
@@ -201,30 +213,20 @@ What would you like help with today?`,
       setError(`Failed to start chat: ${error.message}. Please check if the AI service is running on ${API_URL}.`);
       setConnectionStatus('disconnected');
       
-      // Add fallback message
-      addMessage({
-        text: `⚠️ **Connection Issue**
-
-I'm having trouble connecting to the AI service. This might be because:
-
-• The AI server is currently offline
-• Network connectivity issues
-• Service is temporarily unavailable
-
-**You can still try:**
-• Refreshing the page
-• Checking your internet connection
-• Trying again in a few moments
-
-I apologize for the inconvenience!`,
-        sender: "ai"
-      });
+      // Clear messages and add single error message
+      setMessages([{
+        id: 'error_single',
+        text: `⚠️ Connection failed. Please refresh the page or try again later.`,
+        sender: "ai",
+        timestamp: new Date()
+      }]);
     } finally {
       setIsLoading(false);
+      isCreatingSession.current = false;
     }
   };
 
-  // Add message to chat with unique keys
+  // Add message function with duplicate prevention
   const addMessage = (message) => {
     messageCounter.current += 1;
     const newMsg = {
@@ -232,6 +234,16 @@ I apologize for the inconvenience!`,
       timestamp: new Date(),
       ...message
     };
+    
+    // Prevent adding duplicate welcome messages
+    if (message.text?.includes("Hi there! I'm your AI assistant")) {
+      const hasWelcome = messages.some(msg => msg.text?.includes("Hi there! I'm your AI assistant"));
+      if (hasWelcome) {
+        console.log('Duplicate welcome message prevented');
+        return;
+      }
+    }
+    
     setMessages(prev => [...prev, newMsg]);
   };
 
@@ -335,15 +347,14 @@ I apologize for the inconvenience!`,
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 16000,  // Standard rate for speech recognition
-          channelCount: 1,    // Mono
+          sampleRate: 16000,
+          channelCount: 1,
           volume: 1.0,
           echoCancellation: true,
           noiseSuppression: true
         } 
       });
 
-      // Try different MIME types for better browser support
       let mimeType = 'audio/webm';
       if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
         mimeType = 'audio/webm;codecs=opus';
@@ -374,7 +385,6 @@ I apologize for the inconvenience!`,
           actualMimeType: mimeType
         });
         
-        // Always convert to WAV for backend compatibility
         try {
           const wavBlob = await convertToWav(audioBlob);
           setAudioBlob(wavBlob);
@@ -455,13 +465,11 @@ I apologize for the inconvenience!`,
     try {
       console.log('=== PROCESSING VOICE WITH WAV CONVERSION ===');
       
-      // Check original audio format
       console.log('Original audio:', {
         size: audioBlob.size,
         type: audioBlob.type
       });
 
-      // Ensure we have a proper WAV file
       let finalAudioBlob = audioBlob;
       if (!audioBlob.type.includes('wav')) {
         console.log('Converting to WAV format...');
@@ -472,12 +480,10 @@ I apologize for the inconvenience!`,
         });
       }
 
-      // Create FormData with proper WAV file
       const formData = new FormData();
       formData.append('session_id', sessionId);
       formData.append('language', currentLanguage);
       
-      // Create proper WAV file
       const audioFile = new File([finalAudioBlob], `voice_${Date.now()}.wav`, { 
         type: 'audio/wav' 
       });
@@ -569,7 +575,7 @@ I apologize for the inconvenience!`,
     setShowImageModal(true);
   };
 
-  // Send image with command selection
+  // IMPROVED: Send image with proper correction formatting
   const sendImage = async (selectedCommand = null) => {
     if (!selectedImage || !sessionId) return;
 
@@ -638,25 +644,8 @@ I apologize for the inconvenience!`,
       const data = await commandResponse.json();
       console.log('Command response data:', data);
       
-      // Handle different response formats
-      let responseText = data.response || data.solution || data.step_by_step_solution || "I analyzed your image!";
-      
-      // Handle array responses (step-by-step solutions)
-      if (Array.isArray(responseText)) {
-        responseText = responseText.join('\n\n');
-      }
-      
-      // Add appropriate emoji and label based on command
-      const commandEmoji = commandToUse === "solve it" ? "🧮" : "✅";
-      const commandLabel = commandToUse === "solve it" ? "Solution" : "Correction";
-      
-      // Add detected text if available
-      let finalResponse = responseText;
-      if (data.detected_text) {
-        finalResponse = `📝 **Detected Text:** ${data.detected_text}\n\n${commandEmoji} **${commandLabel}:**\n\n${responseText}`;
-      } else {
-        finalResponse = `${commandEmoji} **${commandLabel} Complete:**\n\n${responseText}`;
-      }
+      // IMPROVED: Use enhanced formatting function
+      let finalResponse = formatCorrectionResponse(data, commandToUse);
       
       addMessage({
         text: finalResponse,
@@ -697,6 +686,32 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
     }
   };
 
+  // IMPROVED: Dedicated function for formatting correction responses
+  const formatCorrectionResponse = (data, commandUsed) => {
+    let responseText = data.response || data.solution || data.step_by_step_solution || "I analyzed your image!";
+    
+    // Handle array responses (step-by-step solutions)
+    if (Array.isArray(responseText)) {
+      responseText = responseText.map((step, index) => `**Step ${index + 1}:** ${step}`).join('\n\n');
+    }
+    
+    const commandEmoji = commandUsed === "solve it" ? "🧮" : "✅";
+    const commandLabel = commandUsed === "solve it" ? "Step-by-Step Solution" : "Correction Analysis";
+    
+    let finalResponse;
+    if (commandUsed === "solve it") {
+      // Format as step-by-step solution
+      finalResponse = `📝 **Problem Identified:** ${data.detected_text || "Mathematical problem detected"}\n\n${commandEmoji} **${commandLabel}:**\n\n${responseText}\n\n✅ **Solution Complete!**`;
+    } else if (commandUsed === "correct it") {
+      // Format as correction analysis
+      finalResponse = `📝 **Answer Review:** ${data.detected_text || "Student work analyzed"}\n\n${commandEmoji} **${commandLabel}:**\n\n${responseText}`;
+    } else {
+      finalResponse = `${commandEmoji} **${commandLabel}:**\n\n${responseText}`;
+    }
+    
+    return finalResponse;
+  };
+
   // Clear image selection
   const clearImageSelection = () => {
     setSelectedImage(null);
@@ -707,13 +722,21 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
     }
   };
 
-  // Clear chat
+  // Clear chat with complete reset
   const clearChat = async () => {
     if (!sessionId) return;
     
     try {
       setMessages([]);
-      await createSession(); // Create new session
+      setSessionId(null);
+      hasInitialized.current = false;
+      isCreatingSession.current = false;
+      
+      setTimeout(() => {
+        hasInitialized.current = true;
+        isCreatingSession.current = true;
+        createSession();
+      }, 100);
     } catch (error) {
       console.error("Clear chat error:", error);
       setError("Failed to clear chat. Please refresh the page.");
@@ -734,7 +757,7 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
           "Accept": "audio/mpeg"
         },
         body: JSON.stringify({
-          text: text.replace(/\*\*/g, '').replace(/\*/g, ''), // Remove markdown
+          text: text.replace(/\*\*/g, '').replace(/\*/g, ''),
           session_id: sessionId,
           language: currentLanguage
         })
@@ -766,39 +789,256 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
     }
   };
 
-  // Format message text with math support
+  // IMPROVED: Enhanced message formatting with better alignment
   const formatMessageText = (text) => {
     if (typeof text !== 'string') return text;
 
-    // Handle step-by-step solutions
+    // Handle step-by-step solutions with better formatting
+    if (text.includes('**Step-by-Step Solution:**') || text.includes('**Step ')) {
+      return formatStepByStepSolution(text);
+    }
+
+    // Handle correction format with better structure
+    if (text.includes('**Correction Analysis:**') || text.includes('**Analysis of')) {
+      return formatCorrectionText(text);
+    }
+
+    // Handle regular step patterns
     if (text.includes('**Step') || text.includes('Step ')) {
       const steps = text.split(/(?=\*\*Step|\nStep)/);
       return (
         <div style={{ lineHeight: "1.6" }}>
           {steps.map((step, index) => (
             <div key={index} style={{
-              marginBottom: index < steps.length - 1 ? '10px' : '0',
-              fontWeight: step.toLowerCase().includes('step') ? 'bold' : 'normal'
+              marginBottom: index < steps.length - 1 ? '12px' : '0',
+              padding: step.toLowerCase().includes('step') ? '8px 0' : '0'
             }}>
-              {formatMathInText(step)}
+              {formatTextWithMarkdown(step)}
             </div>
           ))}
         </div>
       );
     }
 
-    return formatMathInText(text);
+    return formatTextWithMarkdown(text);
   };
 
+  // NEW: Format step-by-step solutions with proper numbering
+  const formatStepByStepSolution = (text) => {
+    const lines = text.split('\n');
+    let currentSection = 'header';
+    let stepCounter = 0;
+    
+    return (
+      <div style={{ lineHeight: "1.6", fontSize: "14px" }}>
+        {lines.map((line, index) => {
+          // Skip empty lines
+          if (!line.trim()) return <br key={index} />;
+          
+          // Handle main headers
+          if (line.includes('**Problem Identified:**') || line.includes('**Step-by-Step Solution:**')) {
+            return (
+              <div key={index} style={{
+                fontWeight: 'bold',
+                color: '#1976d2',
+                marginTop: index > 0 ? '15px' : '0',
+                marginBottom: '10px',
+                borderLeft: '4px solid #2196f3',
+                paddingLeft: '12px',
+                backgroundColor: '#e3f2fd',
+                padding: '8px 12px',
+                borderRadius: '4px'
+              }}>
+                {line.replace(/\*\*/g, '')}
+              </div>
+            );
+          }
+          
+          // Handle individual steps
+          if (line.includes('**Step ') && line.includes(':**')) {
+            stepCounter++;
+            return (
+              <div key={index} style={{
+                marginTop: '15px',
+                marginBottom: '10px',
+                padding: '12px',
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #dee2e6',
+                borderLeft: '4px solid #28a745',
+                borderRadius: '6px'
+              }}>
+                <div style={{
+                  fontWeight: 'bold',
+                  color: '#28a745',
+                  marginBottom: '6px',
+                  fontSize: '15px'
+                }}>
+                  🔢 {line.replace(/\*\*/g, '')}
+                </div>
+              </div>
+            );
+          }
+          
+          // Handle step content (lines that follow steps)
+          if (stepCounter > 0 && !line.includes('**') && line.trim()) {
+            return (
+              <div key={index} style={{
+                marginLeft: '16px',
+                marginBottom: '8px',
+                padding: '8px 12px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e9ecef',
+                borderRadius: '4px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}>
+                {formatTextWithMarkdown(line)}
+              </div>
+            );
+          }
+          
+          // Handle solution complete
+          if (line.includes('**Solution Complete!**')) {
+            return (
+              <div key={index} style={{
+                marginTop: '20px',
+                padding: '12px',
+                backgroundColor: '#d4edda',
+                border: '1px solid #c3e6cb',
+                borderRadius: '6px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                color: '#155724'
+              }}>
+                ✅ {line.replace(/\*\*/g, '')}
+              </div>
+            );
+          }
+          
+          // Handle regular content
+          return (
+            <div key={index} style={{
+              marginBottom: '6px',
+              textAlign: 'left'
+            }}>
+              {formatTextWithMarkdown(line)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // IMPROVED: Better correction text formatting with proper alignment
+  const formatCorrectionText = (text) => {
+    const lines = text.split('\n');
+    
+    return (
+      <div style={{ lineHeight: "1.6", fontSize: "14px" }}>
+        {lines.map((line, index) => {
+          // Skip empty lines
+          if (!line.trim()) return <br key={index} />;
+          
+          // Handle headers
+          if (line.includes('**') && line.includes(':')) {
+            return (
+              <div key={index} style={{
+                fontWeight: 'bold',
+                color: '#2c3e50',
+                marginTop: index > 0 ? '12px' : '0',
+                marginBottom: '8px',
+                borderLeft: '3px solid #3498db',
+                paddingLeft: '8px'
+              }}>
+                {line.replace(/\*\*/g, '')}
+              </div>
+            );
+          }
+          
+          // Handle correction items (✓ or ❌)
+          if (line.includes('✓') || line.includes('❌') || line.includes('✅')) {
+            const isCorrect = line.includes('✓') || line.includes('✅');
+            return (
+              <div key={index} style={{
+                padding: '6px 12px',
+                marginBottom: '6px',
+                backgroundColor: isCorrect ? '#d5f4e6' : '#ffeaa7',
+                borderLeft: `4px solid ${isCorrect ? '#00b894' : '#fdcb6e'}`,
+                borderRadius: '4px',
+                fontSize: '13px'
+              }}>
+                {formatTextWithMarkdown(line)}
+              </div>
+            );
+          }
+          
+          // Handle numbered items
+          if (/^\d+\./.test(line.trim())) {
+            return (
+              <div key={index} style={{
+                marginLeft: '12px',
+                marginBottom: '8px',
+                paddingLeft: '8px'
+              }}>
+                {formatTextWithMarkdown(line)}
+              </div>
+            );
+          }
+          
+          // Handle regular lines
+          return (
+            <div key={index} style={{
+              marginBottom: '6px',
+              textAlign: 'left'
+            }}>
+              {formatTextWithMarkdown(line)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // IMPROVED: Better markdown formatting
+  const formatTextWithMarkdown = (text) => {
+    if (typeof text !== 'string') return text;
+    
+    // Handle bold text
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={index} style={{ color: '#2c3e50' }}>
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
+  // Handle math rendering (stub function - would need KaTeX for full implementation)
   const formatMathInText = (text) => {
     const segments = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
 
     return segments.map((segment, index) => {
       try {
         if (segment.startsWith("$$") && segment.endsWith("$$")) {
-          return <BlockMath key={index}>{segment.slice(2, -2)}</BlockMath>;
+          // For demo purposes, just show the LaTeX code
+          return <div key={index} style={{
+            background: '#f8f9fa',
+            padding: '8px',
+            margin: '4px 0',
+            borderRadius: '4px',
+            fontFamily: 'monospace'
+          }}>{segment.slice(2, -2)}</div>;
         } else if (segment.startsWith("$") && segment.endsWith("$")) {
-          return <InlineMath key={index}>{segment.slice(1, -1)}</InlineMath>;
+          return <span key={index} style={{
+            background: '#f8f9fa',
+            padding: '2px 4px',
+            borderRadius: '2px',
+            fontFamily: 'monospace'
+          }}>{segment.slice(1, -1)}</span>;
         } else {
           return <span key={index}>{segment}</span>;
         }
@@ -1326,7 +1566,7 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
         </div>
       )}
 
-      {/* Image Preview Modal */}
+      {/* IMPROVED: Image Preview Modal with better layout */}
       {showImageModal && selectedImage && (
         <div style={{
           position: "fixed",
@@ -1343,13 +1583,19 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
           <div style={{
             background: "white",
             borderRadius: "15px",
-            padding: "20px",
+            padding: "25px",
             maxWidth: "90%",
             maxHeight: "90%",
             overflow: "auto",
-            minWidth: "400px"
+            minWidth: "450px"
           }}>
-            <h3 style={{ marginTop: 0, marginBottom: "15px", textAlign: "center" }}>
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: "20px", 
+              textAlign: "center",
+              color: "#2c3e50",
+              fontWeight: "600"
+            }}>
               📸 Choose Analysis Type
             </h3>
             
@@ -1359,70 +1605,98 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
               style={{
                 maxWidth: "100%",
                 maxHeight: "300px",
-                borderRadius: "8px",
-                marginBottom: "15px",
+                borderRadius: "10px",
+                marginBottom: "20px",
                 display: "block",
-                margin: "0 auto 15px"
+                margin: "0 auto 20px",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
               }}
             />
             
             <div style={{
               background: "#f8f9fa",
-              padding: "15px",
-              borderRadius: "8px",
-              marginBottom: "20px",
-              fontSize: "14px"
+              padding: "20px",
+              borderRadius: "10px",
+              marginBottom: "25px",
+              border: "1px solid #e9ecef"
             }}>
-              <strong style={{ color: "#333" }}>🤖 What should I do with this image?</strong>
+              <strong style={{ color: "#495057", fontSize: "15px" }}>
+                🤖 What should I do with this image?
+              </strong>
               
-              <div style={{ marginTop: "15px" }}>
+              <div style={{ marginTop: "15px", display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div style={{
-                  padding: "12px",
+                  padding: "15px",
                   border: "2px solid #2196F3",
-                  borderRadius: "8px",
-                  marginBottom: "10px",
+                  borderRadius: "10px",
                   background: "#f0f8ff",
-                  cursor: "pointer"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
-                    <span style={{ fontSize: "20px", marginRight: "8px" }}>🧮</span>
-                    <strong style={{ color: "#1976D2" }}>Solve It</strong>
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => e.target.style.transform = "scale(1.02)"}
+                onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
+                >
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "22px", marginRight: "10px" }}>🧮</span>
+                    <strong style={{ color: "#1976D2", fontSize: "16px" }}>Solve It</strong>
                   </div>
-                  <p style={{ margin: 0, fontSize: "13px", color: "#666", paddingLeft: "28px" }}>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: "13px", 
+                    color: "#666", 
+                    paddingLeft: "32px",
+                    lineHeight: "1.4"
+                  }}>
                     I'll analyze and solve the math problems or questions in your image
                   </p>
                 </div>
                 
                 <div style={{
-                  padding: "12px",
+                  padding: "15px",
                   border: "2px solid #4CAF50",
-                  borderRadius: "8px",
+                  borderRadius: "10px",
                   background: "#f0fff0",
-                  cursor: "pointer"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
-                    <span style={{ fontSize: "20px", marginRight: "8px" }}>✅</span>
-                    <strong style={{ color: "#388E3C" }}>Correct It</strong>
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => e.target.style.transform = "scale(1.02)"}
+                onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
+                >
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "22px", marginRight: "10px" }}>✅</span>
+                    <strong style={{ color: "#388E3C", fontSize: "16px" }}>Correct It</strong>
                   </div>
-                  <p style={{ margin: 0, fontSize: "13px", color: "#666", paddingLeft: "28px" }}>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: "13px", 
+                    color: "#666", 
+                    paddingLeft: "32px",
+                    lineHeight: "1.4"
+                  }}>
                     I'll check and correct the answers or solutions shown in your image
                   </p>
                 </div>
               </div>
             </div>
             
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+            <div style={{ 
+              display: "flex", 
+              gap: "12px", 
+              justifyContent: "center", 
+              flexWrap: "wrap" 
+            }}>
               <button
                 onClick={clearImageSelection}
                 style={{
                   background: "#6c757d",
                   color: "white",
                   border: "none",
-                  padding: "12px 20px",
-                  borderRadius: "20px",
+                  padding: "12px 24px",
+                  borderRadius: "25px",
                   cursor: "pointer",
                   fontSize: "14px",
-                  minWidth: "100px"
+                  minWidth: "100px",
+                  fontWeight: "500"
                 }}
               >
                 Cancel
@@ -1437,12 +1711,13 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
                     : "#cccccc",
                   color: "white",
                   border: "none",
-                  padding: "12px 20px",
-                  borderRadius: "20px",
+                  padding: "12px 24px",
+                  borderRadius: "25px",
                   cursor: connectionStatus === 'connected' ? "pointer" : "not-allowed",
                   fontSize: "14px",
                   minWidth: "120px",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+                  boxShadow: "0 3px 6px rgba(33, 150, 243, 0.3)",
+                  fontWeight: "500"
                 }}
               >
                 🧮 Solve It
@@ -1457,12 +1732,13 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
                     : "#cccccc",
                   color: "white",
                   border: "none",
-                  padding: "12px 20px",
-                  borderRadius: "20px",
+                  padding: "12px 24px",
+                  borderRadius: "25px",
                   cursor: connectionStatus === 'connected' ? "pointer" : "not-allowed",
                   fontSize: "14px",
                   minWidth: "120px",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+                  boxShadow: "0 3px 6px rgba(76, 175, 80, 0.3)",
+                  fontWeight: "500"
                 }}
               >
                 ✅ Correct It
@@ -1470,13 +1746,14 @@ Example: *"Solve x² + 5x + 6 = 0"* or *"Find the derivative of 3x² + 2x + 1"*`
             </div>
             
             <div style={{
-              marginTop: "15px",
+              marginTop: "20px",
               fontSize: "12px",
-              color: "#666",
+              color: "#6c757d",
               textAlign: "center",
-              padding: "10px",
+              padding: "12px",
               background: "#fff3e0",
-              borderRadius: "8px"
+              borderRadius: "8px",
+              border: "1px solid #ffcc02"
             }}>
               💡 <strong>Tip:</strong> Choose "Solve It" for questions you need help with, 
               or "Correct It" to check your existing answers
