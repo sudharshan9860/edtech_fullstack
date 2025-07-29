@@ -628,11 +628,11 @@ function StudentDash() {
             </div>
           </div>
 
-          {/* Enhanced Dark Mode Toggle */}
+          {/* Enhanced Dark Mode Toggle
           <div className="dark-mode-toggle" onClick={toggleDarkMode}>
             <FontAwesomeIcon icon={isDarkMode ? faSun : faMoon} />
             <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-          </div>
+          </div> */}
         </div>
       </div>
 

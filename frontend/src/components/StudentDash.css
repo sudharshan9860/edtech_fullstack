@@ -559,84 +559,6 @@ body {
 }
 
 /* ========================================
-   REVOLUTIONARY DARK MODE TOGGLE
-======================================== */
-.dark-mode-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  /* FIX 1: Remove margin-top auto to prevent pushing to bottom */
-  margin-top: 1.5rem;
-  margin-bottom: 0;
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 2px solid var(--glass-border);
-  border-radius: var(--border-radius-lg);
-  cursor: pointer;
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-  font-weight: 700;
-  color: var(--text-primary);
-  min-height: 60px;
-}
-
-/* CRITICAL: Enhanced dark mode toggle button */
-.dark-mode .dark-mode-toggle {
-  background: rgba(15, 23, 42, 0.95) !important;
-  border: 2px solid rgba(0, 188, 212, 0.4) !important;
-  color: #f8fafc !important;
-  box-shadow: 
-    0 10px 25px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(0, 188, 212, 0.1) !important;
-}
-
-.dark-mode-toggle::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: var(--primary-gradient);
-  transition: left 0.5s ease;
-  z-index: -1;
-}
-
-.dark-mode .dark-mode-toggle::before {
-  background: linear-gradient(90deg, #00BCD4 0%, #2196F3 50%, #3F51B5 100%) !important;
-}
-
-.dark-mode-toggle:hover::before {
-  left: 0;
-}
-
-.dark-mode-toggle:hover {
-  color: var(--text-inverse);
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--shadow-xl);
-  border-color: transparent;
-}
-
-.dark-mode-toggle svg {
-  font-size: 1.5rem;
-  transition: var(--transition);
-}
-
-.dark-mode-toggle:hover svg {
-  transform: rotate(180deg) scale(1.1);
-}
-
-.dark-mode-toggle span {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-/* ========================================
    MAIN CONTENT - SEAMLESS LAYOUT
 ======================================== */
 .main-content-fixed {
@@ -1648,7 +1570,6 @@ body {
   box-shadow: 0 10px 20px rgba(0, 188, 212, 0.2) !important;
   border-color: rgba(0, 188, 212, 0.3) !important;
 }
-.dark-mode .dark-mode-toggle:focus-visible,
 .dark-mode .btn-generate-enhanced:focus-visible,
 .dark-mode .form-control-enhanced:focus-visible {
   outline: 3px solid #00BCD4 !important;
@@ -1916,7 +1837,6 @@ body {
 /* ========================================
    ACCESSIBILITY & FOCUS STATES - ORCALEX THEME
 ======================================== */
-.dark-mode-toggle:focus-visible,
 .btn-generate-enhanced:focus-visible,
 .form-control-enhanced:focus-visible {
   outline: 3px solid var(--primary-color);
