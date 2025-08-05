@@ -47,9 +47,10 @@ function SolveQuestion() {
   const [error, setError] = useState(null);
   const [imageSourceType, setImageSourceType] = useState("upload"); // "upload" or "camera"
 
-  // Extract data from location state
+  // Extract data from location state - UPDATED to properly handle questionId
   const {
     question,
+    questionId, // The original question ID from backend (required)
     index,
     questionList,
     class_id,
@@ -58,8 +59,8 @@ function SolveQuestion() {
     subtopic,
     selectedQuestions,
   } = location.state || {};
+
   const { questionNumber } = location.state || {};
-  const questionId = location.state?.questionId || `question_${index}_${Date.now()}`;
   const question_image =
     location.state?.image || questionList?.[index]?.image || "";
 
@@ -67,25 +68,26 @@ function SolveQuestion() {
     question: question,
     questionNumber: questionNumber || (index !== undefined ? index + 1 : 1),
     image: question_image,
-    id: questionId
+    id: questionId, // Use only the original backend question ID
+    originalQuestionId: questionId // Store the original backend question ID (same as id)
   });
 
   console.log("questionList", questionList);
 
   const { setCurrentQuestion: setContextQuestion } = useCurrentQuestion();
 
-  // Start timer when component mounts
+  // Start timer when component mounts (only if we have original question ID)
   useEffect(() => {
-    if (currentQuestion.id) {
-      startTimer(currentQuestion.id);
-    }
+  if (currentQuestion.originalQuestionId) {
+    startTimer(currentQuestion.originalQuestionId);
+  }
     
     // Stop timer when component unmounts
-    return () => {
-      const timeSpent = stopTimer();
-      console.log(`Study session ended. Time spent: ${timeSpent}ms`);
-    };
-  }, [currentQuestion.id]);
+  return () => {
+    const timeSpent = stopTimer();
+    console.log(`Study session ended. Time spent: ${timeSpent}ms`);
+  };
+}, [currentQuestion.originalQuestionId]);
 
   // Log state for debugging
   useEffect(() => {
@@ -97,7 +99,7 @@ function SolveQuestion() {
 
   // Update currentQuestion when location state changes
   useEffect(() => {
-    if (location.state) {
+    if (location.state && location.state.questionId) {
       const newQuestionId = location.state?.questionId || `question_${index}_${Date.now()}`;
       
       const newQuestion = {
@@ -106,7 +108,8 @@ function SolveQuestion() {
           location.state.questionNumber ||
           (index !== undefined ? index + 1 : 1),
         image: location.state.image || "",
-        id: newQuestionId
+        id: location.state.questionId, // Use only the original backend question ID
+        originalQuestionId: location.state.questionId
       };
 
       setCurrentQuestion(newQuestion);
@@ -114,7 +117,7 @@ function SolveQuestion() {
 
       // Stop previous timer and start a new one
       stopTimer();
-      startTimer(newQuestionId);
+      startTimer(location.state.questionId);
 
       // Reset other state
       setImages([]);
@@ -236,6 +239,13 @@ function SolveQuestion() {
     setProcessingButton("correct");
     setError(null);
 
+  // // Validate that we have the original question ID from backend
+  // if (!currentQuestion.originalQuestionId) {
+  //   setError("Cannot submit: Missing original question ID from backend");
+  //   setProcessingButton(null);
+  //   return;
+  // }
+
     // Stop the timer and get the time spent
     const timeSpentMs = stopTimer();
     const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
@@ -245,12 +255,18 @@ function SolveQuestion() {
     formData.append("subject_id", subject_id);
     formData.append("topic_ids", topic_ids);
     formData.append("question", currentQuestion.question);
+    // IMPORTANT: Add the original question ID from backend (required)
+    // formData.append("question_id", currentQuestion.originalQuestionId);
     formData.append("subtopic", subtopic);
     formData.append("correct", true);
     formData.append("study_time_seconds", Math.floor(timeSpentMs / 1000));
     formData.append("study_time_minutes", timeSpentMinutes);
 
-    
+    // IMPORTANT: Add the original question ID from backend
+    if (currentQuestion.originalQuestionId) {
+      formData.append("question_id", currentQuestion.originalQuestionId);
+    }
+
     // Helper: finalize and send the form after appending everything
     const finalizeAndSendForm = async () => {
       // Add user's solution images
@@ -377,10 +393,21 @@ function SolveQuestion() {
     });
   };
 
-  // Send form data with progress tracking
+  // UPDATE: Modified sendFormData function to include question_id
   const sendFormData = async (flags = {}, actionType) => {
     setProcessingButton(actionType);
     setError(null);
+
+  // // Validate that we have the original question ID from backend
+  // if (!currentQuestion.originalQuestionId) {
+  //   setError("Cannot submit: Missing original question ID from backend");
+  //   setProcessingButton(null);
+  //   return;
+  // }
+
+  // console.log("🔍 DEBUG: Sending question_id to backend:", currentQuestion.originalQuestionId);
+  // console.log("🔍 DEBUG: Current question object:", currentQuestion);
+  // console.log("🔍 DEBUG: Action type:", actionType);
 
     const formData = new FormData();
     formData.append("class_id", class_id);
@@ -390,6 +417,22 @@ function SolveQuestion() {
     formData.append("ques_img", currentQuestion.image || "");
     formData.append("subtopic", subtopic);
 
+    // IMPORTANT: Add the original question ID from backend (required)
+    // formData.append("question_id", currentQuestion.originalQuestionId);
+
+    
+
+    // Debug: Log all form data entries
+  // console.log("🔍 DEBUG: FormData entries:");
+  // for (let [key, value] of formData.entries()) {
+  //   if (key === "question_id") {
+  //     console.log(`  ✅ ${key}:`, value);
+  //   } else {
+  //     console.log(`  📝 ${key}:`, key === "ques_img" ? `[${value.length} chars]` : value);
+  //   }
+  // }
+    
+    // Append additional data from flags
     Object.entries(flags).forEach(([key, value]) => {
       formData.append(key, value);
     });
@@ -439,27 +482,42 @@ function SolveQuestion() {
           subtopic,
           questionImage: currentQuestion.image,
           questionNumber: currentQuestion.questionNumber,
+          // questionId: currentQuestion.originalQuestionId, // Pass the original question ID
+          studentImages: images.map(img => URL.createObjectURL(img))
         },
       });
+
+      if (actionType === "solve" || actionType === "correct") {
+        const accuracy = response.data.accuracy || response.data.obtained_marks || 0;
+        playQuestionSolvedSound(true, accuracy);
+      }
+
     } catch (error) {
       console.error("API Error:", error);
 
       // Set user-friendly error message
-      if (error.code === "ECONNABORTED") {
-        setError(
-          "Request timed out. Please try with a smaller image or check your connection."
-        );
-      } else if (error.friendlyMessage) {
-        setError(error.friendlyMessage);
+      if (error.response && error.response.status === 500) {
+      const errorText = error.response.data || error.message;
+      if (errorText.includes("QuestionWithImage matching query does not exist")) {
+        setError("This question is not available for solving/explanation. The question might not be properly stored in the database.");
       } else {
-        setError("Failed to perform the action. Please try again.");
+        setError("Server error occurred. Please try again later.");
       }
+    } else if (error.code === "ECONNABORTED") {
+      setError("Request timed out. Please try with a smaller image or check your connection.");
+    } else if (error.friendlyMessage) {
+      setError(error.friendlyMessage);
+    } else {
+      setError("Failed to perform the action. Please try again.");
+    }
 
       setProcessingButton(null);
       setUploadProgress(0);
       
-      // Restart timer since submission failed
+     // Restart timer since submission failed (using original question ID)
+      if (currentQuestion.id) {
       startTimer(currentQuestion.id);
+    }
     }
   };
 
@@ -470,30 +528,39 @@ function SolveQuestion() {
     setIsSolveEnabled(updatedImages.length === 0);
   };
 
-  // Select question from list
-  const handleQuestionSelect = (
-    selectedQuestion,
-    selectedIndex,
-    selectedImage
-  ) => {
-    console.log("Question selected in SolveQuestion");
-    console.log("Selected question:", selectedQuestion);
-    console.log("Selected image:", selectedImage);
+  // UPDATE: Modified handleQuestionSelect to preserve question ID
+  const handleQuestionSelect = (selectedQuestion, selectedIndex, selectedImage, questionData = null) => {
+      console.log("Question selected in SolveQuestion");
+      console.log("Selected question:", selectedQuestion);
+      console.log("Selected image:", selectedImage);
+      console.log("Question data:", questionData);
 
     // Stop the current timer
     stopTimer();
 
-    const newQuestionId = `question_${selectedIndex}_${Date.now()}`;
+    // Use questionData if available, otherwise get from questionList
+  const actualQuestionData = questionData || questionList[selectedIndex];
+  const originalQuestionId = actualQuestionData?.id;
+
+  // Only proceed if we have an original question ID from backend
+  if (!originalQuestionId) {
+    console.error("No original question ID found for selected question");
+    setError("Unable to select question: Missing question ID");
+    return;
+  }
+
+    // const newQuestionId = `question_${selectedIndex}_${Date.now()}`;
     
     setCurrentQuestion({
       question: selectedQuestion,
       questionNumber: selectedIndex + 1,
       image: selectedImage,
-      id: newQuestionId
+      id: originalQuestionId, // Use only the original backend question ID
+      originalQuestionId: originalQuestionId
     });
 
-    // Start a new timer for the selected question
-    startTimer(newQuestionId);
+  // Start a new timer for the selected question using the original ID
+    startTimer(originalQuestionId);
 
     // Reset image related state
     setImages([]);

@@ -766,3 +766,170 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
+/* Add this to frontend/src/components/ResultPage.css */
+/* RESULT PAGE - DARK MODE ENHANCEMENTS */
+
+/* Result Page Container */
+.dark-mode .result-page-container {
+  background: rgba(15, 23, 42, 0.98) !important;
+  color: #f8fafc !important;
+}
+
+/* Result Content */
+.dark-mode .result-content {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 15px !important;
+  padding: 25px !important;
+}
+
+/* Result Title */
+.dark-mode .result-title {
+  color: #00BCD4 !important;
+  text-shadow: 0 0 15px rgba(0, 188, 212, 0.4) !important;
+}
+
+/* ========================================
+   FIXED BUTTONS FOR RESULT PAGE
+======================================== */
+
+/* Fixed Back Button - Top Left */
+.dark-mode .fixed-back-button .back-btn-fixed {
+  background: rgba(51, 65, 85, 0.95) !important;
+  border: 2px solid rgba(71, 85, 105, 0.8) !important;
+  color: #cbd5e1 !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark-mode .fixed-back-button .back-btn-fixed:hover {
+  background: rgba(71, 85, 105, 1) !important;
+  border-color: rgba(100, 116, 139, 0.9) !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Fixed Bottom Buttons */
+.dark-mode .fixed-bottom-buttons .dashboard-btn-fixed {
+  background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
+  border: 2px solid rgba(59, 130, 246, 0.6) !important;
+  color: white !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4) !important;
+}
+
+.dark-mode .fixed-bottom-buttons .dashboard-btn-fixed:hover {
+  background: linear-gradient(135deg, #60A5FA, #3B82F6) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.6) !important;
+}
+
+.dark-mode .fixed-bottom-buttons .practice-btn-fixed {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: 2px solid rgba(0, 188, 212, 0.6) !important;
+  color: white !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 8px 20px rgba(0, 188, 212, 0.4) !important;
+}
+
+.dark-mode .fixed-bottom-buttons .practice-btn-fixed:hover {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 15px 35px rgba(0, 188, 212, 0.6) !important;
+}
+
+/* ========================================
+   SOLUTION CONTENT - DARK MODE
+======================================== */
+
+/* Solution Steps */
+.dark-mode .solution-step {
+  border-left-color: #00BCD4 !important;
+  background: rgba(30, 41, 59, 0.6) !important;
+  color: #cbd5e1 !important;
+  padding: 15px !important;
+  margin: 10px 0 !important;
+  border-radius: 8px !important;
+}
+
+/* Step Numbers */
+.dark-mode .step-number {
+  color: #00BCD4 !important;
+  text-shadow: 0 0 5px rgba(0, 188, 212, 0.3) !important;
+}
+
+/* Mathematical Expressions */
+.dark-mode .math-expression {
+  color: #f8fafc !important;
+  background: rgba(30, 41, 59, 0.6) !important;
+  padding: 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Student Answer Content */
+.dark-mode .student-answer-content,
+.dark-mode .answer-text-content {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  color: #cbd5e1 !important;
+  padding: 15px !important;
+  border-radius: 8px !important;
+}
+
+/* Result Question Section */
+.dark-mode .result-question {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(51, 65, 85, 0.5) !important;
+  border-radius: 10px !important;
+  padding: 20px !important;
+  margin: 15px 0 !important;
+}
+
+.dark-mode .result-question p {
+  color: #cbd5e1 !important;
+}
+
+.dark-mode .result-question strong {
+  color: #00BCD4 !important;
+}
+
+/* Student Images */
+.dark-mode .student-image-wrapper {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 2px solid rgba(51, 65, 85, 0.6) !important;
+  border-radius: 10px !important;
+  padding: 10px !important;
+}
+
+.dark-mode .image-label {
+  color: #94a3b8 !important;
+}
+
+.dark-mode .image-type-badge {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  color: white !important;
+}
+
+/* Solution Header */
+.dark-mode .solution-header {
+  color: #00BCD4 !important;
+  border-bottom: 2px solid rgba(0, 188, 212, 0.3) !important;
+  padding-bottom: 10px !important;
+}
+
+/* Concept Items */
+.dark-mode .concept-item {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(0, 188, 212, 0.4) !important;
+}
+
+.dark-mode .concept-item h3 {
+  color: #00BCD4 !important;
+}
+
+.dark-mode .concept-item p {
+  color: #cbd5e1 !important;
+}

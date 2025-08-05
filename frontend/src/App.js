@@ -15,6 +15,16 @@ import "./styles/multilingualChat.css";
 import "./styles/theme.css";
 import { TimerProvider } from "./contexts/TimerContext";
 
+// Import Bootstrap and other existing CSS
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Import your existing component styles
+import './components/StudentDash.css';
+import './components/Layout.css';
+
+// ✅ ADD THIS LINE - Import the new enhanced dark mode CSS
+import './styles/dark-mode-enhanced.css';
+
 
 // Wrapper component to use location hook
 function AppContent() {

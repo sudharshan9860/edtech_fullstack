@@ -34,19 +34,21 @@ const QuestionListModal = ({
     } else {
       const selectedQuestion = {
         question: questionData.question,
+        id: questionData.id, // Include the original question ID from backend
         image: questionData.question_image
           ? `data:image/png;base64,${questionData.question_image}`
           : null,
       };
 
-      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image);
-    }
+      // Pass the question text, index, image, and the full question data (which includes ID)
+      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image);    }
   };
 
   const handleMultipleSelectSubmit = () => {
     if (selectedQuestions.length >= 1 && selectedQuestions.length <= 5) {
       const selectedQuestionsData = selectedQuestions.map((index) => ({
         question: questionList[index].question,
+        id: questionList[index].id, // Include the original question ID
         image: questionList[index].question_image
           ? `data:image/png;base64,${questionList[index].question_image}`
           : null,

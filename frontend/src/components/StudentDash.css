@@ -2223,3 +2223,425 @@ body {
     font-size: 0.85rem;
   }
 }
+
+/* Add this to frontend/src/components/StudentDash.css */
+/* STUDENT DASHBOARD - ADDITIONAL DARK MODE ENHANCEMENTS */
+
+/* ========================================
+   GENERATE QUESTIONS BUTTON - ENHANCED
+======================================== */
+
+/* Generate Questions Button - Main Dashboard */
+.dark-mode .btn-generate-enhanced {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: 2px solid rgba(0, 188, 212, 0.8) !important;
+  color: white !important;
+  box-shadow: 0 6px 18px rgba(0, 188, 212, 0.4) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+.dark-mode .btn-generate-enhanced:hover {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  border-color: rgba(0, 229, 255, 0.9) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 20px 40px rgba(0, 188, 212, 0.6) !important;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ========================================
+   PRACTICE EXERCISES BUTTON - ENHANCED
+======================================== */
+
+/* Practice Exercises Button Styling */
+.dark-mode button:contains("Practice Exercises"),
+.dark-mode .btn[class*="practice"] {
+  background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+  border: 2px solid rgba(245, 158, 11, 0.8) !important;
+  color: white !important;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+.dark-mode button:contains("Practice Exercises"):hover,
+.dark-mode .btn[class*="practice"]:hover {
+  background: linear-gradient(135deg, #FCD34D, #F59E0B) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 20px 40px rgba(245, 158, 11, 0.6) !important;
+}
+
+/* ========================================
+   DASHBOARD SIDEBAR CARDS - ENHANCED
+======================================== */
+
+/* Progress Card */
+.dark-mode .progress-card {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 2px solid rgba(76, 175, 80, 0.6) !important;
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3) !important;
+}
+
+.dark-mode .progress-card:hover {
+  border-color: rgba(76, 175, 80, 0.8) !important;
+  box-shadow: 0 15px 30px rgba(76, 175, 80, 0.5) !important;
+  transform: translateY(-5px) scale(1.02) !important;
+}
+
+/* Streak Card */
+.dark-mode .streak-card {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 2px solid rgba(255, 152, 0, 0.6) !important;
+  box-shadow: 0 8px 20px rgba(255, 152, 0, 0.3) !important;
+}
+
+.dark-mode .streak-card:hover {
+  border-color: rgba(255, 152, 0, 0.8) !important;
+  box-shadow: 0 15px 30px rgba(255, 152, 0, 0.5) !important;
+  transform: translateY(-5px) scale(1.02) !important;
+}
+
+/* Badges Card */
+.dark-mode .badges-card {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3) !important;
+}
+
+.dark-mode .badges-card:hover {
+  border-color: rgba(139, 92, 246, 0.8) !important;
+  box-shadow: 0 15px 30px rgba(139, 92, 246, 0.5) !important;
+  transform: translateY(-5px) scale(1.02) !important;
+}
+
+/* ========================================
+   FORM CONTROLS - DASHBOARD SPECIFIC
+======================================== */
+
+/* Class Number Input */
+.dark-mode .form-control-enhanced {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .form-control-enhanced:focus {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: #00BCD4 !important;
+  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.2) !important;
+  color: #f8fafc !important;
+}
+
+.dark-mode .form-control-enhanced:hover {
+  border-color: #00BCD4 !important;
+  box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Subject Dropdown */
+.dark-mode select.form-control-enhanced {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+.dark-mode select.form-control-enhanced option {
+  background: rgba(15, 23, 42, 0.98) !important;
+  color: #f8fafc !important;
+}
+
+/* ========================================
+   QUESTION TYPE SELECTOR - ENHANCED
+======================================== */
+
+/* Question Type Dropdown/Select */
+.dark-mode .question-type-select,
+.dark-mode select[class*="question"] {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+.dark-mode .question-type-select:focus,
+.dark-mode select[class*="question"]:focus {
+  border-color: #00BCD4 !important;
+  box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2) !important;
+}
+
+/* ========================================
+   GREETING AND MOTIVATIONAL SECTIONS
+======================================== */
+
+/* Greeting Header */
+.dark-mode .greeting-header {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  backdrop-filter: blur(15px) !important;
+}
+
+.dark-mode .greeting-content {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+}
+
+/* Motivational Quote */
+.dark-mode .motivational-quote {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(0, 188, 212, 0.3) !important;
+  color: #cbd5e1 !important;
+}
+
+/* ========================================
+   FORM CONTAINER - MAIN DASHBOARD
+======================================== */
+
+.dark-mode .form-container {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+}
+
+.dark-mode .form-container:hover {
+  border-color: rgba(0, 188, 212, 0.4) !important;
+  box-shadow: 0 10px 25px rgba(0, 188, 212, 0.2) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ========================================
+   SECTION HEADERS
+======================================== */
+
+.dark-mode .section-header {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  color: #f8fafc !important;
+}
+
+.dark-mode .section-header h2 {
+  color: #00BCD4 !important;
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.3) !important;
+}
+
+/* ========================================
+   LEARNING ADVENTURE SECTION
+======================================== */
+
+.dark-mode .learning-adventure-section {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+}
+
+/* ========================================
+   RESPONSIVE ENHANCEMENTS FOR DASHBOARD
+======================================== */
+
+@media (max-width: 992px) {
+  .dark-mode .sidebar-fixed {
+    background: rgba(15, 23, 42, 0.98) !important;
+    border-right: 1px solid rgba(51, 65, 85, 0.8) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dark-mode .greeting-content {
+    padding: 20px !important;
+  }
+  
+  .dark-mode .form-container {
+    padding: 20px !important;
+    margin: 15px !important;
+  }
+}
+
+/* Add this to frontend/src/components/StudentDash.css */
+/* ========================================
+   CHAPTER DROPDOWN - DARK MODE FIX
+======================================== */
+
+/* React Select Dark Mode - Complete Override */
+.dark-mode .chapters-select-final .select__control {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .chapters-select-final .select__control:hover {
+  border-color: #00BCD4 !important;
+  box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2) !important;
+}
+
+.dark-mode .chapters-select-final .select__control--is-focused {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: #00BCD4 !important;
+  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.2) !important;
+  color: #f8fafc !important;
+}
+
+/* CRITICAL FIX: Dropdown Menu Container */
+.dark-mode .chapters-select-final .select__menu {
+  background: rgba(15, 23, 42, 0.98) !important;
+  border: 2px solid rgba(0, 188, 212, 0.4) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* CRITICAL FIX: Dropdown Options */
+.dark-mode .chapters-select-final .select__option {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #f8fafc !important;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5) !important;
+  transition: all 0.2s ease !important;
+}
+
+.dark-mode .chapters-select-final .select__option:hover {
+  background: rgba(0, 188, 212, 0.8) !important;
+  color: #ffffff !important;
+  transform: translateX(4px) !important;
+}
+
+.dark-mode .chapters-select-final .select__option--is-focused {
+  background: rgba(0, 188, 212, 0.6) !important;
+  color: #ffffff !important;
+  transform: translateX(2px) !important;
+}
+
+.dark-mode .chapters-select-final .select__option--is-selected {
+  background: linear-gradient(135deg, #00BCD4 0%, #2196F3 50%, #3F51B5 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Placeholder and Single Value */
+.dark-mode .chapters-select-final .select__placeholder {
+  color: #94a3b8 !important;
+}
+
+.dark-mode .chapters-select-final .select__single-value {
+  color: #f8fafc !important;
+}
+
+/* Multi-Value (Selected Items) */
+.dark-mode .chapters-select-final .select__multi-value {
+  background: rgba(0, 188, 212, 0.2) !important;
+  border: 1px solid rgba(0, 188, 212, 0.3) !important;
+  border-radius: 8px !important;
+}
+
+.dark-mode .chapters-select-final .select__multi-value__label {
+  color: #00BCD4 !important;
+  font-weight: 600 !important;
+  padding: 6px 10px !important;
+}
+
+.dark-mode .chapters-select-final .select__multi-value__remove {
+  color: #00BCD4 !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+.dark-mode .chapters-select-final .select__multi-value__remove:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+  transform: scale(1.1) !important;
+}
+
+/* Indicators (Dropdown Arrow, Clear) */
+.dark-mode .chapters-select-final .select__indicator {
+  color: #94a3b8 !important;
+  transition: all 0.3s ease !important;
+}
+
+.dark-mode .chapters-select-final .select__indicator:hover {
+  color: #00BCD4 !important;
+  transform: scale(1.1) !important;
+}
+
+.dark-mode .chapters-select-final .select__dropdown-indicator {
+  color: #94a3b8 !important;
+}
+
+.dark-mode .chapters-select-final .select__dropdown-indicator:hover {
+  color: #00BCD4 !important;
+}
+
+.dark-mode .chapters-select-final .select__clear-indicator {
+  color: #94a3b8 !important;
+}
+
+.dark-mode .chapters-select-final .select__clear-indicator:hover {
+  color: #ef4444 !important;
+}
+
+.dark-mode .chapters-select-final .select__indicator-separator {
+  background-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+/* Menu List Scrollbar */
+.dark-mode .chapters-select-final .select__menu-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark-mode .chapters-select-final .select__menu-list::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 4px;
+}
+
+.dark-mode .chapters-select-final .select__menu-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #00BCD4, #001B6C);
+  border-radius: 4px;
+}
+
+.dark-mode .chapters-select-final .select__menu-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #00E5FF, #0D47A1);
+}
+
+/* No Options Message */
+.dark-mode .chapters-select-final .select__menu-notice {
+  color: #94a3b8 !important;
+  background: rgba(30, 41, 59, 0.8) !important;
+}
+
+/* Loading Message */
+.dark-mode .chapters-select-final .select__loading-indicator {
+  color: #00BCD4 !important;
+}
+
+/* ========================================
+   SUBJECT AND CLASS DROPDOWNS - CONSISTENCY
+======================================== */
+
+/* Regular Select Dropdowns (Class, Subject) */
+.dark-mode select.form-control-enhanced {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode select.form-control-enhanced:focus {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: #00BCD4 !important;
+  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.2) !important;
+  color: #f8fafc !important;
+}
+
+.dark-mode select.form-control-enhanced:hover {
+  border-color: #00BCD4 !important;
+  box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.1) !important;
+}
+
+/* Select Options */
+.dark-mode select.form-control-enhanced option {
+  background: rgba(15, 23, 42, 0.98) !important;
+  color: #f8fafc !important;
+  padding: 8px 12px !important;
+}
+
+.dark-mode select.form-control-enhanced option:hover,
+.dark-mode select.form-control-enhanced option:checked {
+  background: rgba(0, 188, 212, 0.8) !important;
+  color: #ffffff !important;
+}

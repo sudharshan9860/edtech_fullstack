@@ -504,3 +504,1217 @@
     color: #f8d7da;
   }
 }
+
+/* Add this to frontend/src/components/SolveQuestion.css */
+/* SOLVE QUESTION PAGE - DARK MODE ENHANCEMENTS */
+
+/* Solve Question Container */
+.dark-mode .solve-question-container {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Question Text Container */
+.dark-mode .question-text-container {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.dark-mode .question-text-container:hover {
+  box-shadow: 0 8px 25px rgba(0, 188, 212, 0.2) !important;
+  border-color: rgba(0, 188, 212, 0.3) !important;
+}
+
+/* Question Title */
+.dark-mode .question-title {
+  color: #00BCD4 !important;
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.3) !important;
+}
+
+.dark-mode .question-title::after {
+  background: linear-gradient(90deg, #00BCD4, #5046e4) !important;
+  box-shadow: 0 0 10px rgba(0, 188, 212, 0.5) !important;
+}
+
+/* Question Text */
+.dark-mode .question-text {
+  color: #cbd5e1 !important;
+}
+
+/* ========================================
+   SPECIFIC BUTTON CLASSES - SOLVE QUESTION PAGE
+======================================== */
+
+/* Take Photo Button */
+.dark-mode .btn-camera,
+.dark-mode .btn[onclick*="camera"],
+.dark-mode button[aria-label*="camera"] {
+  background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+.dark-mode .btn-camera:hover,
+.dark-mode .btn[onclick*="camera"]:hover,
+.dark-mode button[aria-label*="camera"]:hover {
+  background: linear-gradient(135deg, #A78BFA, #8B5CF6) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5) !important;
+}
+
+/* File Upload Button */
+.dark-mode .btn-upload,
+.dark-mode input[type="file"] + label,
+.dark-mode .file-upload-btn {
+  background: linear-gradient(135deg, #10B981, #059669) !important;
+  border: 2px solid rgba(16, 185, 129, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .btn-upload:hover,
+.dark-mode input[type="file"] + label:hover,
+.dark-mode .file-upload-btn:hover {
+  background: linear-gradient(135deg, #34D399, #10B981) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Solve Button - Enhanced */
+.dark-mode .solve-btn,
+.dark-mode .btn-solve {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: 2px solid rgba(0, 188, 212, 0.8) !important;
+  color: white !important;
+  box-shadow: 0 6px 15px rgba(0, 188, 212, 0.4) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+}
+
+.dark-mode .solve-btn:hover,
+.dark-mode .btn-solve:hover {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  border-color: rgba(0, 229, 255, 0.9) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(0, 188, 212, 0.6) !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Auto-Correct Button */
+.dark-mode .btn-correct {
+  background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+  border: 2px solid rgba(245, 158, 11, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+}
+
+.dark-mode .btn-correct:hover {
+  background: linear-gradient(135deg, #FCD34D, #F59E0B) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* Explain Button */
+.dark-mode .explain-btn {
+  background: linear-gradient(135deg, #06B6D4, #0891B2) !important;
+  border: 2px solid rgba(6, 182, 212, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3) !important;
+}
+
+.dark-mode .explain-btn:hover {
+  background: linear-gradient(135deg, #22D3EE, #06B6D4) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(6, 182, 212, 0.5) !important;
+}
+
+/* Gap Analysis Button */
+.dark-mode .gap-btn {
+  background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+.dark-mode .gap-btn:hover {
+  background: linear-gradient(135deg, #A78BFA, #8B5CF6) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5) !important;
+}
+
+/* Back Button */
+.dark-mode .btn-back {
+  background: rgba(71, 85, 105, 0.9) !important;
+  border: 2px solid rgba(100, 116, 139, 0.6) !important;
+  color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .btn-back:hover {
+  background: rgba(100, 116, 139, 1) !important;
+  border-color: rgba(148, 163, 184, 0.8) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Question List Button */
+.dark-mode .btn-question-list {
+  background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
+  border: 2px solid rgba(59, 130, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.dark-mode .btn-question-list:hover {
+  background: linear-gradient(135deg, #60A5FA, #3B82F6) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* ========================================
+   IMAGE UPLOAD AND PREVIEW - DARK MODE
+======================================== */
+
+/* Image Preview Containers */
+.dark-mode .image-preview-container {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark-mode .image-preview-container:hover {
+  border-color: rgba(0, 188, 212, 0.6) !important;
+  box-shadow: 0 15px 30px rgba(0, 188, 212, 0.3) !important;
+}
+
+/* Image Remove Button */
+.dark-mode .image-remove-btn {
+  background-color: #EF4444 !important;
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4) !important;
+}
+
+.dark-mode .image-remove-btn:hover:not(:disabled) {
+  background-color: #DC2626 !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 12px rgba(220, 38, 38, 0.6) !important;
+}
+
+/* ========================================
+   EXTRACTED TEXT AND OCR - DARK MODE
+======================================== */
+
+/* Extracted Text Container */
+.dark-mode .extracted-text-container {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+}
+
+.dark-mode .extracted-text {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+/* ========================================
+   PROGRESS BARS - DARK MODE
+======================================== */
+
+/* Upload Progress */
+.dark-mode .upload-progress {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  color: #cbd5e1 !important;
+}
+
+.dark-mode .progress {
+  background-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark-mode .progress-bar {
+  background: linear-gradient(90deg, #00BCD4, #001B6C) !important;
+  box-shadow: 0 0 10px rgba(0, 188, 212, 0.5) !important;
+}
+
+/* Processing Indicator */
+.dark-mode .processing-indicator {
+  background-color: rgba(0, 188, 212, 0.2) !important;
+  border: 1px solid rgba(0, 188, 212, 0.4) !important;
+  color: #00BCD4 !important;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS FOR SOLVE PAGE
+======================================== */
+
+@media (max-width: 768px) {
+  .dark-mode .solve-question-container {
+    padding: 20px !important;
+    margin: 10px !important;
+  }
+  
+  .dark-mode .button-grid .row {
+    margin-bottom: 10px !important;
+  }
+}
+
+/* Add this to frontend/src/components/SolveQuestion.css */
+/* ========================================
+   FILE INPUT - DARK MODE STYLING
+======================================== */
+
+/* File Input Base Styling */
+.form-control[type="file"] {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #2d3748;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.form-control[type="file"]:hover {
+  border-color: #00C1D4;
+  box-shadow: 0 0 0 2px rgba(0, 193, 212, 0.1);
+  transform: translateY(-1px);
+}
+
+/* CRITICAL FIX: Dark Mode File Input */
+.dark-mode .form-control[type="file"] {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .form-control[type="file"]:hover {
+  border-color: #00BCD4 !important;
+  box-shadow: 
+    0 0 0 3px rgba(0, 188, 212, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.4) !important;
+  transform: translateY(-2px) !important;
+  background: rgba(30, 41, 59, 0.95) !important;
+}
+
+.dark-mode .form-control[type="file"]:focus {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border-color: #00BCD4 !important;
+  box-shadow: 
+    0 0 0 4px rgba(0, 188, 212, 0.3),
+    0 8px 15px rgba(0, 0, 0, 0.4) !important;
+  color: #f8fafc !important;
+  outline: none !important;
+}
+
+/* File Input Placeholder Text */
+.dark-mode .form-control[type="file"]::file-selector-button {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: none !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  margin-right: 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.dark-mode .form-control[type="file"]:hover::file-selector-button {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 8px rgba(0, 188, 212, 0.4) !important;
+}
+
+/* For Firefox */
+.dark-mode .form-control[type="file"]::file-selector-button {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: none !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  margin-right: 12px !important;
+}
+
+/* ========================================
+   IMAGE SOURCE BUTTONS - ENHANCED STYLING
+======================================== */
+
+/* Image Source Buttons Container */
+.image-source-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Take Photo Button */
+.dark-mode .image-source-buttons .btn:contains("Take Photo"),
+.dark-mode button[class*="camera"],
+.dark-mode .btn-camera {
+  background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .image-source-buttons .btn:contains("Take Photo"):hover,
+.dark-mode button[class*="camera"]:hover,
+.dark-mode .btn-camera:hover {
+  background: linear-gradient(135deg, #A78BFA, #8B5CF6) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5) !important;
+  border-color: rgba(139, 92, 246, 0.8) !important;
+}
+
+/* Upload Images Button */
+.dark-mode .image-source-buttons .btn-outline-primary {
+  background: transparent !important;
+  border: 2px solid #10B981 !important;
+  color: #10B981 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+  font-weight: 600 !important;
+}
+
+.dark-mode .image-source-buttons .btn-outline-primary:hover {
+  background: linear-gradient(135deg, #10B981, #059669) !important;
+  border-color: #10B981 !important;
+  color: white !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 12px 25px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* ========================================
+   FORM LABELS AND TEXT - DARK MODE
+======================================== */
+
+/* Form Labels */
+.dark-mode .form-label,
+.dark-mode label {
+  color: #f8fafc !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Form Text Muted */
+.dark-mode .form-text.text-muted,
+.dark-mode .text-muted {
+  color: #94a3b8 !important;
+}
+
+/* ========================================
+   BUTTON GRID - ENHANCED DARK MODE
+======================================== */
+
+/* Button Grid Container */
+.dark-mode .button-grid {
+  margin-top: 30px !important;
+}
+
+/* All Buttons in Grid */
+.dark-mode .button-grid .btn {
+  border-radius: 12px !important;
+  padding: 12px 20px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Back Button - Enhanced */
+.dark-mode .button-grid .btn-back,
+.dark-mode .button-grid .btn-secondary {
+  background: rgba(71, 85, 105, 0.9) !important;
+  border: 2px solid rgba(100, 116, 139, 0.6) !important;
+  color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .button-grid .btn-back:hover,
+.dark-mode .button-grid .btn-secondary:hover {
+  background: rgba(100, 116, 139, 1) !important;
+  border-color: rgba(148, 163, 184, 0.8) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Question List Button - Enhanced */
+.dark-mode .button-grid .btn-question-list,
+.dark-mode .button-grid .btn[class*="question"] {
+  background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
+  border: 2px solid rgba(59, 130, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.dark-mode .button-grid .btn-question-list:hover,
+.dark-mode .button-grid .btn[class*="question"]:hover {
+  background: linear-gradient(135deg, #60A5FA, #3B82F6) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(59, 130, 246, 0.5) !important;
+  border-color: rgba(59, 130, 246, 0.8) !important;
+}
+
+/* Solve Button - Extra Enhanced */
+.dark-mode .button-grid .solve-btn,
+.dark-mode .button-grid .btn-solve {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: 2px solid rgba(0, 188, 212, 0.8) !important;
+  color: white !important;
+  box-shadow: 0 8px 20px rgba(0, 188, 212, 0.4) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+.dark-mode .button-grid .solve-btn:hover,
+.dark-mode .button-grid .btn-solve:hover {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  border-color: rgba(0, 229, 255, 0.9) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 
+    0 20px 40px rgba(0, 188, 212, 0.6),
+    0 0 30px rgba(0, 229, 255, 0.4) !important;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Auto-Correct Button - Enhanced */
+.dark-mode .button-grid .btn-correct {
+  background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+  border: 2px solid rgba(245, 158, 11, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+}
+
+.dark-mode .button-grid .btn-correct:hover {
+  background: linear-gradient(135deg, #FCD34D, #F59E0B) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(245, 158, 11, 0.5) !important;
+  border-color: rgba(245, 158, 11, 0.8) !important;
+}
+
+/* Explain Button - Enhanced */
+.dark-mode .button-grid .explain-btn {
+  background: linear-gradient(135deg, #06B6D4, #0891B2) !important;
+  border: 2px solid rgba(6, 182, 212, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3) !important;
+}
+
+.dark-mode .button-grid .explain-btn:hover {
+  background: linear-gradient(135deg, #22D3EE, #06B6D4) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(6, 182, 212, 0.5) !important;
+  border-color: rgba(6, 182, 212, 0.8) !important;
+}
+
+/* Gap Analysis Button - Enhanced */
+.dark-mode .button-grid .gap-btn,
+.dark-mode .button-grid .btn-info {
+  background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+.dark-mode .button-grid .gap-btn:hover,
+.dark-mode .button-grid .btn-info:hover {
+  background: linear-gradient(135deg, #A78BFA, #8B5CF6) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5) !important;
+  border-color: rgba(139, 92, 246, 0.8) !important;
+}
+
+/* ========================================
+   BUTTON RIPPLE EFFECTS - ENHANCED
+======================================== */
+
+/* Universal Button Ripple */
+.dark-mode .button-grid .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: skew(30deg);
+  transition: all 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+  z-index: 0;
+}
+
+.dark-mode .button-grid .btn:hover::before {
+  left: 120%;
+  transform: skew(30deg);
+}
+
+.dark-mode .button-grid .btn span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   DISABLED BUTTON STATES
+======================================== */
+
+/* Disabled File Input */
+.dark-mode .form-control[type="file"]:disabled {
+  background: rgba(51, 65, 85, 0.5) !important;
+  border: 2px solid rgba(71, 85, 105, 0.3) !important;
+  color: rgba(156, 163, 175, 0.6) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+.dark-mode .form-control[type="file"]:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Disabled Buttons */
+.dark-mode .button-grid .btn:disabled {
+  background: rgba(51, 65, 85, 0.5) !important;
+  border: 2px solid rgba(71, 85, 105, 0.3) !important;
+  color: rgba(156, 163, 175, 0.6) !important;
+  opacity: 0.6 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+.dark-mode .button-grid .btn:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ========================================
+   ADDITIONAL FILE INPUT ENHANCEMENTS
+======================================== */
+
+/* File Input Icon Enhancement (if using FontAwesome) */
+.dark-mode .form-control[type="file"] + .file-input-icon {
+  color: #00BCD4 !important;
+  margin-left: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.dark-mode .form-control[type="file"]:hover + .file-input-icon {
+  color: #00E5FF !important;
+  transform: scale(1.1) !important;
+}
+
+/* File Input Label Enhancement */
+.dark-mode label[for*="file"],
+.dark-mode .file-input-label {
+  color: #f8fafc !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.dark-mode label[for*="file"] svg,
+.dark-mode .file-input-label svg {
+  color: #00BCD4 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 188, 212, 0.3)) !important;
+}
+
+/* ========================================
+   IMAGE PREVIEW ENHANCEMENTS
+======================================== */
+
+/* Image Preview Grid */
+.dark-mode .uploaded-images {
+  margin-top: 20px !important;
+}
+
+.dark-mode .uploaded-images h6 {
+  color: #f8fafc !important;
+  font-weight: 600 !important;
+  margin-bottom: 15px !important;
+}
+
+/* Clear All Button */
+.dark-mode .uploaded-images .btn-outline-danger {
+  background: transparent !important;
+  border: 2px solid #EF4444 !important;
+  color: #EF4444 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark-mode .uploaded-images .btn-outline-danger:hover {
+  background: #EF4444 !important;
+  color: white !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* ========================================
+   RESPONSIVE ENHANCEMENTS
+======================================== */
+
+@media (max-width: 768px) {
+  .dark-mode .image-source-buttons {
+    flex-direction: column !important;
+  }
+  
+  .dark-mode .image-source-buttons .btn {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .dark-mode .form-control[type="file"] {
+    padding: 10px 12px !important;
+    min-height: 45px !important;
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .dark-mode .button-grid .btn {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+  
+  .dark-mode .form-control[type="file"] {
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Add this to frontend/src/components/SolveQuestion.css */
+/* ========================================
+   IMAGE UPLOAD AREA - COMPLETE DARK MODE FIX
+======================================== */
+
+/* Image Upload Section Container */
+.dark-mode .form-group,
+.dark-mode .form-group > * {
+  color: #f8fafc !important;
+}
+
+/* Form Group Labels */
+.dark-mode .form-label,
+.dark-mode label {
+  color: #f8fafc !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ========================================
+   IMAGE SOURCE BUTTONS - ENHANCED DARK MODE
+======================================== */
+
+/* Image Source Buttons Container */
+.dark-mode .image-source-buttons {
+  display: flex !important;
+  gap: 12px !important;
+  margin-bottom: 20px !important;
+}
+
+/* Take Photo Button - Enhanced */
+.dark-mode .image-source-buttons .btn-primary,
+.dark-mode button[class*="camera"] {
+  background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4) !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .image-source-buttons .btn-primary:hover,
+.dark-mode button[class*="camera"]:hover {
+  background: linear-gradient(135deg, #A78BFA, #8B5CF6) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(139, 92, 246, 0.6) !important;
+  border-color: rgba(139, 92, 246, 0.8) !important;
+}
+
+/* Upload Images Button (Outline) */
+.dark-mode .image-source-buttons .btn-outline-primary {
+  background: transparent !important;
+  border: 2px solid #10B981 !important;
+  color: #10B981 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+  font-weight: 600 !important;
+}
+
+.dark-mode .image-source-buttons .btn-outline-primary:hover {
+  background: linear-gradient(135deg, #10B981, #059669) !important;
+  border-color: #10B981 !important;
+  color: white !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* ========================================
+   FILE INPUT - COMPLETE DARK MODE STYLING
+======================================== */
+
+/* File Input Base */
+.dark-mode input[type="file"].form-control {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  min-height: 50px !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode input[type="file"].form-control:hover {
+  border-color: #00BCD4 !important;
+  box-shadow: 
+    0 0 0 3px rgba(0, 188, 212, 0.2),
+    0 8px 20px rgba(0, 0, 0, 0.4) !important;
+  transform: translateY(-2px) !important;
+  background: rgba(30, 41, 59, 0.95) !important;
+}
+
+.dark-mode input[type="file"].form-control:focus {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border-color: #00BCD4 !important;
+  box-shadow: 
+    0 0 0 4px rgba(0, 188, 212, 0.3),
+    0 10px 25px rgba(0, 0, 0, 0.4) !important;
+  color: #f8fafc !important;
+  outline: none !important;
+}
+
+/* File Input Choose Button */
+.dark-mode input[type="file"].form-control::file-selector-button {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: none !important;
+  color: white !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  margin-right: 15px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+.dark-mode input[type="file"].form-control:hover::file-selector-button {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 6px 15px rgba(0, 188, 212, 0.5) !important;
+}
+
+/* Firefox File Input Button */
+.dark-mode input[type="file"].form-control::-moz-file-upload-button {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: none !important;
+  color: white !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  margin-right: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+
+/* ========================================
+   IMAGE PREVIEW AREA - COMPLETE DARK MODE
+======================================== */
+
+/* Uploaded Images Container */
+.dark-mode .uploaded-images {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  border-radius: 15px !important;
+  padding: 20px !important;
+  margin: 20px 0 !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Uploaded Images Title */
+.dark-mode .uploaded-images h6 {
+  color: #00BCD4 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 8px rgba(0, 188, 212, 0.3) !important;
+  margin-bottom: 15px !important;
+}
+
+/* Image Preview Grid */
+.dark-mode .uploaded-images > div:not(h6) {
+  background: transparent !important;
+}
+
+/* Individual Image Preview Container */
+.dark-mode .image-preview-container {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  border-radius: 15px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .image-preview-container:hover {
+  border-color: rgba(0, 188, 212, 0.6) !important;
+  box-shadow: 0 15px 35px rgba(0, 188, 212, 0.3) !important;
+  transform: translateY(-5px) scale(1.02) !important;
+}
+
+/* Image Preview */
+.dark-mode .image-preview {
+  border-radius: 15px !important;
+  transition: transform 0.3s ease !important;
+}
+
+.dark-mode .image-preview-container:hover .image-preview {
+  transform: scale(1.05) !important;
+}
+
+/* Clear All Button */
+.dark-mode .uploaded-images .btn-outline-danger {
+  background: transparent !important;
+  border: 2px solid #EF4444 !important;
+  color: #EF4444 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+  border-radius: 10px !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .uploaded-images .btn-outline-danger:hover {
+  background: #EF4444 !important;
+  color: white !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 12px 25px rgba(239, 68, 68, 0.5) !important;
+  border-color: #EF4444 !important;
+}
+
+/* ========================================
+   IMAGE REMOVE BUTTON - ENHANCED
+======================================== */
+
+.dark-mode .image-remove-btn {
+  background: linear-gradient(135deg, #EF4444, #DC2626) !important;
+  border: 1px solid rgba(239, 68, 68, 0.8) !important;
+  color: white !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4) !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 10 !important;
+}
+
+.dark-mode .image-remove-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #F87171, #B91C1C) !important;
+  transform: scale(1.2) rotate(90deg) !important;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.6) !important;
+  border-color: rgba(248, 113, 113, 0.9) !important;
+}
+
+/* ========================================
+   FORM TEXT AND HELPER TEXT - DARK MODE
+======================================== */
+
+/* Helper Text */
+.dark-mode .form-text.text-muted {
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+}
+
+/* Maximum File Size Text */
+.dark-mode .text-muted {
+  color: #94a3b8 !important;
+}
+
+/* ========================================
+   SOLVE QUESTION CONTAINER - ENHANCED
+======================================== */
+
+/* Main Container Background */
+.dark-mode .solve-question-container {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ========================================
+   IMAGE GRID STYLING - DARK MODE
+======================================== */
+
+/* Image Grid Container */
+.dark-mode .uploaded-images > div[style*="grid"] {
+  gap: 15px !important;
+  margin-top: 15px !important;
+}
+
+/* Individual Grid Item Styling */
+.dark-mode .uploaded-images > div[style*="grid"] > div {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  border-radius: 15px !important;
+  padding: 8px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .uploaded-images > div[style*="grid"] > div:hover {
+  border-color: rgba(0, 188, 212, 0.6) !important;
+  box-shadow: 0 15px 35px rgba(0, 188, 212, 0.3) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+}
+
+/* ========================================
+   ERROR AND SUCCESS MESSAGES - ENHANCED
+======================================== */
+
+/* Error Alert */
+.dark-mode .alert-danger {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+  color: #FCA5A5 !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+}
+
+/* Success Alert */
+.dark-mode .alert-success {
+  background: rgba(34, 197, 94, 0.2) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  color: #86EFAC !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+}
+
+/* ========================================
+   PROGRESS INDICATORS - DARK MODE
+======================================== */
+
+/* Upload Progress Container */
+.dark-mode .upload-progress {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  color: #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 15px !important;
+}
+
+/* Progress Bar */
+.dark-mode .progress {
+  background-color: rgba(51, 65, 85, 0.8) !important;
+  border-radius: 8px !important;
+  height: 8px !important;
+}
+
+.dark-mode .progress-bar {
+  background: linear-gradient(90deg, #00BCD4, #001B6C) !important;
+  box-shadow: 0 0 10px rgba(0, 188, 212, 0.5) !important;
+  border-radius: 8px !important;
+}
+
+/* Processing Indicator */
+.dark-mode .processing-indicator {
+  background: rgba(0, 188, 212, 0.2) !important;
+  border: 1px solid rgba(0, 188, 212, 0.4) !important;
+  color: #00BCD4 !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(5px) !important;
+}
+
+/* ========================================
+   ENHANCED BUTTON STYLING - ALL BUTTONS
+======================================== */
+
+/* Back Button */
+.dark-mode .btn-back,
+.dark-mode .button-grid .btn-secondary {
+  background: rgba(71, 85, 105, 0.9) !important;
+  border: 2px solid rgba(100, 116, 139, 0.6) !important;
+  color: #cbd5e1 !important;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3) !important;
+  font-weight: 600 !important;
+}
+
+.dark-mode .btn-back:hover,
+.dark-mode .button-grid .btn-secondary:hover {
+  background: rgba(100, 116, 139, 1) !important;
+  border-color: rgba(148, 163, 184, 0.8) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Question List Button */
+.dark-mode .btn-question-list {
+  background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
+  border: 2px solid rgba(59, 130, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4) !important;
+  font-weight: 600 !important;
+}
+
+.dark-mode .btn-question-list:hover {
+  background: linear-gradient(135deg, #60A5FA, #3B82F6) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(59, 130, 246, 0.6) !important;
+  border-color: rgba(59, 130, 246, 0.8) !important;
+}
+
+/* SOLVE Button - Ultra Enhanced */
+.dark-mode .solve-btn {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: 2px solid rgba(0, 188, 212, 0.8) !important;
+  color: white !important;
+  box-shadow: 0 8px 20px rgba(0, 188, 212, 0.5) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  font-size: 16px !important;
+}
+
+.dark-mode .solve-btn:hover {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  border-color: rgba(0, 229, 255, 0.9) !important;
+  transform: translateY(-5px) scale(1.08) !important;
+  box-shadow: 
+    0 25px 50px rgba(0, 188, 212, 0.7),
+    0 0 40px rgba(0, 229, 255, 0.5) !important;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Auto-Correct Button */
+.dark-mode .btn-correct {
+  background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+  border: 2px solid rgba(245, 158, 11, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4) !important;
+  font-weight: 600 !important;
+}
+
+.dark-mode .btn-correct:hover {
+  background: linear-gradient(135deg, #FCD34D, #F59E0B) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(245, 158, 11, 0.6) !important;
+  border-color: rgba(245, 158, 11, 0.8) !important;
+}
+
+/* Explain Button */
+.dark-mode .explain-btn {
+  background: linear-gradient(135deg, #06B6D4, #0891B2) !important;
+  border: 2px solid rgba(6, 182, 212, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 6px 15px rgba(6, 182, 212, 0.4) !important;
+  font-weight: 600 !important;
+}
+
+.dark-mode .explain-btn:hover {
+  background: linear-gradient(135deg, #22D3EE, #06B6D4) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(6, 182, 212, 0.6) !important;
+  border-color: rgba(6, 182, 212, 0.8) !important;
+}
+
+/* Gap Analysis Button */
+.dark-mode .gap-btn {
+  background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4) !important;
+  font-weight: 600 !important;
+}
+
+.dark-mode .gap-btn:hover {
+  background: linear-gradient(135deg, #A78BFA, #8B5CF6) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(139, 92, 246, 0.6) !important;
+  border-color: rgba(139, 92, 246, 0.8) !important;
+}
+
+/* ========================================
+   DISABLED STATES - ENHANCED
+======================================== */
+
+/* Disabled File Input */
+.dark-mode input[type="file"].form-control:disabled {
+  background: rgba(51, 65, 85, 0.5) !important;
+  border: 2px solid rgba(71, 85, 105, 0.3) !important;
+  color: rgba(156, 163, 175, 0.6) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+/* Disabled Buttons */
+.dark-mode .btn:disabled {
+  background: rgba(51, 65, 85, 0.5) !important;
+  border: 2px solid rgba(71, 85, 105, 0.3) !important;
+  color: rgba(156, 163, 175, 0.6) !important;
+  opacity: 0.6 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+.dark-mode .btn:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ========================================
+   RESPONSIVE ENHANCEMENTS
+======================================== */
+
+@media (max-width: 768px) {
+  .dark-mode .uploaded-images {
+    padding: 15px !important;
+    margin: 15px 0 !important;
+  }
+  
+  .dark-mode .image-preview-container {
+    margin-bottom: 10px !important;
+  }
+  
+  .dark-mode input[type="file"].form-control {
+    padding: 10px 12px !important;
+    min-height: 45px !important;
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .dark-mode .image-source-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .dark-mode .image-source-buttons .btn {
+    width: 100% !important;
+  }
+}

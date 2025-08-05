@@ -339,3 +339,521 @@
     font-size: 20px;
   }
 }
+
+/* Add this to frontend/src/components/Login.css */
+/* ========================================
+   LOGIN PAGE - DARK MODE ENHANCEMENTS
+======================================== */
+
+/* Dark Mode Login Wrapper */
+.dark-mode .login-wrapper {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+  position: relative !important;
+}
+
+/* Dark Mode Background Circles */
+.dark-mode .animated-circle {
+  background: radial-gradient(
+    circle,
+    rgba(0, 188, 212, 0.1) 0%,
+    rgba(0, 188, 212, 0.05) 100%
+  ) !important;
+  border: 1px solid rgba(0, 188, 212, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Dark Mode Form Container */
+.dark-mode .login-form-container {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ========================================
+   LOGO AND BRANDING - DARK MODE
+======================================== */
+
+/* Platform Name */
+.dark-mode .platform-name {
+  background: linear-gradient(45deg, #00BCD4, #60A5FA) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 10px rgba(0, 188, 212, 0.3)) !important;
+}
+
+/* Platform Subtitle */
+.dark-mode .platform-subtitle {
+  color: #cbd5e1 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Portal Title */
+.dark-mode .portal-title {
+  color: #00BCD4 !important;
+  text-shadow: 0 0 8px rgba(0, 188, 212, 0.3) !important;
+}
+
+/* Portal Description */
+.dark-mode .portal-description {
+  color: #94a3b8 !important;
+}
+
+/* Portal Icons */
+.dark-mode .portal-icons svg {
+  color: #00BCD4 !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 188, 212, 0.3)) !important;
+}
+
+.dark-mode .portal-icons svg:hover {
+  color: #00E5FF !important;
+  transform: scale(1.3) rotate(10deg) !important;
+  filter: drop-shadow(0 4px 8px rgba(0, 188, 212, 0.6)) !important;
+}
+
+/* ========================================
+   FORM INPUTS - DARK MODE
+======================================== */
+
+/* Input Groups */
+.dark-mode .input-group {
+  position: relative !important;
+}
+
+/* Form Inputs */
+.dark-mode .form-input {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 2px solid rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .form-input:focus {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border-color: #00BCD4 !important;
+  box-shadow: 
+    0 0 0 4px rgba(0, 188, 212, 0.2),
+    0 8px 15px rgba(0, 0, 0, 0.4) !important;
+  color: #f8fafc !important;
+  transform: translateY(-2px) !important;
+}
+
+.dark-mode .form-input:hover {
+  border-color: rgba(0, 188, 212, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Placeholder Text */
+.dark-mode .form-input::placeholder {
+  color: #64748b !important;
+}
+
+/* Input Icons */
+.dark-mode .input-icon {
+  color: #00BCD4 !important;
+  filter: drop-shadow(0 1px 3px rgba(0, 188, 212, 0.3)) !important;
+}
+
+.dark-mode .form-input:focus + .icon-wrapper .input-icon,
+.dark-mode .input-group:hover .input-icon {
+  color: #00E5FF !important;
+  transform: scale(1.1) !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 188, 212, 0.5)) !important;
+}
+
+/* Password Toggle */
+.dark-mode .password-toggle {
+  color: #00BCD4 !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark-mode .password-toggle:hover {
+  color: #00E5FF !important;
+  transform: translateY(-50%) scale(1.2) !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 188, 212, 0.5)) !important;
+}
+
+/* ========================================
+   START LEARNING BUTTON - ENHANCED HOVER
+======================================== */
+
+/* Start Learning Button */
+.dark-mode .start-learning-btn {
+  background: linear-gradient(135deg, #00BCD4, #001B6C) !important;
+  border: 2px solid rgba(0, 188, 212, 0.6) !important;
+  color: white !important;
+  box-shadow: 0 8px 20px rgba(0, 188, 212, 0.4) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Enhanced Hover Effect for Start Learning Button */
+.dark-mode .start-learning-btn:hover {
+  background: linear-gradient(135deg, #00E5FF, #0D47A1) !important;
+  border-color: rgba(0, 229, 255, 0.8) !important;
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 
+    0 20px 40px rgba(0, 188, 212, 0.6),
+    0 0 30px rgba(0, 229, 255, 0.4) !important;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.4) !important;
+  animation: button-pulse 0.6s ease-in-out !important;
+}
+
+/* Button Pulse Animation */
+@keyframes button-pulse {
+  0% {
+    box-shadow: 0 8px 20px rgba(0, 188, 212, 0.4);
+  }
+  50% {
+    box-shadow: 0 25px 50px rgba(0, 188, 212, 0.7);
+  }
+  100% {
+    box-shadow: 0 20px 40px rgba(0, 188, 212, 0.6);
+  }
+}
+
+/* Enhanced Ripple Effect */
+.dark-mode .start-learning-btn::before {
+  background: rgba(0, 229, 255, 0.3) !important;
+  transition: all 0.4s cubic-bezier(0.3, 1, 0.8, 1) !important;
+}
+
+.dark-mode .start-learning-btn:hover::before {
+  left: 120% !important;
+  transform: skew(30deg) !important;
+}
+
+/* Button Focus State */
+.dark-mode .start-learning-btn:focus {
+  outline: 3px solid rgba(0, 188, 212, 0.4) !important;
+  outline-offset: 3px !important;
+  box-shadow: 
+    0 0 0 4px rgba(0, 188, 212, 0.2),
+    0 15px 30px rgba(0, 188, 212, 0.5) !important;
+}
+
+/* Button Active State */
+.dark-mode .start-learning-btn:active {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 10px 20px rgba(0, 188, 212, 0.4) !important;
+}
+
+/* ========================================
+   FOOTER LINKS - DARK MODE
+======================================== */
+
+/* Reset and Support Links */
+.dark-mode .reset-link,
+.dark-mode .support-link {
+  color: #00BCD4 !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  position: relative !important;
+}
+
+.dark-mode .reset-link:hover,
+.dark-mode .support-link:hover {
+  color: #00E5FF !important;
+  transform: translateY(-2px) !important;
+  text-shadow: 0 0 8px rgba(0, 188, 212, 0.5) !important;
+}
+
+/* Underline Effect on Hover */
+.dark-mode .reset-link::after,
+.dark-mode .support-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00BCD4, #00E5FF);
+  transition: width 0.3s ease;
+}
+
+.dark-mode .reset-link:hover::after,
+.dark-mode .support-link:hover::after {
+  width: 100%;
+}
+
+/* ========================================
+   ERROR MESSAGES - DARK MODE
+======================================== */
+
+/* Error Alert */
+.dark-mode .error-alert {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+  color: #FCA5A5 !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* ========================================
+   COPYRIGHT - DARK MODE
+======================================== */
+
+/* Copyright Text */
+.dark-mode .copyright {
+  color: #64748b !important;
+}
+
+/* ========================================
+   FORM ENHANCEMENTS - DARK MODE
+======================================== */
+
+/* Form Group Hover Effects */
+.dark-mode .input-group:hover {
+  transform: translateY(-2px) !important;
+}
+
+.dark-mode .input-group:hover .form-input {
+  border-color: rgba(0, 188, 212, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.1) !important;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS - DARK MODE
+======================================== */
+
+@media (max-width: 768px) {
+  .dark-mode .login-form-container {
+    background: rgba(15, 23, 42, 0.98) !important;
+    margin: 10px !important;
+    padding: 30px 20px !important;
+  }
+  
+  .dark-mode .start-learning-btn {
+    padding: 12px !important;
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dark-mode .platform-name {
+    font-size: 32px !important;
+  }
+  
+  .dark-mode .portal-title {
+    font-size: 22px !important;
+  }
+  
+  .dark-mode .form-input {
+    padding: 12px 16px 12px 44px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* ========================================
+   LOADING STATES - DARK MODE
+======================================== */
+
+/* Loading Button State */
+.dark-mode .start-learning-btn:disabled {
+  background: rgba(51, 65, 85, 0.8) !important;
+  border: 2px solid rgba(71, 85, 105, 0.6) !important;
+  color: rgba(156, 163, 175, 0.8) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.dark-mode .start-learning-btn:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ========================================
+   ACCESSIBILITY ENHANCEMENTS - DARK MODE
+======================================== */
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .dark-mode .form-input {
+    border-color: #00BCD4 !important;
+  }
+  
+  .dark-mode .start-learning-btn {
+    border: 3px solid #00BCD4 !important;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .dark-mode .start-learning-btn:hover {
+    transform: none !important;
+    animation: none !important;
+  }
+  
+  .dark-mode .portal-icons svg:hover {
+    transform: scale(1.1) !important;
+  }
+  
+  .dark-mode .animated-circle {
+    animation: none !important;
+  }
+}
+
+/* ========================================
+   ENHANCED VISUAL EFFECTS - DARK MODE
+======================================== */
+
+/* Form Container Glow Effect */
+.dark-mode .login-form-container::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #00BCD4, transparent, #00BCD4);
+  border-radius: 26px;
+  z-index: -1;
+  opacity: 0.3;
+  animation: rotate-glow 4s linear infinite;
+}
+
+@keyframes rotate-glow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Input Focus Glow */
+.dark-mode .form-input:focus {
+  position: relative;
+}
+
+.dark-mode .form-input:focus::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, rgba(0, 188, 212, 0.5), transparent);
+  border-radius: 14px;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+/* ========================================
+   BUTTON INTERACTION ENHANCEMENTS
+======================================== */
+
+/* Start Learning Button - Multiple Hover States */
+.dark-mode .start-learning-btn {
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  position: relative !important;
+}
+
+/* Hover State 1: Scale and Elevation */
+.dark-mode .start-learning-btn:hover {
+  transform: translateY(-6px) scale(1.05) !important;
+}
+
+/* Hover State 2: Shadow Enhancement */
+.dark-mode .start-learning-btn:hover {
+  box-shadow: 
+    0 25px 50px rgba(0, 188, 212, 0.6),
+    0 0 50px rgba(0, 229, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Hover State 3: Text Glow */
+.dark-mode .start-learning-btn:hover span {
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(0, 229, 255, 0.6) !important;
+}
+
+/* Button Press Effect */
+.dark-mode .start-learning-btn:active {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 15px 30px rgba(0, 188, 212, 0.5) !important;
+  transition: all 0.1s ease !important;
+}
+
+/* ========================================
+   FORM VALIDATION STATES - DARK MODE
+======================================== */
+
+/* Invalid Input State */
+.dark-mode .form-input:invalid {
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Valid Input State */
+.dark-mode .form-input:valid {
+  border-color: rgba(34, 197, 94, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1) !important;
+}
+
+/* ========================================
+   ADDITIONAL INTERACTIVE ELEMENTS
+======================================== */
+
+/* Form Container Hover Effect */
+.dark-mode .login-form-container:hover {
+  border-color: rgba(0, 188, 212, 0.4) !important;
+  box-shadow: 
+    0 30px 60px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(0, 188, 212, 0.2) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Logo Section Hover */
+.dark-mode .logo-section:hover .platform-name {
+  filter: drop-shadow(0 0 20px rgba(0, 188, 212, 0.6)) !important;
+}
+
+/* Portal Section Hover */
+.dark-mode .portal-section:hover .portal-title {
+  text-shadow: 0 0 15px rgba(0, 188, 212, 0.5) !important;
+}
+
+/* ========================================
+   THEME TRANSITION ANIMATIONS
+======================================== */
+
+/* Smooth Theme Transitions */
+.login-wrapper,
+.login-form-container,
+.form-input,
+.start-learning-btn,
+.platform-name,
+.portal-title {
+  transition: all 0.3s ease !important;
+}
+
+/* ========================================
+   CUSTOM SCROLLBAR FOR DARK MODE
+======================================== */
+
+.dark-mode .login-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark-mode .login-wrapper::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 4px;
+}
+
+.dark-mode .login-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #00BCD4, #001B6C);
+  border-radius: 4px;
+}
+
+.dark-mode .login-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #00E5FF, #0D47A1);
+}

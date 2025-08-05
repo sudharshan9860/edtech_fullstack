@@ -351,18 +351,19 @@ function StudentDash() {
       const response = await axiosInstance.post("/question-images/", requestData);
       console.log("the response data is :", response.data);
 
-      // Process questions with images
+    // Process questions with images - PRESERVE the original backend IDs
       const questionsWithImages = (response.data.questions || []).map((question, index) => ({
         ...question,
-        id: index,
+        originalIndex: index, // Store the array index separately if needed
         question: question.question,
         image: question.question_image
           ? `data:image/png;base64,${question.question_image}`
           : null,
       }));
 
-      setQuestionList(questionsWithImages);
-      setSelectedQuestions([]);
+    console.log("Processed questions with preserved IDs:", questionsWithImages);
+    setQuestionList(questionsWithImages);
+    setSelectedQuestions([]);
 
       // Show the modal
       setShowQuestionList(true);
@@ -372,48 +373,50 @@ function StudentDash() {
     }
   };
 
-  // Enhanced question click handler
-  const handleQuestionClick = (question, index, image) => {
-    console.log("Question clicked:", { question, index, image });
-    
-    setShowQuestionList(false);
-    
-    navigate("/solvequestion", {
-      state: {
-        question,
-        questionNumber: index + 1,
-        questionList,
-        class_id: selectedClass,
-        subject_id: selectedSubject,
-        topic_ids: selectedChapters,
-        subtopic: questionType === "external" ? questionLevel : "",
-        worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
-        image,
-        selectedQuestions: selectedQuestions,
-      },
-    });
-  };
+// Enhanced question click handler - UPDATED to use preserved question IDs
+const handleQuestionClick = (question, index, image) => {
+  console.log("Question clicked:", { question, index, image });
+  
+  setShowQuestionList(false);
+  
+  navigate("/solvequestion", {
+    state: {
+      question: question,
+      questionNumber: index + 1,
+      questionList,
+      class_id: selectedClass,
+      subject_id: selectedSubject,
+      topic_ids: selectedChapters,
+      subtopic: questionType === "external" ? questionLevel : "",
+      worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
+      image,
+      selectedQuestions: selectedQuestions,
+    },
+  });
+};
 
+// Updated handleMultipleSelectSubmit function to preserve question IDs
   const handleMultipleSelectSubmit = (selectedQuestionsData) => {
-    setSelectedQuestions(selectedQuestionsData);
-    setShowQuestionList(false);
+  setSelectedQuestions(selectedQuestionsData);
+  setShowQuestionList(false);
 
-    const firstQuestion = selectedQuestionsData[0];
-    navigate("/solvequestion", {
-      state: {
-        question: firstQuestion.question,
-        questionNumber: firstQuestion.index + 1,
-        questionList,
-        class_id: selectedClass,
-        subject_id: selectedSubject,
-        topic_ids: selectedChapters,
-        subtopic: questionType === "external" ? questionLevel : "",
-        worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
-        image: firstQuestion.image,
-        selectedQuestions: selectedQuestionsData,
-      },
-    });
-  };
+  const firstQuestion = selectedQuestionsData[0];
+  
+  navigate("/solvequestion", {
+    state: {
+      question: firstQuestion.question,
+      questionNumber: firstQuestion.index + 1,
+      questionList,
+      class_id: selectedClass,
+      subject_id: selectedSubject,
+      topic_ids: selectedChapters,
+      subtopic: questionType === "external" ? questionLevel : "",
+      worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
+      image: firstQuestion.image,
+      selectedQuestions: selectedQuestionsData,
+    },
+  });
+};
 
   // Reset dependent fields when question type changes
   useEffect(() => {
