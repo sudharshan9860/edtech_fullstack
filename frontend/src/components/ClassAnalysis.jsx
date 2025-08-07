@@ -1,4 +1,4 @@
-// ClassAnalysis.jsx - Separate Component for Class Analysis
+// ClassAnalysis.jsx - Enhanced Component with Improved Styling and Functionality
 
 import React, { useState } from 'react';
 import { 
@@ -12,24 +12,7 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
   const [classAnalysisTab, setClassAnalysisTab] = useState('overview');
   const [selectedChapter, setSelectedChapter] = useState('All Chapters');
 
-  // Data for charts
-  const progressTrendsData = [
-    { date: 'Jun 23', hwAverage: 20, cwAverage: 35, errorHw: 8, errorCw: 15 },
-    { date: 'Jun 25', hwAverage: 32, cwAverage: 42, errorHw: 10, errorCw: 12 },
-    { date: 'Jun 27', hwAverage: 72, cwAverage: 58, errorHw: 8, errorCw: 18 },
-    { date: 'Jun 29', hwAverage: 78, cwAverage: 55, errorHw: 5, errorCw: 15 },
-    { date: 'Jul 01', hwAverage: 80, cwAverage: 55, errorHw: 6, errorCw: 20 },
-    { date: 'Jul 03', hwAverage: 82, cwAverage: 62, errorHw: 8, errorCw: 18 }
-  ];
-
-  const topPerformersData = [
-    { student: '10HPS21', average: 58 },
-    { student: '10HPS19', average: 52 },
-    { student: '10HPS20', average: 48 },
-    { student: '10HPS17', average: 46 },
-    { student: '10HPS18', average: 42 }
-  ];
-
+  // Updated data with 5 students instead of 3
   const studentPerformanceComparisonData = [
     { student: '10HPS20', homeworkAverage: 55, classworkAverage: 49 },
     { student: '10HPS19', homeworkAverage: 57, classworkAverage: 76 },
@@ -38,11 +21,49 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     { student: '10HPS17', homeworkAverage: 67, classworkAverage: 33 }
   ];
 
+  // Updated summary cards data for 5 students
+  const summaryCardsData = {
+    totalStudents: 5,
+    averageScore: 85,
+    assignments: 12,
+    completionRate: 92
+  };
+
+  // Color-coded Top Performers data
+  const getTopPerformersWithColors = () => {
+    const data = [
+      { student: '10HPS21', average: 58 },
+      { student: '10HPS19', average: 52 },
+      { student: '10HPS20', average: 48 },
+      { student: '10HPS17', average: 46 },
+      { student: '10HPS18', average: 42 }
+    ];
+
+    return data.map((item, index) => ({
+      ...item,
+      color: index < 2 ? '#22c55e' : index < 4 ? '#f59e0b' : '#f97316'
+    }));
+  };
+
   const overallClassStatsData = [
     { type: 'Homework', average: 62, color: '#0ea5e9' },
     { type: 'Classwork', average: 51, color: '#a855f7' }
   ];
 
+  // Chapter options for dropdown
+  const chapterOptions = [
+    'All Chapters',
+    'Algebra',
+    'Calculus', 
+    'Coordinate Geometry',
+    'Functions and Graphs',
+    'Probability',
+    'Quadratic Applications',
+    'Statistics',
+    'Trigonometry'
+  ];
+
+  // All topics data for main view
   const allTopicsRankedData = [
     { topic: 'Algebra - Linear Equations', average: 46.7 },
     { topic: 'Calculus - Derivatives', average: 52.2 },
@@ -56,100 +77,105 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     { topic: 'Coordinate Geometry', average: 71.4 }
   ];
 
-  const algebraSubTopicsData = [
-    { topic: 'Linear Equations', average: 46.7 },
-    { topic: 'Rational Functions', average: 64.0 }
-  ];
-
-  const calculusSubTopicsData = [
-    { topic: 'Derivatives', average: 52.2 },
-    { topic: 'Integration', average: 58.1 }
-  ];
-
-  const chapterOptions = [
-    'All Chapters',
-    'Algebra', 
-    'Calculus',
-    'Coordinate Geometry',
-    'Functions and Graphs', 
-    'Probability',
-    'Quadratic Applications',
-    'Statistics',
-    'Trigonometry'
-  ];
-
-  // Custom Tooltip Component
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip">
-          <p className="tooltip-label">{label}</p>
-          {payload.map((entry, index) => (
-            <p key={index} className="tooltip-entry" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}%
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
+  // Chapter-specific sub-topic data
+  const getChapterSubTopics = (chapter) => {
+    const subTopicData = {
+      'Algebra': {
+        subTopics: [
+          { name: 'Rational Functions', overallAvg: 64.0, hwAvg: 84.0, cwAvg: 54.0, totalQuestions: 15 },
+          { name: 'Linear Equations', overallAvg: 46.7, hwAvg: 58.3, cwAvg: 40.8, totalQuestions: 30 }
+        ],
+        stats: {
+          subTopicsFound: 2,
+          chapterAverage: 55.3,
+          needsMostAttention: 46.7,
+          bestPerformance: 64.0
+        }
+      },
+      'Calculus': {
+        subTopics: [
+          { name: 'Integration', overallAvg: 58.1, hwAvg: 96.7, cwAvg: 45.3, totalQuestions: 20 },
+          { name: 'Derivatives', overallAvg: 52.2, hwAvg: 55.1, cwAvg: 47.5, totalQuestions: 40 }
+        ],
+        stats: {
+          subTopicsFound: 2,
+          chapterAverage: 55.2,
+          needsMostAttention: 52.2,
+          bestPerformance: 58.1
+        }
+      }
+    };
+    return subTopicData[chapter] || null;
   };
 
   // Class Overview Dashboard
   const renderClassOverviewDashboard = () => {
-    const studentCount = selectedClass.students ? selectedClass.students.length : 28;
-    const averageScore = 85;
-    const assignments = 12;
-    const completionRate = 92;
-
     return (
-      <div className="class-overview-dashboard">
-        {/* Metrics Cards */}
-        <div className="overview-metrics-grid">
-          <div className="overview-metric-card metric-card-blue">
-            <div className="overview-metric-icon">👥</div>
-            <div className="overview-metric-content">
-              <div className="overview-metric-label">Total Students</div>
-              <div className="overview-metric-value">{studentCount}</div>
+      <div className="class-overview-container">
+        <div className="overview-header">
+          <div className="overview-title-section">
+            <h2 className="overview-title">📊 CLASS OVERVIEW DASHBOARD</h2>
+            <p className="overview-subtitle">Overall class performance metrics and insights</p>
+          </div>
+        </div>
+
+        {/* Enhanced Summary Cards */}
+        <div className="summary-cards-grid">
+          <div className="summary-card card-blue">
+            <div className="card-icon">👥</div>
+            <div className="card-content">
+              <div className="card-value">{summaryCardsData.totalStudents}</div>
+              <div className="card-label">Total Students</div>
             </div>
           </div>
-
-          <div className="overview-metric-card metric-card-green">
-            <div className="overview-metric-icon">📊</div>
-            <div className="overview-metric-content">
-              <div className="overview-metric-label">Average Score</div>
-              <div className="overview-metric-value">{averageScore}%</div>
+          
+          <div className="summary-card card-green">
+            <div className="card-icon">📊</div>
+            <div className="card-content">
+              <div className="card-value">{summaryCardsData.averageScore}%</div>
+              <div className="card-label">Average Score</div>
             </div>
           </div>
-
-          <div className="overview-metric-card metric-card-yellow">
-            <div className="overview-metric-icon">📄</div>
-            <div className="overview-metric-content">
-              <div className="overview-metric-label">Assignments</div>
-              <div className="overview-metric-value">{assignments}</div>
+          
+          <div className="summary-card card-yellow">
+            <div className="card-icon">📝</div>
+            <div className="card-content">
+              <div className="card-value">{summaryCardsData.assignments}</div>
+              <div className="card-label">Assignments</div>
             </div>
           </div>
-
-          <div className="overview-metric-card metric-card-pink">
-            <div className="overview-metric-icon">🎯</div>
-            <div className="overview-metric-content">
-              <div className="overview-metric-label">Completion Rate</div>
-              <div className="overview-metric-value">{completionRate}%</div>
+          
+          <div className="summary-card card-purple">
+            <div className="card-icon">✅</div>
+            <div className="card-content">
+              <div className="card-value">{summaryCardsData.completionRate}%</div>
+              <div className="card-label">Completion Rate</div>
             </div>
           </div>
         </div>
 
         {/* Charts Section */}
-        <div className="overview-charts-grid">
-          <div className="overview-chart-container">
+        <div className="charts-container">
+          <div className="chart-card">
             <h3 className="chart-title">Student Performance Comparison</h3>
-            <div className="chart-height-300">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={studentPerformanceComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+            <div className="chart-wrapper">
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={studentPerformanceComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="student" fontSize={12} />
-                  <YAxis fontSize={12} domain={[0, 80]} />
-                  <Tooltip formatter={(value, name) => [value, name === 'homeworkAverage' ? 'Homework Average' : 'Classwork Average']} />
+                  <XAxis 
+                    dataKey="student" 
+                    fontSize={12} 
+                    angle={-45} 
+                    textAnchor="end" 
+                    height={80}
+                  />
+                  <YAxis 
+                    fontSize={12} 
+                    domain={[0, 100]} 
+                    tickCount={6}
+                    ticks={[0, 20, 40, 60, 80, 100]}
+                  />
+                  <Tooltip formatter={(value, name) => [value + '%', name === 'homeworkAverage' ? 'Homework Average' : 'Classwork Average']} />
                   <Legend />
                   <Bar dataKey="homeworkAverage" fill="#0ea5e9" name="Homework Average" radius={[2, 2, 0, 0]} />
                   <Bar dataKey="classworkAverage" fill="#a855f7" name="Classwork Average" radius={[2, 2, 0, 0]} />
@@ -158,15 +184,20 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
             </div>
           </div>
 
-          <div className="overview-chart-container">
+          <div className="chart-card">
             <h3 className="chart-title">Class Performance Summary</h3>
-            <div className="chart-height-300">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="chart-wrapper">
+              <ResponsiveContainer width="100%" height={400}>
                 <BarChart data={overallClassStatsData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="type" fontSize={12} />
-                  <YAxis fontSize={12} domain={[0, 70]} />
-                  <Tooltip formatter={(value) => [value, 'Average Score']} />
+                  <YAxis 
+                    fontSize={12} 
+                    domain={[0, 100]} 
+                    tickCount={6}
+                    ticks={[0, 20, 40, 60, 80, 100]}
+                  />
+                  <Tooltip formatter={(value) => [value + '%', 'Average Score']} />
                   <Bar dataKey="average" radius={[4, 4, 0, 0]}>
                     {overallClassStatsData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -175,7 +206,7 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div style={{ marginTop: '10px', fontSize: '12px', color: '#6b7280', textAlign: 'right' }}>
+            <div className="chart-info">
               <div>Type: Classwork</div>
               <div>Average: 51.5%</div>
             </div>
@@ -185,98 +216,66 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     );
   };
 
-  // Class Progress Trends
+  // Enhanced Class Progress Trends with Color Coding
   const renderClassProgressTrends = () => {
+    const topPerformersData = getTopPerformersWithColors();
+    
     return (
-      <div className="rounded-bottom-card">
-        <div className="mb-20">
-          <h3 className="section-title">📈 Class Progress Trends</h3>
-          <p className="section-subtitle">Assignment Progress and Top Performers</p>
+      <div className="progress-trends-container">
+        <div className="trends-header">
+          <h2 className="trends-title">📈 Class Progress Trends</h2>
+          <p className="trends-subtitle">Top Performers Analysis</p>
         </div>
 
-        <div className="filter-buttons">
+        <div className="filter-buttons-container">
           {['1D', '5D', '10D', '15D', '1M', 'MAX'].map((filter) => (
-            <button key={filter} className={`filter-button ${filter === '1M' ? 'active' : ''}`}>
+            <button key={filter} className={`filter-btn ${filter === '1M' ? 'active' : ''}`}>
               {filter}
             </button>
           ))}
         </div>
 
-        <div className="flex-column-gap">
-          {/* Assignment-wise Class Average LineChart */}
-          <div>
-            <h4 className="subsection-title">📈 Assignment-wise Class Average</h4>
-            <div className="chart-height-300">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={progressTrendsData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" fontSize={12} />
-                  <YAxis fontSize={12} domain={[0, 100]} />
-                  <Tooltip formatter={(value, name) => [value + '%', name === 'hwAverage' ? 'HW Class Average' : 'CW Class Average']} />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="hwAverage" 
-                    stroke="#0ea5e9" 
-                    strokeWidth={3}
-                    dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 4 }}
-                    name="HW Class Average"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="cwAverage" 
-                    stroke="#a855f7" 
-                    strokeWidth={3}
-                    dot={{ fill: '#a855f7', strokeWidth: 2, r: 4 }}
-                    name="CW Class Average"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+        <div className="top-performers-section">
+          <h3 className="section-title">🏆 Top Performers</h3>
+          <div className="chart-wrapper large">
+            <ResponsiveContainer width="100%" height={500}>
+              <BarChart data={topPerformersData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="student" 
+                  fontSize={12} 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={80}
+                />
+                <YAxis 
+                  fontSize={12} 
+                  domain={[0, 100]} 
+                  tickCount={6}
+                  ticks={[0, 20, 40, 60, 80, 100]}
+                />
+                <Tooltip formatter={(value) => [value + '%', 'Average Score']} />
+                <Bar dataKey="average" radius={[4, 4, 0, 0]}>
+                  {topPerformersData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-
-          {/* Top Performers BarChart */}
-          <div>
-            <h4 className="subsection-title">🏆 Top Performers</h4>
-            <div className="chart-height-300">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topPerformersData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="student" angle={-45} textAnchor="end" height={60} fontSize={12} />
-                  <YAxis fontSize={12} domain={[0, 70]} />
-                  <Tooltip formatter={(value) => [value + '%', 'Overall Average']} />
-                  <Bar dataKey="average" radius={[4, 4, 0, 0]}>
-                    {topPerformersData.map((entry, index) => {
-                      let color;
-                      if (index === 0) {
-                        color = '#22c55e'; // Green for top performer
-                      } else if (index === topPerformersData.length - 1) {
-                        color = '#ef4444'; // Red for least performer
-                      } else {
-                        color = '#fbbf24'; // Yellow for middle performers
-                      }
-                      return <Cell key={`cell-${index}`} fill={color} />;
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+          
+          <div className="performance-legend">
+            <div className="legend-item">
+              <div className="legend-color green"></div>
+              <span>Top Performers</span>
             </div>
-            {/* Performance Legend */}
-            <div className="legend-container">
-              <div className="legend-grid">
-                <div className="legend-item">
-                  <div className="legend-dot" style={{ backgroundColor: '#22c55e' }}></div>
-                  <span>Top Performer</span>
-                </div>
-                <div className="legend-item">
-                  <div className="legend-dot" style={{ backgroundColor: '#fbbf24' }}></div>
-                  <span>Middle Performers</span>
-                </div>
-                <div className="legend-item">
-                  <div className="legend-dot" style={{ backgroundColor: '#ef4444' }}></div>
-                  <span>Needs Improvement</span>
-                </div>
-              </div>
+            <div className="legend-item">
+              <div className="legend-color yellow"></div>
+              <span>Middle Performers</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color orange"></div>
+              <span>Needs Improvement</span>
             </div>
           </div>
         </div>
@@ -284,304 +283,23 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     );
   };
 
-  // Topic Analysis
+  // Enhanced Topic Analysis with Chapter Selection
   const renderTopicAnalysis = () => {
-    const renderAllChaptersView = () => {
-      return (
-        <div>
-          {/* Overview Stats */}
-          <div className="mb-20">
-            <h3 className="section-title">📊 All Topics Overview</h3>
-            <div className="highlight-box highlight-box-blue">
-              <p style={{ margin: '0', fontSize: '14px' }}>💡 Select a specific chapter from the dropdown above to drill down into sub-topic analysis</p>
-            </div>
-          </div>
-
-          <div className="summary-cards-grid mb-32">
-            <div className="metric-card-blue">
-              <div className="metric-value-blue">10</div>
-              <div className="metric-label">Total Topics</div>
-            </div>
-            <div className="metric-card-green">
-              <div className="metric-value-green">58.3%</div>
-              <div className="metric-label">Overall Average</div>
-            </div>
-            <div className="metric-card-yellow">
-              <div className="metric-value-yellow">8</div>
-              <div className="metric-label">Available Chapters</div>
-            </div>
-          </div>
-
-          {/* All Topics Chart */}
-          <div>
-            <h4 className="subsection-title">🎯 Class Topic Performance Analysis</h4>
-            <p className="topic-stats-text">All Topics Ranked by Class Performance (Lowest to Highest)</p>
-            <div className="chart-height-400">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={allTopicsRankedData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="topic" angle={-45} textAnchor="end" height={80} fontSize={10} interval={0} />
-                  <YAxis fontSize={12} domain={[0, 80]} />
-                  <Tooltip formatter={(value) => [value + '%', 'Class Average']} />
-                  <Bar dataKey="average" fill="#4a90e2" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    const renderAlgebraView = () => {
-      return (
-        <div>
-          <div className="mb-20">
-            <div className="highlight-box highlight-box-blue">
-              <p style={{ margin: '0', fontSize: '14px' }}>📘 Viewing sub-topics for: Algebra</p>
-            </div>
-          </div>
-
-          {/* Algebra Sub-topic Details Overview */}
-          <div className="mb-20">
-            <h3 className="section-title">📊 Algebra Sub-topic Details</h3>
-          </div>
-
-          <div className="summary-cards-grid mb-32">
-            <div className="metric-card-blue">
-              <div className="metric-value-blue">2</div>
-              <div className="metric-label">Sub-topics Found</div>
-            </div>
-            <div className="metric-card-green">
-              <div className="metric-value-green">55.3%</div>
-              <div className="metric-label">Chapter Average</div>
-            </div>
-            <div className="metric-card-yellow">
-              <div className="metric-value-yellow">46.7%</div>
-              <div className="metric-label">Needs Most Attention</div>
-            </div>
-            <div className="metric-card-pink">
-              <div className="metric-value-pink">64.0%</div>
-              <div className="metric-label">Best Performance</div>
-            </div>
-          </div>
-
-          {/* Algebra Sub-topics Chart */}
-          <div className="mb-32">
-            <h4 className="subsection-title">🎯 Class Sub-topic Performance: Algebra</h4>
-            <p className="topic-stats-text">Sub-topics Ranked by Class Performance (Lowest to Highest)</p>
-            <div className="chart-height-300">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={algebraSubTopicsData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="topic" angle={-45} textAnchor="end" height={60} fontSize={12} />
-                  <YAxis fontSize={12} domain={[0, 70]} />
-                  <Tooltip formatter={(value) => [value + '%', 'Class Average']} />
-                  <Bar dataKey="average" fill="#4a90e2" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Detailed Sub-topic Performance Table */}
-          <div>
-            <h4 className="subsection-title">📋 Detailed Sub-topic Performance Table</h4>
-            <div className="data-table-container">
-              <table className="enhanced-data-table">
-                <thead>
-                  <tr className="table-header-row">
-                    <th className="table-header-enhanced">Sub-topic</th>
-                    <th className="table-header-enhanced table-header-center">Overall Avg (%)</th>
-                    <th className="table-header-enhanced table-header-center">HW Avg (%)</th>
-                    <th className="table-header-enhanced table-header-center">CW Avg (%)</th>
-                    <th className="table-header-enhanced table-header-center">Total Questions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="table-row-even">
-                    <td className="table-cell-enhanced">
-                      <span className="table-id-cell">0</span>
-                      Rational Functions
-                    </td>
-                    <td className="table-cell-enhanced table-cell-center">64</td>
-                    <td className="table-cell-enhanced table-cell-center">84</td>
-                    <td className="table-cell-enhanced table-cell-center">54</td>
-                    <td className="table-cell-enhanced table-cell-center">15</td>
-                  </tr>
-                  <tr className="table-row-odd">
-                    <td className="table-cell-enhanced">
-                      <span className="table-id-cell">1</span>
-                      Linear Equations
-                    </td>
-                    <td className="table-cell-enhanced table-cell-center">46.7</td>
-                    <td className="table-cell-enhanced table-cell-center">58.3</td>
-                    <td className="table-cell-enhanced table-cell-center">40.8</td>
-                    <td className="table-cell-enhanced table-cell-center">30</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    const renderCalculusView = () => {
-      return (
-        <div>
-          <div className="mb-20">
-            <div className="highlight-box highlight-box-blue">
-              <p style={{ margin: '0', fontSize: '14px' }}>📘 Viewing sub-topics for: Calculus</p>
-            </div>
-          </div>
-
-          {/* Calculus Sub-topic Details Overview */}
-          <div className="mb-20">
-            <h3 className="section-title">📊 Calculus Sub-topic Details</h3>
-          </div>
-
-          <div className="summary-cards-grid mb-32">
-            <div className="metric-card-blue">
-              <div className="metric-value-blue">2</div>
-              <div className="metric-label">Sub-topics Found</div>
-            </div>
-            <div className="metric-card-green">
-              <div className="metric-value-green">55.2%</div>
-              <div className="metric-label">Chapter Average</div>
-            </div>
-            <div className="metric-card-yellow">
-              <div className="metric-value-yellow">52.2%</div>
-              <div className="metric-label">Needs Most Attention</div>
-            </div>
-            <div className="metric-card-pink">
-              <div className="metric-value-pink">58.1%</div>
-              <div className="metric-label">Best Performance</div>
-            </div>
-          </div>
-
-          {/* Calculus Sub-topics Chart */}
-          <div className="mb-32">
-            <h4 className="subsection-title">🎯 Class Sub-topic Performance: Calculus</h4>
-            <p className="topic-stats-text">Sub-topics Ranked by Class Performance (Lowest to Highest)</p>
-            <div className="chart-height-300">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={calculusSubTopicsData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="topic" angle={-45} textAnchor="end" height={60} fontSize={12} />
-                  <YAxis fontSize={12} domain={[0, 70]} />
-                  <Tooltip formatter={(value) => [value + '%', 'Class Average']} />
-                  <Bar dataKey="average" fill="#4a90e2" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Detailed Sub-topic Performance Table */}
-          <div>
-            <h4 className="subsection-title">📋 Detailed Sub-topic Performance Table</h4>
-            <div className="data-table-container">
-              <table className="enhanced-data-table">
-                <thead>
-                  <tr className="table-header-row">
-                    <th className="table-header-enhanced">Sub-topic</th>
-                    <th className="table-header-enhanced table-header-center">Overall Avg (%)</th>
-                    <th className="table-header-enhanced table-header-center">HW Avg (%)</th>
-                    <th className="table-header-enhanced table-header-center">CW Avg (%)</th>
-                    <th className="table-header-enhanced table-header-center">Total Questions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="table-row-even">
-                    <td className="table-cell-enhanced">
-                      <span className="table-id-cell">0</span>
-                      Integration
-                    </td>
-                    <td className="table-cell-enhanced table-cell-center">58.1</td>
-                    <td className="table-cell-enhanced table-cell-center">96.7</td>
-                    <td className="table-cell-enhanced table-cell-center">45.3</td>
-                    <td className="table-cell-enhanced table-cell-center">20</td>
-                  </tr>
-                  <tr className="table-row-odd">
-                    <td className="table-cell-enhanced">
-                      <span className="table-id-cell">1</span>
-                      Derivatives
-                    </td>
-                    <td className="table-cell-enhanced table-cell-center">52.2</td>
-                    <td className="table-cell-enhanced table-cell-center">55.1</td>
-                    <td className="table-cell-enhanced table-cell-center">47.5</td>
-                    <td className="table-cell-enhanced table-cell-center">40</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    const renderNoSubTopicsView = (chapterName) => {
-      return (
-        <div>
-          <div className="mb-20">
-            <div className="highlight-box highlight-box-blue">
-              <p style={{ margin: '0', fontSize: '14px' }}>📘 Viewing sub-topics for: {chapterName}</p>
-            </div>
-          </div>
-
-          <div className="empty-state" style={{ minHeight: '300px' }}>
-            <div>
-              <div className="empty-state-icon" style={{ color: '#ef4444', fontSize: '48px' }}>🚫</div>
-              <h3 className="empty-state-title" style={{ color: '#ef4444' }}>
-                No Sub-topics Found for Chapter: {chapterName}
-              </h3>
-              <p className="empty-state-text" style={{ color: '#ef4444' }}>
-                Please select a different chapter or check data format
-              </p>
-            </div>
-          </div>
-
-          <div className="highlight-box highlight-box-yellow">
-            <div className="highlight-text-yellow">
-              ⚠️ No sub-topics found for chapter '{chapterName}'. This might mean:
-            </div>
-            <ul className="summary-list" style={{ marginTop: '12px' }}>
-              <li>The chapter '{chapterName}' doesn't have sub-topics with '-' separator</li>
-              <li>There's no performance data available for this chapter's sub-topics</li>
-              <li>Check if your data follows the format: '{chapterName} - Sub-Topic-Name'</li>
-            </ul>
-          </div>
-        </div>
-      );
-    };
-
+    const chapterData = getChapterSubTopics(selectedChapter);
+    
     return (
-      <div className="rounded-bottom-card">
-        <div className="mb-20">
-          <h3 className="section-title">🎯 Class Topic Analysis</h3>
-          <p className="section-subtitle">Across All Students</p>
+      <div className="topic-analysis-container">
+        <div className="topic-header">
+          <h2 className="topic-title">🎯 Topic Analysis</h2>
+          <p className="topic-subtitle">Performance breakdown by academic topics</p>
         </div>
 
-        {/* Chapter Selection Dropdown */}
-        <div className="mb-24">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-              📚 Select Chapter (Main Topic):
-            </span>
-            <span style={{ fontSize: '12px', color: '#6b7280' }}>ℹ️</span>
-          </div>
-          <select
-            value={selectedChapter}
+        <div className="chapter-filter-section">
+          <label className="filter-label">📚 Select Chapter (Main Topic):</label>
+          <select 
+            value={selectedChapter} 
             onChange={(e) => setSelectedChapter(e.target.value)}
-            style={{
-              padding: '10px 16px',
-              border: '2px solid #ef4444',
-              borderRadius: '8px',
-              fontSize: '14px',
-              backgroundColor: 'white',
-              cursor: 'pointer',
-              color: '#374151',
-              minWidth: '200px',
-              fontWeight: '600'
-            }}
+            className="chapter-dropdown"
           >
             {chapterOptions.map(chapter => (
               <option key={chapter} value={chapter}>{chapter}</option>
@@ -589,114 +307,295 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
           </select>
         </div>
 
-        {/* Render content based on selected chapter */}
-        {selectedChapter === 'All Chapters' && renderAllChaptersView()}
-        {selectedChapter === 'Algebra' && renderAlgebraView()}
-        {selectedChapter === 'Calculus' && renderCalculusView()}
-        {!['All Chapters', 'Algebra', 'Calculus'].includes(selectedChapter) && 
-          renderNoSubTopicsView(selectedChapter)}
+        {selectedChapter === 'All Chapters' ? (
+          <>
+            {/* Summary Stats */}
+            <div className="topic-summary-stats">
+              <div className="stat-card">
+                <div className="stat-icon">📊</div>
+                <div className="stat-content">
+                  <div className="stat-value">10</div>
+                  <div className="stat-label">Total Topics</div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">📈</div>
+                <div className="stat-content">
+                  <div className="stat-value">58.3%</div>
+                  <div className="stat-label">Overall Average</div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">📚</div>
+                <div className="stat-content">
+                  <div className="stat-value">8</div>
+                  <div className="stat-label">Available Chapters</div>
+                </div>
+              </div>
+            </div>
+
+            {/* All Topics Chart */}
+            <div className="topic-chart-section">
+              <h3 className="chart-title">🎯 Class Topic Performance Analysis</h3>
+              <p className="chart-subtitle">All Topics Ranked by Class Performance (Lowest to Highest)</p>
+              
+              <div className="chart-wrapper large">
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart 
+                    data={allTopicsRankedData} 
+                    margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="topic" 
+                      fontSize={10} 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={100}
+                      interval={0}
+                    />
+                    <YAxis 
+                      fontSize={12} 
+                      domain={[0, 100]} 
+                      tickCount={11}
+                      ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                    />
+                    <Tooltip formatter={(value) => [value + '%', 'Average Performance']} />
+                    <Bar dataKey="average" fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        ) : chapterData ? (
+          <>
+            {/* Chapter Sub-topic Performance */}
+            <div className="chapter-analysis-section">
+              <h3 className="section-title">🎯 Class Sub-topic Performance: {selectedChapter}</h3>
+              <p className="section-subtitle">Sub-topics Ranked by Class Performance (Lowest to Highest)</p>
+              
+              <div className="subtopic-charts">
+                {chapterData.subTopics.map((subtopic, index) => (
+                  <div key={index} className="subtopic-chart">
+                    <h4 className="subtopic-title">{subtopic.name}</h4>
+                    <div className="subtopic-bar">
+                      <div 
+                        className="subtopic-progress" 
+                        style={{ width: `${subtopic.overallAvg}%` }}
+                      ></div>
+                    </div>
+                    <div className="subtopic-stats">
+                      <span>Overall: {subtopic.overallAvg}%</span>
+                      <span>HW: {subtopic.hwAvg}%</span>
+                      <span>CW: {subtopic.cwAvg}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Chapter Statistics */}
+              <div className="chapter-stats">
+                <h4 className="stats-title">📊 {selectedChapter} Sub-topic Details</h4>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <span className="stat-label">Sub-topics Found</span>
+                    <span className="stat-value">{chapterData.stats.subTopicsFound}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Chapter Average</span>
+                    <span className="stat-value">{chapterData.stats.chapterAverage}%</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Needs Most Attention</span>
+                    <span className="stat-value">{chapterData.stats.needsMostAttention}%</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Best Performance</span>
+                    <span className="stat-value">{chapterData.stats.bestPerformance}%</span>
+                  </div>
+                </div>
+
+                {/* Detailed Performance Table */}
+                <div className="performance-table">
+                  <h5 className="table-title">📋 Detailed Sub-topic Performance Table</h5>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Sub-topic</th>
+                        <th>Overall Avg (%)</th>
+                        <th>HW Avg (%)</th>
+                        <th>CW Avg (%)</th>
+                        <th>Total Questions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {chapterData.subTopics.map((subtopic, index) => (
+                        <tr key={index}>
+                          <td>{subtopic.name}</td>
+                          <td>{subtopic.overallAvg}</td>
+                          <td>{subtopic.hwAvg}</td>
+                          <td>{subtopic.cwAvg}</td>
+                          <td>{subtopic.totalQuestions}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="no-subtopics-section">
+            <div className="empty-state">
+              <div className="empty-icon">🚫</div>
+              <h3 className="empty-title">No Sub-topics Found for Chapter: {selectedChapter}</h3>
+              <p className="empty-message">Please select a different chapter or check data format</p>
+            </div>
+            
+            <div className="troubleshooting">
+              <h4>⚠️ No sub-topics found for chapter '{selectedChapter}'. This might mean:</h4>
+              <ul>
+                <li>The chapter '{selectedChapter}' doesn't have sub-topics with '-' separator</li>
+                <li>There's no performance data available for this chapter's sub-topics</li>
+                <li>Check if your data follows the format: 'Chapter Name - Sub-Topic-Name'</li>
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
 
-  // Summary
+  // Enhanced Summary with Achievement-style layout
   const renderSummary = () => {
-    const totalStudents = selectedClass.students ? selectedClass.students.length : 5;
-    
     return (
-      <div className="rounded-bottom-card">
-        <div className="mb-20">
-          <h3 className="section-title">📋 CLASSROOM PERFORMANCE SUMMARY</h3>
+      <div className="summary-container">
+        <div className="summary-header">
+          <h2 className="summary-title">📋 CLASSROOM PERFORMANCE SUMMARY</h2>
+          <div className="summary-badge">Class Overview</div>
         </div>
 
-        <div className="summary-section">
-          <h4 className="subsection-title">👥 Class Overview:</h4>
-          <ul className="summary-list">
-            <li><strong>Total Students:</strong> {totalStudents}</li>
-            <li><strong>Students with Homework Data:</strong> {totalStudents}</li>
-            <li><strong>Students with Classwork Data:</strong> {totalStudents}</li>
-            <li><strong>Total Assignments Analyzed:</strong> 60</li>
-          </ul>
-        </div>
-
-        <div className="summary-section">
-          <h4 className="subsection-title">📊 Performance Statistics:</h4>
-          <ul className="summary-list">
-            <li><strong>Overall Class Average:</strong> 56.5%</li>
-            <li><strong>Homework Class Average:</strong> 61.6%</li>
-            <li><strong>Classwork Class Average:</strong> 51.4%</li>
-            <li><strong>Performance Gap (CW - HW):</strong> -10.2%</li>
-          </ul>
-        </div>
-
-        <div className="summary-section">
-          <h4 className="subsection-title">🎯 Grade Distribution:</h4>
-          <div className="highlight-box highlight-box-blue">
-            <div className="highlight-text-blue">- **F ({' < '}60%):** 27 assignments (45.0%)</div>
-          </div>
-          <ul className="summary-list">
-            <li><strong>C (70-79%):</strong> 13 assignments (21.7%)</li>
-            <li><strong>B (80-89%):</strong> 13 assignments (21.7%)</li>
-            <li><strong>D (60-69%):</strong> 6 assignments (10.0%)</li>
-            <li><strong>A (90-100%):</strong> 1 assignments (1.7%)</li>
-          </ul>
-        </div>
-
-        <div className="summary-section">
-          <h4 className="subsection-title">🏆 Top Performers:</h4>
-          <div className="summary-list-none">
-            <div className="highlight-box highlight-box-blue">
-              <div className="highlight-text-blue">1. **10HPS21:** 69.0%</div>
+        {/* Achievement Cards */}
+        <div className="achievements-section">
+          <h3 className="section-title">🏆 ACHIEVEMENTS</h3>
+          <div className="achievement-cards">
+            <div className="achievement-card gold">
+              <div className="achievement-icon">🥇</div>
+              <div className="achievement-content">
+                <div className="achievement-title">Top Performer</div>
+                <div className="achievement-value">10HPS21 - 69.5%</div>
+              </div>
             </div>
-            <p style={{ margin: '8px 0', color: '#4b5563' }}>
-              2. <strong>10HPS19:</strong> 66.8% 3. <strong>10HPS20:</strong> 52.2%
-            </p>
-          </div>
-          
-          <div style={{ marginTop: '16px' }}>
-            <div className="highlight-box highlight-box-yellow">
-              <div className="highlight-text-yellow">### 📚 **Students Needing Support:**</div>
-              <div className="highlight-text-yellow">1. **10HPS18:** 44.6%</div>
+            
+            <div className="achievement-card silver">
+              <div className="achievement-icon">📈</div>
+              <div className="achievement-content">
+                <div className="achievement-title">Best Subject</div>
+                <div className="achievement-value">Coordinate Geometry - 71.4%</div>
+              </div>
             </div>
-            <p style={{ margin: '8px 0', color: '#4b5563' }}>
-              2. <strong>10HPS17:</strong> 50.1% 3. <strong>10HPS20:</strong> 52.2%
-            </p>
+            
+            <div className="achievement-card bronze">
+              <div className="achievement-icon">✅</div>
+              <div className="achievement-content">
+                <div className="achievement-title">Completion Rate</div>
+                <div className="achievement-value">92% Overall</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="summary-section">
-          <h4 className="subsection-title">💪 Strongest Topics:</h4>
-          <div className="summary-list-none">
-            <div className="highlight-box highlight-box-green">
-              <div className="highlight-text-green">1. **Coordinate Geometry:** 71.4%</div>
+        {/* Performance Stats */}
+        <div className="performance-stats-section">
+          <h3 className="section-title">📊 CLASS STATISTICS</h3>
+          <div className="stats-grid">
+            <div className="stat-box">
+              <div className="stat-icon">👥</div>
+              <div className="stat-content">
+                <div className="stat-number">5</div>
+                <div className="stat-label">Total Students</div>
+              </div>
             </div>
-            <p style={{ margin: '8px 0', color: '#4b5563' }}>
-              2. <strong>Algebra - Rational Functions:</strong> 64.0% 3. <strong>Probability:</strong> 60.8%
-            </p>
+            
+            <div className="stat-box">
+              <div className="stat-icon">📚</div>
+              <div className="stat-content">
+                <div className="stat-number">60</div>
+                <div className="stat-label">Total Assignments</div>
+              </div>
+            </div>
+            
+            <div className="stat-box">
+              <div className="stat-icon">📈</div>
+              <div className="stat-content">
+                <div className="stat-number">56.5%</div>
+                <div className="stat-label">Class Average</div>
+              </div>
+            </div>
+            
+            <div className="stat-box">
+              <div className="stat-icon">🎯</div>
+              <div className="stat-content">
+                <div className="stat-number">10</div>
+                <div className="stat-label">Topics Covered</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="summary-section">
-          <h4 className="subsection-title">🔍 Topics Needing Attention:</h4>
-          <div className="summary-list-none">
-            <div className="highlight-box highlight-box-red">
-              <div className="highlight-text-red">1. **Algebra - Linear Equations:** 46.7%</div>
-            </div>
-            <p style={{ margin: '8px 0', color: '#4b5563' }}>
-              2. <strong>Calculus - Derivatives:</strong> 52.2% 3. <strong>Statistics:</strong> 56.4%
-            </p>
+        {/* Student Rankings */}
+        <div className="rankings-section">
+          <h3 className="section-title">🏅 STUDENT RANKINGS</h3>
+          <div className="ranking-list">
+            {[
+              { position: 1, student: '10HPS21', score: 69.5, trend: 'up' },
+              { position: 2, student: '10HPS17', score: 67.0, trend: 'up' },
+              { position: 3, student: '10HPS18', score: 62.0, trend: 'neutral' },
+              { position: 4, student: '10HPS19', score: 57.0, trend: 'down' },
+              { position: 5, student: '10HPS20', score: 55.0, trend: 'down' }
+            ].map((student) => (
+              <div key={student.position} className={`ranking-item rank-${student.position}`}>
+                <div className="rank-number">{student.position}</div>
+                <div className="student-info">
+                  <div className="student-name">{student.student}</div>
+                  <div className="student-score">{student.score}%</div>
+                </div>
+                <div className={`trend-indicator ${student.trend}`}>
+                  {student.trend === 'up' ? '↑' : student.trend === 'down' ? '↓' : '→'}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div>
-          <h4 className="subsection-title">💡 Recommendations:</h4>
-          <div className="highlight-box highlight-box-cyan">
-            <div className="highlight-text-cyan">- 📝 **Focus on Classwork:** Class performs 10.2% better on homework. Consider reinforcing classwork concepts.</div>
+        {/* Key Insights */}
+        <div className="insights-section">
+          <h3 className="section-title">💡 KEY INSIGHTS & RECOMMENDATIONS</h3>
+          <div className="insight-cards">
+            <div className="insight-card success">
+              <div className="insight-header">
+                <div className="insight-icon">✅</div>
+                <div className="insight-title">Strengths</div>
+              </div>
+              <ul className="insight-list">
+                <li>Homework performance 11% higher than classwork</li>
+                <li>Strong performance in Coordinate Geometry (71.4%)</li>
+                <li>High completion rate (92%)</li>
+              </ul>
+            </div>
+            
+            <div className="insight-card warning">
+              <div className="insight-header">
+                <div className="insight-icon">⚠️</div>
+                <div className="insight-title">Areas for Improvement</div>
+              </div>
+              <ul className="insight-list">
+                <li>Linear Equations needs focus (46.7%)</li>
+                <li>Classwork strategies need enhancement</li>
+                <li>2 students need additional support</li>
+              </ul>
+            </div>
           </div>
-          <ul className="summary-list">
-            <li>🎯 <strong>Priority Topics:</strong> Focus additional instruction on Algebra - Linear Equations, Calculus - Derivatives, Statistics.</li>
-            <li>⚠️ <strong>Support Needed:</strong> 33 assignments show grades D or F. Consider additional support strategies.</li>
-          </ul>
         </div>
       </div>
     );
@@ -772,6 +671,775 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
         {classAnalysisTab === 'topics' && renderTopicAnalysis()}
         {classAnalysisTab === 'summary' && renderSummary()}
       </div>
+
+      <style jsx>{`
+        .class-analysis-main-content {
+          padding: 20px;
+          background-color: #f8fafc;
+          min-height: 100vh;
+        }
+
+        .class-analysis-header {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          margin-bottom: 24px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .class-header-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .class-header-info {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .class-header-icon {
+          font-size: 32px;
+        }
+
+        .class-header-title {
+          font-size: 24px;
+          font-weight: bold;
+          margin: 0;
+          color: #1f2937;
+        }
+
+        .class-header-subtitle {
+          color: #6b7280;
+          margin: 4px 0 0 0;
+        }
+
+        .class-selector-container {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .class-selector-label {
+          font-size: 14px;
+          color: #6b7280;
+        }
+
+        .class-header-dropdown {
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+        }
+
+        .class-sub-tabs {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 24px;
+        }
+
+        .class-sub-tab {
+          padding: 12px 20px;
+          border: none;
+          border-radius: 8px;
+          background: white;
+          color: #6b7280;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .class-sub-tab.active {
+          background: #3b82f6;
+          color: white;
+        }
+
+        .class-sub-tab:hover:not(.active) {
+          background: #f3f4f6;
+        }
+
+        /* Class Overview Styles */
+        .class-overview-container {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .overview-header {
+          margin-bottom: 24px;
+        }
+
+        .overview-title {
+          font-size: 20px;
+          font-weight: bold;
+          color: #1f2937;
+          margin: 0;
+        }
+
+        .overview-subtitle {
+          color: #6b7280;
+          margin: 8px 0 0 0;
+        }
+
+        .summary-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
+          margin-bottom: 32px;
+        }
+
+        .summary-card {
+          padding: 24px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+          transform: translateY(-2px);
+        }
+
+        .card-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+        .card-green { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .card-yellow { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .card-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+
+        .card-icon {
+          font-size: 24px;
+        }
+
+        .card-value {
+          font-size: 32px;
+          font-weight: bold;
+          margin: 0;
+        }
+
+        .card-label {
+          font-size: 14px;
+          opacity: 0.9;
+          margin: 4px 0 0 0;
+        }
+
+        .charts-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+        }
+
+        .chart-card {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 0 0 16px 0;
+          color: #1f2937;
+        }
+
+        .chart-wrapper {
+          margin-bottom: 12px;
+          height: 400px;
+        }
+
+        .chart-info {
+          font-size: 12px;
+          color: #6b7280;
+          text-align: right;
+        }
+
+        /* Progress Trends Styles */
+        .progress-trends-container {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .trends-header {
+          margin-bottom: 24px;
+        }
+
+        .trends-title {
+          font-size: 20px;
+          font-weight: bold;
+          color: #1f2937;
+          margin: 0;
+        }
+
+        .trends-subtitle {
+          color: #6b7280;
+          margin: 8px 0 0 0;
+        }
+
+        .filter-buttons-container {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 24px;
+        }
+
+        .filter-btn {
+          padding: 8px 16px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          background: white;
+          color: #6b7280;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+          background: #3b82f6;
+          color: white;
+          border-color: #3b82f6;
+        }
+
+        .top-performers-section {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 20px;
+        }
+
+        .section-title {
+          font-size: 18px;
+          font-weight: 600;
+          margin: 0 0 20px 0;
+          color: #1f2937;
+        }
+
+        .chart-wrapper.large {
+          margin-bottom: 16px;
+          height: 500px;
+        }
+
+        .performance-legend {
+          display: flex;
+          justify-content: center;
+          gap: 24px;
+          padding-top: 16px;
+        }
+
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          color: #4b5563;
+        }
+
+        .legend-color {
+          width: 16px;
+          height: 16px;
+          border-radius: 4px;
+        }
+
+        .legend-color.green { background: #22c55e; }
+        .legend-color.yellow { background: #f59e0b; }
+        .legend-color.orange { background: #f97316; }
+
+        /* Topic Analysis Styles */
+        .topic-analysis-container {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .topic-header {
+          margin-bottom: 24px;
+        }
+
+        .topic-title {
+          font-size: 20px;
+          font-weight: bold;
+          color: #1f2937;
+          margin: 0;
+        }
+
+        .topic-subtitle {
+          color: #6b7280;
+          margin: 8px 0 0 0;
+        }
+
+        .chapter-filter-section {
+          margin-bottom: 32px;
+        }
+
+        .filter-label {
+          display: block;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 8px;
+        }
+
+        .chapter-dropdown {
+          width: 100%;
+          max-width: 300px;
+          padding: 12px 16px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 14px;
+          background: white;
+        }
+
+        .topic-summary-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 16px;
+          margin-bottom: 32px;
+        }
+
+        .stat-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: #f8fafc;
+          border-radius: 8px;
+          border-left: 4px solid #3b82f6;
+        }
+
+        .stat-icon {
+          font-size: 20px;
+        }
+
+        .stat-value {
+          font-size: 24px;
+          font-weight: bold;
+          color: #1f2937;
+          margin: 0;
+        }
+
+        .stat-label {
+          font-size: 12px;
+          color: #6b7280;
+          margin: 4px 0 0 0;
+        }
+
+        .topic-chart-section {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 24px;
+        }
+
+        .chart-subtitle {
+          font-size: 14px;
+          color: #6b7280;
+          margin: 8px 0 20px 0;
+        }
+
+        .chapter-analysis-section {
+          margin-top: 24px;
+        }
+
+        .subtopic-charts {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+          margin-bottom: 32px;
+        }
+
+        .subtopic-chart {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 20px;
+          border: 1px solid #e5e7eb;
+        }
+
+        .subtopic-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 12px 0;
+        }
+
+        .subtopic-bar {
+          background: #e5e7eb;
+          border-radius: 8px;
+          height: 12px;
+          margin-bottom: 12px;
+          overflow: hidden;
+        }
+
+        .subtopic-progress {
+          background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+          height: 100%;
+          transition: width 0.3s ease;
+        }
+
+        .subtopic-stats {
+          display: flex;
+          justify-content: space-between;
+          font-size: 12px;
+          color: #6b7280;
+        }
+
+        .chapter-stats {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 20px;
+        }
+
+        .stats-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 16px 0;
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+
+        .stat-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: white;
+          border-radius: 8px;
+          border-left: 4px solid #3b82f6;
+        }
+
+        .performance-table {
+          margin-top: 24px;
+        }
+
+        .table-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 12px 0;
+        }
+
+        .performance-table table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .performance-table th,
+        .performance-table td {
+          padding: 12px;
+          text-align: left;
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .performance-table th {
+          background: #f8fafc;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .no-subtopics-section {
+          text-align: center;
+          padding: 40px;
+        }
+
+        .empty-state {
+          margin-bottom: 32px;
+        }
+
+        .empty-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        .empty-title {
+          font-size: 18px;
+          color: #ef4444;
+          margin: 0 0 8px 0;
+        }
+
+        .empty-message {
+          color: #6b7280;
+          margin: 0;
+        }
+
+        .troubleshooting {
+          text-align: left;
+          background: #fef3c7;
+          border-radius: 8px;
+          padding: 16px;
+          border-left: 4px solid #f59e0b;
+        }
+
+        .troubleshooting h4 {
+          color: #92400e;
+          margin: 0 0 12px 0;
+          font-size: 14px;
+        }
+
+        .troubleshooting ul {
+          margin: 0;
+          padding-left: 20px;
+          color: #78350f;
+        }
+
+        /* Summary Styles */
+        .summary-container {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .summary-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 32px;
+        }
+
+        .summary-title {
+          font-size: 20px;
+          font-weight: bold;
+          color: #1f2937;
+          margin: 0;
+        }
+
+        .summary-badge {
+          background: #3b82f6;
+          color: white;
+          padding: 6px 12px;
+          border-radius: 16px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .achievements-section {
+          margin-bottom: 32px;
+        }
+
+        .achievement-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+        }
+
+        .achievement-card {
+          padding: 20px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .achievement-card.gold {
+          background: linear-gradient(135deg, #fbbf24, #f59e0b);
+          color: white;
+        }
+
+        .achievement-card.silver {
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+        }
+
+        .achievement-card.bronze {
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+          color: white;
+        }
+
+        .achievement-icon {
+          font-size: 32px;
+        }
+
+        .achievement-title {
+          font-size: 14px;
+          font-weight: 500;
+          opacity: 0.9;
+          margin-bottom: 4px;
+        }
+
+        .achievement-value {
+          font-size: 16px;
+          font-weight: bold;
+        }
+
+        .performance-stats-section {
+          margin-bottom: 32px;
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 16px;
+        }
+
+        .stat-box {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 20px;
+          text-align: center;
+          border: 2px solid #e5e7eb;
+          transition: transform 0.2s;
+        }
+
+        .stat-box:hover {
+          transform: translateY(-2px);
+        }
+
+        .stat-icon {
+          font-size: 24px;
+          margin-bottom: 8px;
+        }
+
+        .stat-number {
+          font-size: 24px;
+          font-weight: bold;
+          color: #1f2937;
+          margin-bottom: 4px;
+        }
+
+        .stat-label {
+          font-size: 12px;
+          color: #6b7280;
+        }
+
+        .rankings-section {
+          margin-bottom: 32px;
+        }
+
+        .ranking-list {
+          space-y: 12px;
+        }
+
+        .ranking-item {
+          display: flex;
+          align-items: center;
+          padding: 16px;
+          background: #f8fafc;
+          border-radius: 8px;
+          margin-bottom: 12px;
+          border-left: 4px solid #e5e7eb;
+        }
+
+        .ranking-item.rank-1 { border-left-color: #fbbf24; }
+        .ranking-item.rank-2 { border-left-color: #9ca3af; }
+        .ranking-item.rank-3 { border-left-color: #cd7c2f; }
+
+        .rank-number {
+          font-size: 24px;
+          font-weight: bold;
+          color: #1f2937;
+          width: 40px;
+          text-align: center;
+        }
+
+        .student-info {
+          flex: 1;
+          margin-left: 16px;
+        }
+
+        .student-name {
+          font-weight: 600;
+          color: #1f2937;
+        }
+
+        .student-score {
+          font-size: 14px;
+          color: #6b7280;
+          margin-top: 2px;
+        }
+
+        .trend-indicator {
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        .trend-indicator.up { color: #10b981; }
+        .trend-indicator.down { color: #ef4444; }
+        .trend-indicator.neutral { color: #6b7280; }
+
+        .insights-section {
+          margin-bottom: 24px;
+        }
+
+        .insight-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+        }
+
+        .insight-card {
+          border-radius: 12px;
+          padding: 20px;
+          border-left: 4px solid;
+        }
+
+        .insight-card.success {
+          background: #f0fdf4;
+          border-left-color: #22c55e;
+        }
+
+        .insight-card.warning {
+          background: #fefbf3;
+          border-left-color: #f59e0b;
+        }
+
+        .insight-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+
+        .insight-icon {
+          font-size: 20px;
+        }
+
+        .insight-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0;
+        }
+
+        .insight-list {
+          margin: 0;
+          padding-left: 20px;
+          color: #4b5563;
+        }
+
+        .insight-list li {
+          margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+          .class-analysis-main-content {
+            padding: 16px;
+          }
+          
+          .charts-container {
+            grid-template-columns: 1fr;
+          }
+          
+          .summary-cards-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          }
+          
+          .class-sub-tabs {
+            flex-wrap: wrap;
+          }
+        }
+      `}</style>
     </div>
   );
 };

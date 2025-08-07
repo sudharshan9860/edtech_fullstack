@@ -52,7 +52,7 @@ function SolveQuestion() {
     question,
     questionId, // The original question ID from backend (required)
     index,
-    questionList,
+    questionList, 
     class_id,
     subject_id,
     topic_ids,

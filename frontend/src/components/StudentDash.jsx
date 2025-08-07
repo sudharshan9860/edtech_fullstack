@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-import { Form, Button, Row, Col, Container } from "react-bootstrap";
+import { Form, Button, Row, Col, Container, Alert, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import confetti from 'canvas-confetti';
 import "./StudentDash.css";
 import axiosInstance from "../api/axiosInstance";
 import QuestionListModal from "./QuestionListModal";
@@ -18,6 +19,7 @@ import {
   faClipboardQuestion,
   faQuestionCircle,
   faRocket,
+  faSpinner, // ADD THIS LINE
   faGraduationCap,
   faBrain,
   faLightbulb,
@@ -62,6 +64,11 @@ function StudentDash() {
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [questionList, setQuestionList] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
+
+// ADD THESE MISSING STATE VARIABLES after your existing useState declarations:
+const [isLoading, setIsLoading] = useState(false);
+const [error, setError] = useState(null);
+const [success, setSuccess] = useState('');
 
   // Extract class from username (e.g., 10HPS24 -> 10, 12ABC24 -> 12)
   const extractClassFromUsername = (username) => {
@@ -327,31 +334,41 @@ function StudentDash() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 🎉 TRIGGER CONFETTI IMMEDIATELY ON CLICK
+    triggerConfettiEffect();
+    
+    // Your existing validation logic
     if (!isGenerateButtonEnabled()) {
       console.error("Please select all required fields");
+      setError("Please select all required fields");
       return;
     }
 
-    // API request structure
-    const requestData = {
-      classid: Number(selectedClass),
-      subjectid: Number(selectedSubject),
-      topicid: selectedChapters,
-      solved: questionType === "solved",
-      exercise: questionType === "exercise",
-      // external: questionType === "external",
-      // worksheets: questionType === "worksheets",
-      subtopic: questionType === "external" ? questionLevel : null,
-      worksheet_name: questionType === "worksheets" ? selectedWorksheet : null,
+    setIsLoading(true);
+    setError(null);
+    setSuccess('');
+
+    // Your existing API call logic continues here...
+    try {
+          const requestData = {
+            classid: Number(selectedClass),
+            subjectid: Number(selectedSubject),
+            topicid: selectedChapters,
+            solved: questionType === "solved",
+            exercise: questionType === "exercise",
+            // external: questionType === "external",
+            // worksheets: questionType === "worksheets",
+            subtopic: questionType === "external" ? questionLevel : null,
+            worksheet_name: questionType === "worksheets" ? selectedWorksheet : null,
     };
 
-    console.log("Request data for question generation:", requestData);
+      console.log("Submitting request:", requestData);
 
-    try {
       const response = await axiosInstance.post("/question-images/", requestData);
-      console.log("the response data is :", response.data);
+      console.log("API Response:", response.data);
 
     // Process questions with images - PRESERVE the original backend IDs
+    if (response.data && response.data.questions && Array.isArray(response.data.questions)) {
       const questionsWithImages = (response.data.questions || []).map((question, index) => ({
         ...question,
         originalIndex: index, // Store the array index separately if needed
@@ -364,12 +381,19 @@ function StudentDash() {
     console.log("Processed questions with preserved IDs:", questionsWithImages);
     setQuestionList(questionsWithImages);
     setSelectedQuestions([]);
+    setShowQuestionList(true);
+    
+    // 🎉 TRIGGER SUCCESS CONFETTI WHEN QUESTIONS ARE LOADED
+    // triggerSuccessConfetti();
+     } else {
+            throw new Error("No questions found in response");
+    }
 
-      // Show the modal
-      setShowQuestionList(true);
     } catch (error) {
       console.error("Error generating questions:", error);
       alert("Failed to generate questions. Please try again.");
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -417,6 +441,22 @@ const handleQuestionClick = (question, index, image) => {
     },
   });
 };
+
+  // If you want confetti when the modal opens, you can also add this:
+// useEffect(() => {
+//     if (showQuestionList && questionList.length > 0) {
+//         // Small celebration when modal opens
+//         setTimeout(() => {
+//             confetti({
+//                 particleCount: 30,
+//                 spread: 60,
+//                 origin: { x: 0.5, y: 0.3 },
+//                 colors: ['#00BCD4', '#00E5FF', '#FFD700'],
+//                 zIndex: 999999
+//             });
+//         }, 300);
+//     }
+// }, [showQuestionList]);
 
   // Reset dependent fields when question type changes
   useEffect(() => {
@@ -585,6 +625,185 @@ const handleQuestionClick = (question, index, image) => {
       backgroundColor: isDarkMode ? '#475569' : '#e2e8f0',
     }),
   };
+
+  // Add this sound effect function
+const playConfettiSound = () => {
+    try {
+        // Create a pleasant success chime using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create main success tone
+        const oscillator1 = audioContext.createOscillator();
+        const gainNode1 = audioContext.createGain();
+        
+        oscillator1.connect(gainNode1);
+        gainNode1.connect(audioContext.destination);
+        
+        // Success chime sequence
+        oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+        oscillator1.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+        oscillator1.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+        
+        gainNode1.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode1.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+        gainNode1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.4);
+        
+        oscillator1.start(audioContext.currentTime);
+        oscillator1.stop(audioContext.currentTime + 0.4);
+        
+        // Add a secondary harmonic for richness
+        setTimeout(() => {
+            const oscillator2 = audioContext.createOscillator();
+            const gainNode2 = audioContext.createGain();
+            
+            oscillator2.connect(gainNode2);
+            gainNode2.connect(audioContext.destination);
+            
+            oscillator2.frequency.setValueAtTime(1046.5, audioContext.currentTime); // C6
+            gainNode2.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode2.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.01);
+            gainNode2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+            
+            oscillator2.start(audioContext.currentTime);
+            oscillator2.stop(audioContext.currentTime + 0.3);
+        }, 100);
+        
+    } catch (error) {
+        console.log('Audio not supported or blocked:', error);
+        // Fallback: try to play a simple beep
+        try {
+            const beep = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS1/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmzhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp66hVFApGn+DyvmwhBjiS2/LNeSsFJHfH8N+QQAoUXrTp6");
+            beep.volume = 0.1;
+            beep.play();
+        } catch (e) {
+            console.log('All audio methods failed');
+        }
+    }
+};
+
+// Add this call to your triggerConfettiEffect function:
+// playConfettiSound();
+
+  // Add these functions inside your StudentDash component (before the return statement)
+// Enhanced confetti function with sound and better positioning
+const triggerConfettiEffect = () => {
+    // 🔊 PLAY SOUND FIRST
+    playConfettiSound();
+    
+    // Get the button element for positioning
+    const button = document.querySelector('.btn-generate-enhanced');
+    const buttonRect = button?.getBoundingClientRect();
+    
+    // Calculate position relative to viewport
+    const x = buttonRect ? (buttonRect.left + buttonRect.width / 2) / window.innerWidth : 0.5;
+    const y = buttonRect ? (buttonRect.top + buttonRect.height / 2) / window.innerHeight : 0.5;
+    
+    // Create confetti with higher z-index
+    const confettiConfig = {
+        zIndex: 999999,
+        disableForReducedMotion: false
+    };
+    
+    // Initial burst from button - ENHANCED
+    confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { x, y },
+        colors: ['#00BCD4', '#001B6C', '#00E5FF', '#3F51B5', '#2196F3', '#FFD700'],
+        gravity: 0.8,
+        scalar: 1.4,
+        drift: 0,
+        ticks: 400,
+        shapes: ['square', 'circle'],
+        ...confettiConfig
+    });
+    
+    // Secondary burst with different pattern
+    setTimeout(() => {
+        confetti({
+            particleCount: 50,
+            spread: 100,
+            origin: { x, y },
+            colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF69B4'],
+            gravity: 0.6,
+            scalar: 0.9,
+            drift: 0.3,
+            ticks: 300,
+            shapes: ['circle'],
+            ...confettiConfig
+        });
+    }, 200);
+    
+    // Left side burst to cover sidebar area
+    setTimeout(() => {
+        confetti({
+            particleCount: 30,
+            spread: 60,
+            origin: { x: 0.1, y: 0.6 },
+            colors: ['#00BCD4', '#00E5FF', '#3F51B5'],
+            gravity: 0.7,
+            scalar: 1.2,
+            drift: 0.1,
+            ticks: 350,
+            ...confettiConfig
+        });
+    }, 100);
+    
+    // Right side burst for balance
+    setTimeout(() => {
+        confetti({
+            particleCount: 30,
+            spread: 60,
+            origin: { x: 0.9, y: 0.6 },
+            colors: ['#2196F3', '#FFD700', '#FF6B6B'],
+            gravity: 0.7,
+            scalar: 1.2,
+            drift: -0.1,
+            ticks: 350,
+            ...confettiConfig
+        });
+    }, 150);
+};
+
+// Enhanced success confetti - REMOVE the triggerSuccessConfetti call from handleSubmit
+const triggerSuccessConfetti = () => {
+    // This function can stay but remove its call from handleSubmit
+    // Only keep the first confetti effect in handleSubmit
+};
+
+// Success sound for when questions load
+const playSuccessSound = () => {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create a celebratory fanfare
+        const createTone = (freq, startTime, duration, volume = 0.1) => {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(freq, startTime);
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        };
+        
+        // Success fanfare sequence
+        const now = audioContext.currentTime;
+        createTone(523.25, now, 0.3); // C5
+        createTone(659.25, now + 0.1, 0.3); // E5
+        createTone(783.99, now + 0.2, 0.3); // G5
+        createTone(1046.50, now + 0.3, 0.4); // C6
+        
+    } catch (error) {
+        console.log('Success sound failed:', error);
+    }
+};
 
   return (
     <div className={`student-dash-wrapper ${isDarkMode ? 'dark-mode' : ''}`}>
@@ -1040,16 +1259,33 @@ const handleQuestionClick = (question, index, image) => {
                   </Row>
                 )}
 
+            {error && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                    {error}
+                </Alert>
+            )}
+
+            {success && (
+                <Alert variant="success" dismissible onClose={() => setSuccess('')}>
+                    {success}
+                </Alert>
+            )}
+
+
                 <div className="form-actions">
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    className="btn-generate-enhanced"
-                    disabled={!isGenerateButtonEnabled()}
-                  >
-                    <FontAwesomeIcon icon={faRocket} className="me-2" />
-                    Generate Questions
-                  </Button>
+                    <Button
+                        variant="primary"
+                        type="submit"
+                        className="btn-generate-enhanced"
+                        disabled={!isGenerateButtonEnabled() || isLoading}
+                        onClick={handleSubmit}
+                    >
+                        <FontAwesomeIcon 
+                                icon={isLoading ? faSpinner : faRocket} 
+                                className={`me-2 ${isLoading ? 'fa-spin' : ''}`} 
+                            />
+                            {isLoading ? 'Generating...' : 'Generate Questions'}
+                        </Button>
                 </div>
               </Form>
             </div>
