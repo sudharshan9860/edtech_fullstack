@@ -10,30 +10,45 @@ export const LeaderboardProvider = ({ children }) => {
   const [leaderboard, setLeaderboard] = useState(new Leaderboard());
   const [currentUserEntry, setCurrentUserEntry] = useState(null);
 
-  // Fetch leaderboard data from backend
-  const fetchLeaderboardData = async () => {
+  // In your LeaderboardContext.js, update the fetchLeaderboardData function:
+const fetchLeaderboardData = async () => {
     try {
-      const response = await axiosInstance.get('/leaderboard/');
-      const fetchedEntries = response.data.map(entry => 
-        LeaderboardEntry.fromJSON(entry)
-      );
-      
-      const updatedLeaderboard = new Leaderboard();
-      fetchedEntries.forEach(entry => 
-        updatedLeaderboard.addOrUpdateEntry(entry)
-      );
-      
-      setLeaderboard(updatedLeaderboard);
-      
-      // Find current user's entry
-      const userEntry = updatedLeaderboard.entries.find(
-        entry => entry.userId === userId
-      );
-      setCurrentUserEntry(userEntry);
+        const response = await axiosInstance.get('/leaderboard/');
+        console.log('Leaderboard API Response:', response.data);
+        
+        // Handle different response formats
+        let leaderboardData = [];
+        
+        if (response.data) {
+            // Check if data is directly an array
+            if (Array.isArray(response.data)) {
+                leaderboardData = response.data;
+            }
+            // Check if data is wrapped in a status object
+            else if (response.data.data && Array.isArray(response.data.data)) {
+                leaderboardData = response.data.data;
+            }
+            // Check if data has leaderboard property
+            else if (response.data.leaderboard && Array.isArray(response.data.leaderboard)) {
+                leaderboardData = response.data.leaderboard;
+            }
+            // Check if data has students property
+            else if (response.data.students && Array.isArray(response.data.students)) {
+                leaderboardData = response.data.students;
+            }
+            else {
+                console.warn('Unexpected leaderboard data format:', response.data);
+                leaderboardData = [];
+            }
+        }
+        
+        setLeaderboard(leaderboardData);
+        
     } catch (error) {
-      console.error('Failed to fetch leaderboard:', error);
+        console.warn('Leaderboard temporarily unavailable:', error.message);
+        setLeaderboard([]); // Don't crash - just show empty leaderboard
     }
-  };
+};
 
   // Update leaderboard entry
   const updateLeaderboardEntry = async (updateData) => {

@@ -2645,3 +2645,240 @@ body {
   background: rgba(0, 188, 212, 0.8) !important;
   color: #ffffff !important;
 }
+
+/* ========================================
+   CONFETTI BUTTON ENHANCEMENT
+======================================== */
+
+/* Enhanced Generate Button with Confetti Effect */
+.btn-generate-enhanced {
+    position: relative;
+    overflow: visible !important; /* Allow confetti to show */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+/* Button Click Animation */
+.btn-generate-enhanced:active {
+    transform: scale(0.95) !important;
+    transition: transform 0.1s ease-in-out;
+}
+
+/* Pulse animation on hover */
+.btn-generate-enhanced:hover:not(:disabled) {
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 6px 18px rgba(0, 188, 212, 0.4);
+    }
+    50% {
+        box-shadow: 0 8px 25px rgba(0, 188, 212, 0.6), 0 0 30px rgba(0, 188, 212, 0.3);
+    }
+}
+
+/* Light theme specific enhancements */
+.btn-generate-enhanced {
+    background: linear-gradient(135deg, #00BCD4 0%, #001B6C 50%, #3F51B5 100%) !important;
+    border: 2px solid rgba(0, 188, 212, 0.8) !important;
+    color: white !important;
+    box-shadow: 0 6px 18px rgba(0, 188, 212, 0.4) !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    position: relative;
+}
+
+.btn-generate-enhanced:hover:not(:disabled) {
+    background: linear-gradient(135deg, #00E5FF 0%, #0D47A1 50%, #1A237E 100%) !important;
+    border-color: rgba(0, 229, 255, 0.9) !important;
+    transform: translateY(-4px) scale(1.05) !important;
+    box-shadow: 0 20px 40px rgba(0, 188, 212, 0.6) !important;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Dark theme specific enhancements */
+.dark-mode .btn-generate-enhanced {
+    background: linear-gradient(135deg, #00BCD4 0%, #001B6C 50%, #3F51B5 100%) !important;
+    border: 2px solid rgba(0, 188, 212, 0.9) !important;
+    color: white !important;
+    box-shadow: 0 8px 25px rgba(0, 188, 212, 0.5), 0 0 20px rgba(0, 188, 212, 0.2) !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+}
+
+.dark-mode .btn-generate-enhanced:hover:not(:disabled) {
+    background: linear-gradient(135deg, #00E5FF 0%, #1565C0 50%, #283593 100%) !important;
+    border-color: rgba(0, 229, 255, 1) !important;
+    transform: translateY(-4px) scale(1.05) !important;
+    box-shadow: 0 25px 50px rgba(0, 188, 212, 0.7), 0 0 30px rgba(0, 229, 255, 0.4) !important;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Loading state with shimmer effect */
+.btn-generate-enhanced:disabled {
+    background: linear-gradient(90deg, #e2e8f0, #f1f5f9, #e2e8f0) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 1.5s infinite;
+    color: #94a3b8 !important;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.dark-mode .btn-generate-enhanced:disabled {
+    background: linear-gradient(90deg, #374151, #4b5563, #374151) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 1.5s infinite;
+    color: #6b7280 !important;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Confetti particle enhancement */
+.btn-generate-enhanced::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: linear-gradient(45deg, transparent, rgba(0, 188, 212, 0.1), transparent);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.btn-generate-enhanced:hover::before {
+    opacity: 1;
+    animation: rotate-glow 3s linear infinite;
+}
+
+@keyframes rotate-glow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Button icon animation */
+.btn-generate-enhanced .fa-rocket {
+    transition: transform 0.3s ease;
+}
+
+.btn-generate-enhanced:hover .fa-rocket {
+    transform: translateY(-2px) rotate(15deg);
+    animation: rocket-bounce 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes rocket-bounce {
+    0% { transform: translateY(-2px) rotate(15deg); }
+    100% { transform: translateY(-4px) rotate(15deg); }
+}
+
+/* Success feedback */
+.btn-generate-enhanced.success-state {
+    background: linear-gradient(135deg, #10B981, #059669, #047857) !important;
+    animation: success-pulse 0.6s ease-in-out;
+}
+
+@keyframes success-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* ========================================
+   RESPONSIVE CONFETTI BUTTON
+======================================== */
+
+@media (max-width: 768px) {
+    .btn-generate-enhanced {
+        padding: 1.2rem 2rem !important;
+        font-size: 1rem !important;
+        min-height: 60px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .btn-generate-enhanced {
+        padding: 1rem 1.5rem !important;
+        font-size: 0.9rem !important;
+        min-height: 50px !important;
+    }
+}
+
+/* Add these styles to frontend/src/components/StudentDash.css */
+
+/* Fix confetti layering - ensure confetti appears above everything */
+canvas[style*="position: fixed"] {
+    z-index: 999999 !important;
+    pointer-events: none !important;
+}
+
+/* Ensure confetti canvas is above all components */
+body canvas {
+    z-index: 999999 !important;
+    pointer-events: none !important;
+}
+
+/* Fix sidebar z-index to be lower than confetti */
+.student-dash-wrapper .progress-sidebar,
+.student-dash-wrapper .sidebar,
+.student-dash-wrapper .left-sidebar,
+.student-dash-wrapper .stats-sidebar {
+    z-index: 100 !important;
+}
+
+/* Fix modal z-index to be lower than confetti */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* Ensure main content doesn't block confetti */
+.student-dash-container,
+.dashboard-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fix any overlapping elements */
+.card, .progress-card, .badge-card {
+    z-index: 10 !important;
+}
+
+/* Add this to StudentDash.css as backup */
+
+/* Force confetti canvas to be on top of everything */
+html body canvas[style*="pointer-events: none"] {
+    z-index: 2147483647 !important; /* Maximum z-index value */
+    position: fixed !important;
+}
+
+/* Ensure sidebar and other elements stay below */
+.student-dash-wrapper * {
+    z-index: auto !important;
+}
+
+.student-dash-wrapper .modal {
+    z-index: 1050 !important;
+}
+
+/* Create a confetti container if needed */
+.confetti-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 999999;
+}

@@ -16,12 +16,12 @@ export const NotificationProvider = ({ children }) => {
       setLastFetchAttempt(new Date());
       
       // Check if backend is available first
-      const healthCheck = await axiosInstance.get('/health');
-      if (!healthCheck.data) {
-        throw new Error('Backend not responding');
-      }
+      // const healthCheck = await axiosInstance.get('/health');
+      // if (!healthCheck.data) {
+      //   throw new Error('Backend not responding');
+      // }
       
-      setIsConnected(true);
+      // setIsConnected(true);
       
       // Get notifications from the endpoint
       const res = await axiosInstance.get('/studentnotifications/');
@@ -80,16 +80,16 @@ export const NotificationProvider = ({ children }) => {
   };
 
   // Check backend connection
-  const checkConnection = async () => {
-    try {
-      const response = await axiosInstance.get('/health');
-      setIsConnected(!!response.data);
-      return !!response.data;
-    } catch (error) {
-      setIsConnected(false);
-      return false;
-    }
-  };
+  // const checkConnection = async () => {
+  //   try {
+  //     const response = await axiosInstance.get('/health');
+  //     setIsConnected(!!response.data);
+  //     return !!response.data;
+  //   } catch (error) {
+  //     setIsConnected(false);
+  //     return false;
+  //   }
+  // };
 
   // Initial fetch and polling setup
   useEffect(() => {

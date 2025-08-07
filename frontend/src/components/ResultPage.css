@@ -15,7 +15,7 @@
 /* Fixed Back Button - Top Left */
 .fixed-back-button {
   position: fixed;
-  top: 10vh;
+  bottom: 30px;
   left: 3vh;
   z-index: 999;
 }
@@ -43,8 +43,8 @@
 /* Fixed Bottom Buttons */
 .fixed-bottom-buttons {
   position: fixed;
-  bottom: 10vh;
-  right: 2vw;
+  bottom: 30px;
+  right: 30px;
   display: flex;
   gap: 15px;
   z-index:999;
@@ -933,3 +933,12 @@
 .dark-mode .concept-item p {
   color: #cbd5e1 !important;
 }
+
+/* Enhanced Dark Mode Support */
+body.dark-mode .result-page-container,
+.result-page-container.dark-mode {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+  min-height: 100vh;
+}
+
+/* ... (add all the dark mode styles from the modifications artifact) ... */
