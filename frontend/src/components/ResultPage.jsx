@@ -215,20 +215,36 @@ const ResultPage = () => {
     setShowQuestionListModal(false);
   };
 
-  const handleQuestionSelect = (selectedQuestion, index, selectedImage) => {
-    navigate('/solvequestion', { 
-      state: { 
-        question: selectedQuestion, 
-        questionNumber: index + 1, 
-        questionList, 
-        class_id,
-        subject_id,
-        topic_ids,
-        subtopic,
-        image: selectedImage
-      } 
-    });
+  const handleQuestionSelect = (selectedQuestion, index, selectedImage, questionId) => {
+  console.log("ResultPage - Question selected:", {
+    selectedQuestion,
+    index,
+    selectedImage,
+    questionId
+  });
+
+   // Ensure we have proper question data structure
+  const questionData = {
+    question: selectedQuestion || "No question available",
+    questionNumber: index + 1,
+    questionId: questionId || questionList?.[index]?.id || questionList?.[index]?.question_id,
+    image: selectedImage,
+    class_id,
+    subject_id,
+    topic_ids,
+    subtopic
   };
+
+  console.log("Navigating to SolveQuestion with data:", questionData);
+
+  navigate('/solvequestion', { 
+    state: { 
+      ...questionData,
+      questionList,
+      selectedQuestions: questionList
+    } 
+  });
+};
 
   const handlePracticeSimilar = () => {
     if (!question) {
@@ -594,12 +610,14 @@ const ResultPage = () => {
           </Col>
         </Row>
 
-        <QuestionListModal 
-          show={showQuestionListModal} 
-          onHide={handleCloseQuestionList} 
-          questionList={questionList} 
-          onQuestionClick={handleQuestionSelect} 
-        />
+       <QuestionListModal 
+  show={showQuestionListModal} 
+  onHide={handleCloseQuestionList} 
+  questionList={questionList || []} 
+  onQuestionClick={handleQuestionSelect} // This now expects 4 parameters
+  isMultipleSelect={false}
+  onMultipleSelectSubmit={null}
+/>
       </Container>
     </>
   );

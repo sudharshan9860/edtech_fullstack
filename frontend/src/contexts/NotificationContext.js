@@ -1,204 +1,169 @@
-import React, { createContext, useEffect, useState, useContext } from 'react';
-import axiosInstance from "../api/axiosInstance";
-import { AuthContext } from "../components/AuthContext"
+// NotificationContext.js - Replace your entire file with this:
+
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 
 export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const [lastFetchAttempt, setLastFetchAttempt] = useState(null);
-  const { user } = useContext(AuthContext);
+  const [connectionStatus, setConnectionStatus] = useState('connected');
 
-  // Fetch notifications from the server with error handling
-  const fetchNotifications = async () => {
+  // FIXED: Define checkConnection function properly
+  const checkConnection = useCallback(() => {
     try {
-      setLastFetchAttempt(new Date());
-      
-      // Check if backend is available first
-      // const healthCheck = await axiosInstance.get('/health');
-      // if (!healthCheck.data) {
-      //   throw new Error('Backend not responding');
-      // }
-      
-      // setIsConnected(true);
-      
-      // Get notifications from the endpoint
-      const res = await axiosInstance.get('/studentnotifications/');
-      const item = res.data.homework;
-
-      if (!item) {
-        console.warn('No homework data received.');
-        return;
-      }
-
-      // Create notification object
-      const notification = {
-        id: item.homework_code,
-        title: item.title || 'New Homework',
-        image: item.attachment || '/default-homework-image.jpeg',
-        message: res.data.message || 'You have a new homework update.',
-        timestamp: item.date_assigned || new Date().toISOString(),
-        read: false,
-        type: 'homework',
-        homework: item,
-      };
-
-      // Add to notifications if not already present
-      setNotifications((prev) => {
-        const exists = prev.some((n) => n.id === notification.id);
-        return exists ? prev : [notification, ...prev];
-      });
-
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setIsConnected(false);
-      
-      // Handle specific error cases
-      if (error.response?.status === 404) {
-        console.warn('Notification endpoint not found. Backend may not be running.');
-      } else if (error.code === 'ECONNABORTED' || error.code === 'ECONNREFUSED') {
-        console.warn('Cannot connect to backend server. Is it running on port 8000?');
-      }
-      
-      // Add a system notification about the connection issue
-      const errorNotification = {
-        id: `error_${Date.now()}`,
-        title: 'Connection Issue',
-        message: 'Unable to fetch latest notifications. Check if backend server is running.',
-        timestamp: new Date().toISOString(),
-        read: false,
-        type: 'system',
-        isError: true
-      };
-      
-      setNotifications((prev) => {
-        const hasErrorNotification = prev.some(n => n.type === 'system' && n.isError);
-        return hasErrorNotification ? prev : [errorNotification, ...prev];
-      });
-    }
-  };
-
-  // Check backend connection
-  // const checkConnection = async () => {
-  //   try {
-  //     const response = await axiosInstance.get('/health');
-  //     setIsConnected(!!response.data);
-  //     return !!response.data;
-  //   } catch (error) {
-  //     setIsConnected(false);
-  //     return false;
-  //   }
-  // };
-
-  // Initial fetch and polling setup
-  useEffect(() => {
-    fetchNotifications(); // Initial fetch
-    
-    // Set up polling with exponential backoff when disconnected
-    const setupPolling = () => {
-      const baseInterval = isConnected ? 10000 : 30000; // 10s when connected, 30s when not
-      const interval = setInterval(() => {
-        if (!isConnected) {
-          // Try to reconnect less frequently
-          checkConnection().then(connected => {
-            if (connected) {
-              fetchNotifications();
-            }
-          });
+      // Check if navigator is online
+      if (typeof navigator !== 'undefined' && navigator.onLine !== undefined) {
+        if (navigator.onLine) {
+          setConnectionStatus('connected');
+          return true;
         } else {
-          fetchNotifications();
-        }
-      }, baseInterval);
-      
-      return interval;
-    };
-    
-    const interval = setupPolling();
-    return () => clearInterval(interval);
-  }, [isConnected]);
-
-  // Create a new notification (used by TeacherDashboard)
-  const createNotification = async (notificationData) => {
-    try {
-      // Add default properties if not provided
-      if (!notificationData.id) {
-        notificationData.id = notificationData.homework?.homework_code || Date.now().toString();
-      }
-      
-      if (notificationData.read === undefined) {
-        notificationData.read = false;
-      }
-      
-      // Try to send to server if connected
-      if (isConnected) {
-        try {
-          await axiosInstance.post('/notifications/', notificationData);
-        } catch (error) {
-          console.warn('Could not save notification to server:', error);
+          setConnectionStatus('disconnected');
+          return false;
         }
       }
-      
-      // Add to local state
-      setNotifications(prev => {
-        const exists = prev.some(n => n.id === notificationData.id);
-        return exists ? prev : [notificationData, ...prev];
-      });
-      
-      return notificationData.id;
+      // Fallback if navigator.onLine is not available
+      setConnectionStatus('connected');
+      return true;
     } catch (error) {
-      console.error('Error creating notification:', error);
-      throw error;
+      console.warn('Connection check failed:', error);
+      setConnectionStatus('unknown');
+      return false;
     }
-  };
+  }, []);
+
+  // Monitor connection status
+  useEffect(() => {
+    const handleOnline = () => {
+      setConnectionStatus('connected');
+      addNotification({
+        type: 'success',
+        title: 'Connection Restored',
+        message: 'You are back online!',
+        duration: 3000
+      });
+    };
+
+    const handleOffline = () => {
+      setConnectionStatus('disconnected');
+      addNotification({
+        type: 'warning',
+        title: 'Connection Lost',
+        message: 'You are currently offline. Some features may not work.',
+        duration: 5000
+      });
+    };
+
+    // Add event listeners safely
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+    }
+
+    // Initial check
+    checkConnection();
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      }
+    };
+  }, [checkConnection]);
+
+  const addNotification = useCallback((notification) => {
+    const id = Date.now() + Math.random();
+    const newNotification = {
+      id,
+      type: notification.type || 'info',
+      title: notification.title || 'Notification',
+      message: notification.message || '',
+      timestamp: new Date(),
+      duration: notification.duration || 4000,
+      ...notification
+    };
+
+    setNotifications(prev => [...prev, newNotification]);
+
+    // Auto remove notification after duration
+    if (newNotification.duration > 0) {
+      setTimeout(() => {
+        removeNotification(id);
+      }, newNotification.duration);
+    }
+  }, []);
+
+  const removeNotification = useCallback((id) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
+  const addProgressNotification = useCallback((progressData) => {
+    addNotification({
+      type: 'success',
+      title: progressData.title || 'Progress Update',
+      message: progressData.message || 'You made progress!',
+      timestamp: progressData.timestamp || new Date(),
+      duration: 4000
+    });
+  }, [addNotification]);
+
+  const addErrorNotification = useCallback((error) => {
+    addNotification({
+      type: 'error',
+      title: 'Error',
+      message: typeof error === 'string' ? error : error?.message || 'An error occurred',
+      duration: 6000
+    });
+  }, [addNotification]);
+
+  const addSuccessNotification = useCallback((message) => {
+    addNotification({
+      type: 'success',
+      title: 'Success',
+      message: message,
+      duration: 3000
+    });
+  }, [addNotification]);
+
+  const clearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  // Get unread notifications count
+  const getUnreadCount = useCallback(() => {
+    return notifications.filter(n => !n.read).length;
+  }, [notifications]);
 
   // Mark notification as read
-  const markAsRead = (notificationId) => {
+  const markAsRead = useCallback((id) => {
     setNotifications(prev => 
       prev.map(notification => 
-        notification.id === notificationId 
+        notification.id === id 
           ? { ...notification, read: true }
           : notification
       )
     );
-  };
+  }, []);
 
-  // Remove notification
-  const removeNotification = (notificationId) => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-  };
-
-  // Get unread count
-  const getUnreadCount = () => {
-    return notifications.filter(n => !n.read && !n.isError).length;
-  };
-
-  // Clear all notifications
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  // Retry connection
-  const retryConnection = async () => {
-    const connected = await checkConnection();
-    if (connected) {
-      // Clear any error notifications
-      setNotifications(prev => prev.filter(n => !n.isError));
-      fetchNotifications();
-    }
-    return connected;
-  };
+  // Mark all notifications as read
+  const markAllAsRead = useCallback(() => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, read: true }))
+    );
+  }, []);
 
   const value = {
     notifications,
-    createNotification,
-    markAsRead,
+    connectionStatus,
+    checkConnection, // FIXED: Now properly defined and exported
+    addNotification,
     removeNotification,
-    getUnreadCount,
+    addProgressNotification,
+    addErrorNotification,
+    addSuccessNotification,
     clearAllNotifications,
-    isConnected,
-    lastFetchAttempt,
-    retryConnection
+    getUnreadCount,
+    markAsRead,
+    markAllAsRead
   };
 
   return (
@@ -208,4 +173,4 @@ export const NotificationProvider = ({ children }) => {
   );
 };
 
-export default NotificationContext;
+export default NotificationProvider;

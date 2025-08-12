@@ -1718,3 +1718,115 @@
     width: 100% !important;
   }
 }
+
+/* Add this CSS to the END of your existing SolveQuestion.css file */
+
+/* ========================================
+   FIXED BOTTOM BUTTONS - NEW ADDITION
+======================================== */
+
+/* Fixed Bottom Buttons Container */
+.fixed-bottom-buttons-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid #e9ecef;
+  padding: 15px 20px 20px 20px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+/* Dark mode support for fixed buttons */
+.dark-mode .fixed-bottom-buttons-container {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border-top-color: rgba(51, 65, 85, 0.6) !important;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Ensure content doesn't scroll behind fixed buttons */
+.solve-question-content {
+  padding-bottom: 140px; /* Adjust based on button height */
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Button styling improvements for fixed layout */
+.fixed-bottom-buttons-container .btn {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 12px;
+  transition: all 0.3s ease;
+}
+
+/* Solve button special styling */
+.solve-question-wrapper .solve-btn {
+  background: linear-gradient(135deg, #00BCD4, #001B6C);
+  border: none;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+}
+
+.solve-question-wrapper .solve-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #26C6DA, #1A237E);
+  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+}
+
+/* Animation for button interactions */
+.fixed-bottom-buttons-container .btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Button loading states */
+.fixed-bottom-buttons-container .btn .spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.1em;
+}
+
+/* Ensure proper layering over other content */
+.solve-question-wrapper {
+  position: relative;
+  min-height: 100vh;
+}
+
+.solve-question-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .fixed-bottom-buttons-container {
+    padding: 10px 15px 15px 15px;
+  }
+  
+  .fixed-bottom-buttons-container .btn {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  
+  .solve-question-content {
+    padding-bottom: 130px;
+  }
+}
+
+@media (max-width: 576px) {
+  .fixed-bottom-buttons-container {
+    padding: 8px 10px 12px 10px;
+  }
+  
+  .fixed-bottom-buttons-container .btn {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  .solve-question-content {
+    padding-bottom: 120px;
+  }
+}

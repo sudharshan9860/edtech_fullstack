@@ -262,6 +262,11 @@ function SolveQuestion() {
     formData.append("study_time_seconds", Math.floor(timeSpentMs / 1000));
     formData.append("study_time_minutes", timeSpentMinutes);
 
+    // In handleCorrect function, ADD this line after the existing formData.append calls:
+if (currentQuestion.originalQuestionId || currentQuestion.id) {
+  formData.append("question_id", currentQuestion.originalQuestionId || currentQuestion.id);
+}
+
     // IMPORTANT: Add the original question ID from backend
     if (currentQuestion.originalQuestionId) {
       formData.append("question_id", currentQuestion.originalQuestionId);
@@ -431,6 +436,11 @@ function SolveQuestion() {
   //     console.log(`  📝 ${key}:`, key === "ques_img" ? `[${value.length} chars]` : value);
   //   }
   // }
+
+  // In sendFormData function, ADD this line after the existing formData.append calls:
+if (currentQuestion.originalQuestionId || currentQuestion.id) {
+  formData.append("question_id", currentQuestion.originalQuestionId || currentQuestion.id);
+}
     
     // Append additional data from flags
     Object.entries(flags).forEach(([key, value]) => {
@@ -529,18 +539,18 @@ function SolveQuestion() {
   };
 
   // UPDATE: Modified handleQuestionSelect to preserve question ID
-  const handleQuestionSelect = (selectedQuestion, selectedIndex, selectedImage, questionData = null) => {
-      console.log("Question selected in SolveQuestion");
-      console.log("Selected question:", selectedQuestion);
-      console.log("Selected image:", selectedImage);
-      console.log("Question data:", questionData);
+  const handleQuestionSelect = (selectedQuestion, selectedIndex, selectedImage, questionId = null) => {
+  console.log("Question selected in SolveQuestion");
+  console.log("Selected question:", selectedQuestion);
+  console.log("Selected image:", selectedImage);
+  console.log("Question ID:", questionId);
 
     // Stop the current timer
     stopTimer();
 
-    // Use questionData if available, otherwise get from questionList
-  const actualQuestionData = questionData || questionList[selectedIndex];
-  const originalQuestionId = actualQuestionData?.id;
+   // Use questionId if provided, otherwise get from questionList
+  const actualQuestionData = questionList?.[selectedIndex];
+  const originalQuestionId = questionId || actualQuestionData?.id || actualQuestionData?.question_id;
 
   // Only proceed if we have an original question ID from backend
   if (!originalQuestionId) {
@@ -601,169 +611,159 @@ function SolveQuestion() {
     };
   }, [images]);
 
+ // Replace the existing button layout section in your SolveQuestion.jsx (around line 654)
+// Find the section that starts with {/* Button Layout */} and replace it with this:
+
   return (
     <div className="solve-question-wrapper">
       <div className="solve-question-container">
-        {/* Header section with timer */}
-        <div className="solve-question-header d-flex justify-content-between align-items-center mb-3">
-          {/* Study Timer */}
-          <StudyTimer 
-            isActive={isTimerActive}
-            questionId={currentQuestion.id}
-            onTimerComplete={handleTimerComplete}
-            className={processingButton ? "stopped" : ""}
-          />
-        </div>
-
-        {/* Question Display Section */}
-        <div className="question-text-container">
-          <span className="question-title">
-            Question {currentQuestion.questionNumber}
-          </span>
-          {currentQuestion.image && (
-            <img
-              src={currentQuestion.image}
-              alt="Question"
-              className="question-image"
+        <div className="solve-question-content">
+          {/* Header section with timer */}
+          <div className="solve-question-header d-flex justify-content-between align-items-center mb-3">
+            <StudyTimer 
+              isActive={isTimerActive}
+              questionId={currentQuestion.id}
+              onTimerComplete={handleTimerComplete}
+              className={processingButton ? "stopped" : ""}
             />
-          )}
-          <div className="question-text"><MarkdownWithMath content={currentQuestion.question} /></div>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <Alert variant="danger" className="my-3">
-            {error}
-          </Alert>
-        )}
-
-        {/* Image Upload Section */}
-        <Form onSubmit={(e) => e.preventDefault()}>
-          <Form.Group controlId="formImage">
-            <Form.Label>Add Solution Images</Form.Label>
-            
-            {/* Image Source Selection Buttons */}
-            <div className="image-source-buttons mb-3">
-              {/* <Button
-                variant={imageSourceType === "upload" ? "primary" : "outline-primary"}
-                className="me-2"
-                onClick={() => setImageSourceType("upload")}
-                disabled={isAnyButtonProcessing()}
-              >
-                <FontAwesomeIcon icon={faUpload} className="me-2" />
-                Upload Images
-              </Button> */}
-              <Button
-                variant={imageSourceType === "camera" ? "primary" : "outline-primary"}
-                onClick={() => setImageSourceType("camera")}
-                disabled={isAnyButtonProcessing()}
-              >
-                <FontAwesomeIcon icon={faCamera} className="me-2" />
-                Take Photo
-              </Button>
-            </div>
-
-            {/* Conditional rendering based on image source type */}
-            {imageSourceType === "upload" ? (
-              <>
-                <Form.Control
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  disabled={isAnyButtonProcessing()}
-                />
-                <Form.Text className="text-muted">
-                  Maximum file size: 5MB per image. You can select multiple images.
-                </Form.Text>
-              </>
-            ) : (
-              <div style={{
-                border: '2px dashed #dee2e6',
-                borderRadius: '8px',
-                padding: '20px',
-                backgroundColor: '#f8f9fa',
-                marginTop: '10px'
-              }}>
-              
-              <CameraCapture
-                onImageCapture={handleCapturedImage}
-                videoConstraints={{ 
-                  facingMode: { ideal: "environment" },
-                  // For text documents, use higher resolution
-                  width: { ideal: 4096 },
-                  height: { ideal: 3072 },
-                  // Additional constraints for clarity
-                  focusMode: { ideal: "continuous" },
-                  exposureMode: { ideal: "continuous" }
-                }}
-              />
-                <p className="text-muted mt-2 text-center">
-                  Click "Capture" to take a photo of your solution
-                </p>
-              </div>
-            )}
-          </Form.Group>
-        </Form>
-
-        {/* Upload Progress Bar */}
-        {isAnyButtonProcessing() && uploadProgress > 0 && (
-          <div className="upload-progress mt-3">
-            <div className="progress">
-              <div
-                className="progress-bar progress-bar-striped progress-bar-animated"
-                role="progressbar"
-                style={{ width: `${uploadProgress}%` }}
-                aria-valuenow={uploadProgress}
-                aria-valuemin="0"
-                aria-valuemax="100"
-              >
-                {uploadProgress}%
-              </div>
-            </div>
-            <p className="text-center mt-1">
-              Uploading... Please don't close this page.
-            </p>
           </div>
-        )}
 
-        {/* Image Previews */}
-        {images.length > 0 && (
-          <div className="uploaded-images mt-3">
-            <h6>Solution Images ({images.length})</h6>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-              gap: '12px',
-              marginTop: '12px'
-            }}>
-              {images.map((image, index) => (
-                <div key={index} className="image-preview-container" style={{ position: 'relative' }}>
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt={`Preview ${index + 1}`}
-                    className="image-preview"
-                    style={{
-                      width: '100%',
-                      height: '150px',
-                      objectFit: 'cover',
-                      borderRadius: '8px',
-                      border: '1px solid #dee2e6'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="image-remove-btn"
-                    onClick={() => handleCancelImage(index)}
+          {/* Question Display Section */}
+          <div className="question-text-container">
+            <span className="question-title">
+              Question {currentQuestion.questionNumber}
+            </span>
+            {currentQuestion.image && (
+              <img
+                src={currentQuestion.image}
+                alt="Question"
+                className="question-image"
+              />
+            )}
+            <div className="question-text"><MarkdownWithMath content={currentQuestion.question} /></div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <Alert variant="danger" className="my-3">
+              {error}
+            </Alert>
+          )}
+
+          {/* Image Upload Section - Keep your existing upload section here */}
+          <Form onSubmit={(e) => e.preventDefault()}>
+            <Form.Group controlId="formImage">
+              <Form.Label>Add Solution Images</Form.Label>
+              
+              {/* Image Source Selection Buttons */}
+              <div className="image-source-buttons mb-3">
+                <Button
+                  variant={imageSourceType === "camera" ? "primary" : "outline-primary"}
+                  onClick={() => setImageSourceType("camera")}
+                  disabled={isAnyButtonProcessing()}
+                >
+                  <FontAwesomeIcon icon={faCamera} className="me-2" />
+                  Take Photo
+                </Button>
+              </div>
+
+              {/* Keep your existing conditional rendering and image upload logic here */}
+              {imageSourceType === "upload" ? (
+                <>
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
                     disabled={isAnyButtonProcessing()}
-                    aria-label="Remove image"
-                  >
-                    ×
-                  </button>
+                  />
+                  <Form.Text className="text-muted">
+                    Maximum file size: 5MB per image. You can select multiple images.
+                  </Form.Text>
+                </>
+              ) : (
+                <div style={{
+                  border: '2px dashed #dee2e6',
+                  borderRadius: '8px',
+                  padding: '20px',
+                  backgroundColor: '#f8f9fa',
+                  marginTop: '10px'
+                }}>
+                <CameraCapture
+                  onImageCapture={handleCapturedImage}
+                  videoConstraints={{ 
+                    facingMode: { ideal: "environment" },
+                    width: { ideal: 4096 },
+                    height: { ideal: 3072 },
+                    focusMode: { ideal: "continuous" },
+                    exposureMode: { ideal: "continuous" }
+                  }}
+                />
+                  <p className="text-muted mt-2 text-center">
+                    Click "Capture" to take a photo of your solution
+                  </p>
                 </div>
-              ))}
+              )}
+            </Form.Group>
+          </Form>
+
+          {/* Upload Progress Bar - Keep your existing progress bar */}
+          {isAnyButtonProcessing() && uploadProgress > 0 && (
+            <div className="upload-progress mt-3">
+              <div className="progress">
+                <div
+                  className="progress-bar progress-bar-striped progress-bar-animated"
+                  role="progressbar"
+                  style={{ width: `${uploadProgress}%` }}
+                  aria-valuenow={uploadProgress}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  {uploadProgress}%
+                </div>
+              </div>
+              <p className="text-center mt-1">
+                Uploading... Please don't close this page.
+              </p>
             </div>
-            {images.length > 0 && (
+          )}
+
+          {/* Image Previews - Keep your existing image preview logic */}
+          {images.length > 0 && (
+            <div className="uploaded-images mt-3">
+              <h6>Solution Images ({images.length})</h6>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                gap: '12px',
+                marginTop: '12px'
+              }}>
+                {images.map((image, index) => (
+                  <div key={index} className="image-preview-container" style={{ position: 'relative' }}>
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={`Preview ${index + 1}`}
+                      className="image-preview"
+                      style={{
+                        width: '100%',
+                        height: '150px',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        border: '1px solid #dee2e6'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="image-remove-btn"
+                      onClick={() => handleCancelImage(index)}
+                      disabled={isAnyButtonProcessing()}
+                      aria-label="Remove image"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
               <Button
                 variant="outline-danger"
                 size="sm"
@@ -776,15 +776,18 @@ function SolveQuestion() {
               >
                 Clear All
               </Button>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Button Layout */}
-        <div className="button-grid mt-4">
-          {/* Top Row with Navigation and Submit */}
-          <Row className="mb-3">
-            <Col xs={6} md={3}>
+          {/* Add padding at bottom to prevent content from being hidden behind fixed buttons */}
+          <div style={{ height: '120px' }}></div>
+        </div>
+
+        {/* FIXED BOTTOM BUTTON CONTAINER - NEW ADDITION */}
+        <div className="fixed-bottom-buttons-container">
+          {/* Top Row with Navigation */}
+          <Row className="mb-2">
+            <Col xs={6}>
               <Button
                 variant="secondary"
                 onClick={handleBackClick}
@@ -794,7 +797,7 @@ function SolveQuestion() {
                 Back
               </Button>
             </Col>
-            <Col xs={6} md={3}>
+            <Col xs={6}>
               <Button
                 variant="primary"
                 onClick={() => setShowQuestionListModal(true)}
@@ -808,7 +811,7 @@ function SolveQuestion() {
 
           {/* Bottom Row with Action Buttons */}
           <Row>
-            <Col xs={6} md={3} className="mb-2">
+            <Col xs={6} md={3} className="mb-1">
               <Button
                 variant={isSolveEnabled ? "primary" : "secondary"}
                 onClick={handleSolve}
@@ -831,7 +834,7 @@ function SolveQuestion() {
                 )}
               </Button>
             </Col>
-            <Col xs={6} md={3} className="mb-2">
+            <Col xs={6} md={3} className="mb-1">
               <Button
                 variant="primary"
                 onClick={handleCorrect}
@@ -854,7 +857,7 @@ function SolveQuestion() {
                 )}
               </Button>
             </Col>
-            <Col xs={6} md={3} className="mb-2">
+            <Col xs={6} md={3} className="mb-1">
               <Button
                 variant="primary"
                 onClick={handleExplain}
@@ -877,7 +880,7 @@ function SolveQuestion() {
                 )}
               </Button>
             </Col>
-            <Col xs={6} md={3} className="mb-2">
+            <Col xs={6} md={3} className="mb-1">
               <Button
                 variant="info"
                 onClick={handleGapAnalysis}
@@ -891,7 +894,7 @@ function SolveQuestion() {
         </div>
       </div>
 
-      {/* Question List Modal */}
+      {/* Question List Modal - Keep your existing modal */}
       <QuestionListModal
         show={showQuestionListModal}
         onHide={() => setShowQuestionListModal(false)}

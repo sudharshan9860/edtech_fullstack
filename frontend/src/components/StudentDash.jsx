@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 import "./StudentDash.css";
 import axiosInstance from "../api/axiosInstance";
 import QuestionListModal from "./QuestionListModal";
+import { NotificationContext } from '../contexts/NotificationContext';
 import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AuthContext } from "./AuthContext";
@@ -69,6 +70,26 @@ function StudentDash() {
 const [isLoading, setIsLoading] = useState(false);
 const [error, setError] = useState(null);
 const [success, setSuccess] = useState('');
+
+  // ADD these missing state variables after your existing useState declarations:
+const [selectedTopics, setSelectedTopics] = useState([]); // Add this line
+const [selectedSubtopic, setSelectedSubtopic] = useState(""); // Add this line
+const [selectedQuestionsData, setSelectedQuestionsData] = useState([]); // Add this line
+const [showQuestionListModal, setShowQuestionListModal] = useState(false); // Add this line
+
+const { addNotification } = useContext(NotificationContext);
+
+
+// Add this INSIDE your StudentDash function, after the useState declarations:
+useEffect(() => {
+  console.log('StudentDash State Debug:', {
+    selectedClass,
+    selectedSubject,
+    selectedTopics,
+    selectedSubtopic,
+    questionList: questionList?.length || 0
+  });
+}, [selectedClass, selectedSubject, selectedTopics, selectedSubtopic, questionList]);
 
   // Extract class from username (e.g., 10HPS24 -> 10, 12ABC24 -> 12)
   const extractClassFromUsername = (username) => {
@@ -367,6 +388,14 @@ const [success, setSuccess] = useState('');
       const response = await axiosInstance.post("/question-images/", requestData);
       console.log("API Response:", response.data);
 
+      // Add success notification
+    addNotification({
+      type: 'success',
+      title: 'Questions Generated!',
+      message: `Found ${response.data.questions.length} questions for your selection`,
+      duration: 4000
+    });
+
     // Process questions with images - PRESERVE the original backend IDs
     if (response.data && response.data.questions && Array.isArray(response.data.questions)) {
       const questionsWithImages = (response.data.questions || []).map((question, index) => ({
@@ -381,8 +410,8 @@ const [success, setSuccess] = useState('');
     console.log("Processed questions with preserved IDs:", questionsWithImages);
     setQuestionList(questionsWithImages);
     setSelectedQuestions([]);
-    setShowQuestionList(true);
-    
+    setShowQuestionListModal(true); // This is CORRECT
+
     // 🎉 TRIGGER SUCCESS CONFETTI WHEN QUESTIONS ARE LOADED
     // triggerSuccessConfetti();
      } else {
@@ -392,31 +421,50 @@ const [success, setSuccess] = useState('');
     } catch (error) {
       console.error("Error generating questions:", error);
       alert("Failed to generate questions. Please try again.");
+      // Add error notification
+    addNotification({
+      type: 'error',
+      title: 'Generation Failed',
+      message: 'Failed to generate questions. Please try again.',
+      duration: 6000
+    });
     } finally {
         setIsLoading(false);
     }
   };
 
 // Enhanced question click handler - UPDATED to use preserved question IDs
-const handleQuestionClick = (question, index, image) => {
-  console.log("Question clicked:", { question, index, image });
+const handleQuestionClick = (questionObj, index) => {
+  console.log("Question clicked:", questionObj, index);
   
-  setShowQuestionList(false);
-  
-  navigate("/solvequestion", {
+  // FIXED: Use selectedChapters instead of selectedTopics
+  const topicIds = selectedChapters && Array.isArray(selectedChapters) 
+    ? selectedChapters.join(',') 
+    : '';
+
+  navigate('/solvequestion', {
     state: {
-      question: question,
+      question: questionObj.question,
+      questionId: questionObj.id,
       questionNumber: index + 1,
-      questionList,
+      questionList: questionList,
       class_id: selectedClass,
       subject_id: selectedSubject,
-      topic_ids: selectedChapters,
-      subtopic: questionType === "external" ? questionLevel : "",
-      worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
-      image,
-      selectedQuestions: selectedQuestions,
-    },
+      topic_ids: topicIds,
+      subtopic: questionLevel || '',
+      image: questionObj.image || questionObj.question_image || '',
+      index: index,
+      selectedQuestions: selectedQuestionsData || [],
+      questionLevel: questionObj.level,
+      originalQuestionId: questionObj.id
+    }
   });
+};
+
+// ADD this function after handleQuestionClick:
+const handleQuestionClickFromModal = (questionObj, index) => {
+  handleQuestionClick(questionObj, index);
+  setShowQuestionListModal(false);
 };
 
 // Updated handleMultipleSelectSubmit function to preserve question IDs
@@ -1297,16 +1345,16 @@ const playSuccessSound = () => {
       </div>
 
       {/* Enhanced Question List Modal */}
-      <QuestionListModal
-        show={showQuestionList}
-        onHide={() => setShowQuestionList(false)}
-        questionList={questionList}
-        onQuestionClick={handleQuestionClick}
-        isMultipleSelect={questionType === "external"}
-        onMultipleSelectSubmit={handleMultipleSelectSubmit}
-        worksheetName={questionType === "worksheets" ? selectedWorksheet : ""}
-
-      />
+      {/* REPLACE your existing QuestionListModal usage with this: */}
+          <QuestionListModal
+            show={showQuestionListModal}
+            onHide={() => setShowQuestionListModal(false)}
+            questionList={questionList}
+            onQuestionClick={handleQuestionClickFromModal} // Use the new handler
+            isMultipleSelect={questionType === "external"}
+            onMultipleSelectSubmit={handleMultipleSelectSubmit}
+            worksheetName={questionType === "worksheets" ? selectedWorksheet : ""}
+          />
     </div>
   );
 }

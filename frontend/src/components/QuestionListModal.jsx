@@ -19,6 +19,8 @@ const QuestionListModal = ({
   const [selectedQuestions, setSelectedQuestions] = useState([]);
 
   const handleQuestionClick = (questionData, index) => {
+    console.log("Question clicked in modal:", questionData, index);
+    
     if (isMultipleSelect) {
       setSelectedQuestions((prev) => {
         const isSelected = prev.includes(index);
@@ -32,28 +34,48 @@ const QuestionListModal = ({
         }
       });
     } else {
+      // Ensure we're passing proper string content and IDs
       const selectedQuestion = {
-        question: questionData.question,
-        id: questionData.id, // Include the original question ID from backend
+        // Ensure question is a string
+        question: typeof questionData.question === 'string' 
+          ? questionData.question 
+          : questionData.question?.text || questionData.question?.question || String(questionData.question || ''),
+        // Pass proper IDs
+        id: questionData.id || questionData.question_id || questionData._id,
+        // Handle image properly
         image: questionData.question_image
           ? `data:image/png;base64,${questionData.question_image}`
-          : null,
+          : questionData.image || null,
+        // Additional metadata
+        level: questionData.level || 'Medium',
+        originalIndex: index
       };
 
-      // Pass the question text, index, image, and the full question data (which includes ID)
-      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image);    }
+      console.log("Processed selected question:", selectedQuestion);
+      
+      // Call the parent handler with processed data
+      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image, selectedQuestion.id);
+    }
   };
 
   const handleMultipleSelectSubmit = () => {
     if (selectedQuestions.length >= 1 && selectedQuestions.length <= 5) {
       const selectedQuestionsData = selectedQuestions.map((index) => ({
-        question: questionList[index].question,
-        id: questionList[index].id, // Include the original question ID
+        // Ensure question is a string
+        question: typeof questionList[index].question === 'string'
+          ? questionList[index].question
+          : questionList[index].question?.text || questionList[index].question?.question || String(questionList[index].question || ''),
+        // Pass proper IDs
+        id: questionList[index].id || questionList[index].question_id || questionList[index]._id,
+        // Handle image properly
         image: questionList[index].question_image
           ? `data:image/png;base64,${questionList[index].question_image}`
-          : null,
+          : questionList[index].image || null,
         index: index,
+        level: questionList[index].level || 'Medium'
       }));
+      
+      console.log("Multiple questions selected:", selectedQuestionsData);
       onMultipleSelectSubmit(selectedQuestionsData);
     }
   };
@@ -72,6 +94,23 @@ const QuestionListModal = ({
   const handleModalClose = () => {
     setSelectedQuestions([]);
     onHide();
+  };
+
+  // Safe function to render question content
+  const renderQuestionContent = (questionData) => {
+    let questionText = '';
+    
+    if (typeof questionData.question === 'string') {
+      questionText = questionData.question;
+    } else if (questionData.question?.text) {
+      questionText = questionData.question.text;
+    } else if (questionData.question?.question) {
+      questionText = questionData.question.question;
+    } else {
+      questionText = String(questionData.question || 'Question content unavailable');
+    }
+
+    return <MarkdownWithMath content={questionText} />;
   };
 
   return (
@@ -114,7 +153,7 @@ const QuestionListModal = ({
                   <div className="question-number">{index + 1}</div>
                   <div className="question-content">
                     <div className="question-text">
-                      <MarkdownWithMath content={questionData.question} />
+                      {renderQuestionContent(questionData)}
                     </div>
 
                     <div
@@ -122,7 +161,7 @@ const QuestionListModal = ({
                         questionData.level?.toLowerCase() || ""
                       }`}
                     >
-                      {questionData.level}
+                      {questionData.level || 'Medium'}
                     </div>
 
                     {questionData.question_image && (

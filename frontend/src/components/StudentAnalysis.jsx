@@ -1,10 +1,11 @@
-// StudentAnalysis.jsx - Enhanced Component with Smooth Animations and Extended Data - SYNTAX FIXED
+// StudentAnalysis.jsx 
 
 import React, { useState } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   PieChart, Pie, Cell, LineChart, Line, ReferenceLine
 } from 'recharts';
+import './StudentAnalysis.css';
 
 const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, classesData, onClassChange }) => {
   // Main tab state
@@ -54,7 +55,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     { date: 'Jul 03', homework: 38, classwork: 16 }
   ];
 
-  // Enhanced Topic-wise Performance Data (from image 2 & 7)
+  // Enhanced Topic-wise Performance Data
   const topicWisePerformanceData = [
     { topic: 'Calculus - Integration', homework: 100, classwork: 12 },
     { topic: 'Algebra - Linear Equations', homework: 75, classwork: 15 },
@@ -68,7 +69,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     { topic: 'Coordinate Geometry', homework: 66, classwork: 93 }
   ];
 
-  // Grouped Bar Chart Data (from image 6)
+  // Grouped Bar Chart Data
   const groupedBarData = [
     { date: 'Jun 23', homework: 18.2, classwork: 36.7 },
     { date: 'Jun 25', homework: 35.9, classwork: 20.0 },
@@ -78,7 +79,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     { date: 'Jul 03', homework: 92.7, classwork: 44.4 }
   ];
 
-  // Enhanced Comparison Summary Data (from images 3, 4, 8, 9)
+  // Enhanced Comparison Summary Data
   const detailedComparisonData = {
     overallPerformance: {
       homeworkAverage: 66.8,
@@ -123,7 +124,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     ]
   };
 
-  // Chapter Explorer Data (from images 10-15)
+  // Chapter Explorer Data
   const chapterExplorerData = [
     { chapter: 'Algebra - Linear Equations', percentage: 75 },
     { chapter: 'Algebra - Rational Functions', percentage: 80 },
@@ -245,85 +246,33 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     );
   };
 
-  // Enhanced Score Progression Tab with smooth animations
+  // Enhanced Score Progression Tab
   const renderScoreProgressionTab = () => {
     return (
-      <div className="tab-content" style={{ opacity: isTransitioning ? 0.5 : 1, transition: 'opacity 0.3s ease' }}>
-        {/* Fixed Summary Cards */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(4, 1fr)', 
-          gap: '20px', 
-          marginBottom: '30px',
-          transform: isTransitioning ? 'translateY(-10px)' : 'translateY(0)',
-          transition: 'transform 0.3s ease'
-        }}>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(59, 130, 246, 0.3)',
-            transform: 'translateY(0)',
-            transition: 'transform 0.3s ease'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>66.8%</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>Homework Average</div>
+      <div className={`tab-content ${isTransitioning ? 'transitioning' : ''}`}>
+        {/* Summary Cards */}
+        <div className={`summary-cards-grid ${isTransitioning ? 'transitioning' : ''}`}>
+          <div className="metric-card metric-card-blue">
+            <div className="metric-value">66.8%</div>
+            <div className="metric-label">Homework Average</div>
           </div>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(239, 68, 68, 0.3)',
-            transform: 'translateY(0)',
-            transition: 'transform 0.3s ease'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>33.8%</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>Classwork Average</div>
+          <div className="metric-card metric-card-red">
+            <div className="metric-value">33.8%</div>
+            <div className="metric-label">Classwork Average</div>
           </div>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(34, 197, 94, 0.3)',
-            transform: 'translateY(0)',
-            transition: 'transform 0.3s ease'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>15.07%</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>HW Improvement Rate</div>
+          <div className="metric-card metric-card-green">
+            <div className="metric-value">15.07%</div>
+            <div className="metric-label">HW Improvement Rate</div>
           </div>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(245, 158, 11, 0.3)',
-            transform: 'translateY(0)',
-            transition: 'transform 0.3s ease'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>-33.0%</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>Performance Gap</div>
+          <div className="metric-card metric-card-yellow">
+            <div className="metric-value">-33.0%</div>
+            <div className="metric-label">Performance Gap</div>
           </div>
         </div>
 
-        {/* Enhanced Sub Navigation Tabs */}
-        <div style={{ 
-          marginBottom: '30px',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0'
-          }}>
+        {/* Sub Navigation Tabs */}
+        <div className="sub-nav-container">
+          <div className="sub-nav-tabs">
             {[
               { key: 'datewise', icon: '📅', label: 'Date-wise Comparison' },
               { key: 'chapterwise', icon: '🎯', label: 'Chapter-wise Comparison' },
@@ -332,94 +281,48 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
               <button 
                 key={tab.key}
                 onClick={() => handleScoreSubTabChange(tab.key)}
-                style={{
-                  flex: 1,
-                  padding: '16px 24px',
-                  border: 'none',
-                  backgroundColor: scoreProgressionSubTab === tab.key ? '#3b82f6' : 'transparent',
-                  color: scoreProgressionSubTab === tab.key ? 'white' : '#64748b',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  transition: 'all 0.3s ease',
-                  borderRight: index < 2 ? '1px solid #e2e8f0' : 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  justifyContent: 'center'
-                }}
+                className={`sub-tab-button ${scoreProgressionSubTab === tab.key ? 'active' : ''}`}
               >
-                <span style={{ fontSize: '18px' }}>{tab.icon}</span>
+                <span className="sub-tab-icon">{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Enhanced Sub Tab Content */}
+        {/* Sub Tab Content */}
         {scoreProgressionSubTab === 'datewise' && (
-          <div style={{ 
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateX(-20px)' : 'translateX(0)',
-            transition: 'all 0.3s ease'
-          }}>
+          <div className={isTransitioning ? 'content-transitioning' : ''}>
             {scoreProgressionView === 'combined' && (
               <>
-                <div style={{ marginBottom: '30px' }}>
-                  <h3 style={{ 
-                    fontSize: '28px', 
-                    fontWeight: 'bold', 
-                    marginBottom: '8px', 
-                    color: '#1f2937',
-                    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}>
+                <div className="section-header">
+                  <h3 className="section-title">
                     📅 Homework vs Classwork: Date-wise Performance Analysis
                   </h3>
-                  <p style={{ color: '#64748b', fontSize: '16px' }}>Score Comparison Over Time with All Submission Dates</p>
+                  <p className="section-subtitle">Score Comparison Over Time with All Submission Dates</p>
                 </div>
                 
-                {/* Enhanced Summary Cards */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(4, 1fr)', 
-                  gap: '16px', 
-                  marginBottom: '30px',
-                  animation: 'slideUp 0.6s ease-out'
-                }}>
-                  {[
-                    { value: '6', label: 'Total Dates', color: '#3b82f6', bg: '#dbeafe' },
-                    { value: '532%', label: 'HW Growth Rate', color: '#22c55e', bg: '#dcfce7' },
-                    { value: '33%', label: 'CW Growth Rate', color: '#f59e0b', bg: '#fef3c7' },
-                    { value: '26 pts', label: 'Max Gap (HW-CW)', color: '#ec4899', bg: '#fce7f3' }
-                  ].map((card, index) => (
-                    <div key={index} style={{ 
-                      padding: '20px', 
-                      borderRadius: '12px', 
-                      backgroundColor: card.bg, 
-                      textAlign: 'center',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                      transform: 'translateY(0)',
-                      transition: 'transform 0.3s ease',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => e.target.style.transform = 'translateY(-4px)'}
-                    onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-                    >
-                      <div style={{ fontSize: '28px', fontWeight: 'bold', color: card.color, marginBottom: '4px' }}>{card.value}</div>
-                      <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>{card.label}</div>
-                    </div>
-                  ))}
+                {/* Small Metric Cards */}
+                <div className="small-metric-cards">
+                  <div className="small-metric-card" style={{ backgroundColor: '#dbeafe' }}>
+                    <div className="small-metric-value" style={{ color: '#3b82f6' }}>6</div>
+                    <div className="small-metric-label">Total Dates</div>
+                  </div>
+                  <div className="small-metric-card" style={{ backgroundColor: '#dcfce7' }}>
+                    <div className="small-metric-value" style={{ color: '#22c55e' }}>532%</div>
+                    <div className="small-metric-label">HW Growth Rate</div>
+                  </div>
+                  <div className="small-metric-card" style={{ backgroundColor: '#fef3c7' }}>
+                    <div className="small-metric-value" style={{ color: '#f59e0b' }}>33%</div>
+                    <div className="small-metric-label">CW Growth Rate</div>
+                  </div>
+                  <div className="small-metric-card" style={{ backgroundColor: '#fce7f3' }}>
+                    <div className="small-metric-value" style={{ color: '#ec4899' }}>26 pts</div>
+                    <div className="small-metric-label">Max Gap (HW-CW)</div>
+                  </div>
                 </div>
 
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #f1f5f9'
-                }}>
+                <div className="chart-container">
                   <ResponsiveContainer width="100%" height={450}>
                     <LineChart data={studentDateWiseComparisonData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -460,20 +363,8 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   </ResponsiveContainer>
                 </div>
                 
-                <div style={{ 
-                  textAlign: 'center', 
-                  marginTop: '20px', 
-                  padding: '16px',
-                  backgroundColor: '#f0f9ff',
-                  borderRadius: '12px',
-                  border: '1px solid #bae6fd'
-                }}>
-                  <p style={{ 
-                    color: '#0369a1', 
-                    fontSize: '15px', 
-                    fontWeight: '600',
-                    margin: 0
-                  }}>
+                <div className="info-card">
+                  <p className="info-text">
                     💡 Click on the lines to view detailed performance progression with class ranking
                   </p>
                 </div>
@@ -481,59 +372,18 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             )}
 
             {scoreProgressionView === 'homework' && (
-              <div style={{ 
-                opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  marginBottom: '24px',
-                  padding: '20px',
-                  backgroundColor: '#f8fafc',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0'
-                }}>
-                  <h3 style={{ 
-                    fontSize: '24px', 
-                    fontWeight: 'bold', 
-                    color: '#1f2937',
-                    margin: 0
-                  }}>
+              <div className={isTransitioning ? 'content-scaling' : ''}>
+                <div className="control-header">
+                  <h3 className="control-title">
                     📝 Homework Performance Progression with Class Ranking
                   </h3>
                   
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {/* Filter Buttons */}
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                  <div className="control-actions">
+                    <div className="filter-buttons">
                       {['1D', '5D', '10D', '15D', '1M', 'MAX'].map((filter) => (
                         <button 
                           key={filter} 
-                          style={{
-                            padding: '8px 12px',
-                            border: filter === 'MAX' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-                            backgroundColor: filter === 'MAX' ? '#3b82f6' : 'white',
-                            color: filter === 'MAX' ? 'white' : '#64748b',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (filter !== 'MAX') {
-                              e.target.style.backgroundColor = '#f1f5f9';
-                              e.target.style.borderColor = '#cbd5e1';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (filter !== 'MAX') {
-                              e.target.style.backgroundColor = 'white';
-                              e.target.style.borderColor = '#e2e8f0';
-                            }
-                          }}
+                          className={`filter-button ${filter === 'MAX' ? 'active' : ''}`}
                         >
                           {filter}
                         </button>
@@ -542,54 +392,18 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                     
                     <button 
                       onClick={() => handleViewTransition('combined', setScoreProgressionView)}
-                      style={{ 
-                        background: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
-                        color: 'white', 
-                        border: 'none', 
-                        padding: '12px 18px', 
-                        borderRadius: '10px',
-                        cursor: 'pointer',
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-                      }}
+                      className="back-button"
                     >
                       ← Back to Comparison
                     </button>
                   </div>
                 </div>
                 
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', 
-                  color: 'white', 
-                  padding: '16px 24px', 
-                  borderRadius: '12px', 
-                  marginBottom: '24px',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  boxShadow: '0 4px 16px rgba(251, 191, 36, 0.3)',
-                  animation: 'pulse 2s infinite'
-                }}>
+                <div className="alert-banner alert-success">
                   🏆 YOU ARE AMONG TOP 60% STUDENTS - Your Score: 66.8% | Class Avg: 62.2%
                 </div>
 
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                  border: '1px solid #f1f5f9'
-                }}>
+                <div className="chart-container-enhanced">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={studentHomeworkProgressionData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -626,64 +440,25 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   </ResponsiveContainer>
                 </div>
                 
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', 
-                  color: 'white', 
-                  padding: '12px 20px', 
-                  borderRadius: '10px', 
-                  display: 'inline-block',
-                  marginTop: '16px',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)'
-                }}>
+                <div className="improvement-trend">
                   📈 Improvement Trend: 15.07% per assignment
                 </div>
               </div>
             )}
 
             {scoreProgressionView === 'classwork' && (
-              <div style={{ 
-                opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  marginBottom: '24px',
-                  padding: '20px',
-                  backgroundColor: '#f8fafc',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0'
-                }}>
-                  <h3 style={{ 
-                    fontSize: '24px', 
-                    fontWeight: 'bold', 
-                    color: '#1f2937',
-                    margin: 0
-                  }}>
+              <div className={isTransitioning ? 'content-scaling' : ''}>
+                <div className="control-header">
+                  <h3 className="control-title">
                     📝 Classwork Performance Progression with Class Ranking
                   </h3>
                   
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {/* Filter Buttons */}
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                  <div className="control-actions">
+                    <div className="filter-buttons">
                       {['1D', '5D', '10D', '15D', '1M', 'MAX'].map((filter) => (
                         <button 
                           key={filter} 
-                          style={{
-                            padding: '8px 12px',
-                            border: filter === 'MAX' ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
-                            backgroundColor: filter === 'MAX' ? '#8b5cf6' : 'white',
-                            color: filter === 'MAX' ? 'white' : '#64748b',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            transition: 'all 0.2s ease'
-                          }}
+                          className={`filter-button topics ${filter === 'MAX' ? 'active' : ''}`}
                         >
                           {filter}
                         </button>
@@ -692,46 +467,18 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                     
                     <button 
                       onClick={() => handleViewTransition('combined', setScoreProgressionView)}
-                      style={{ 
-                        background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
-                        color: 'white', 
-                        border: 'none', 
-                        padding: '12px 18px', 
-                        borderRadius: '10px',
-                        cursor: 'pointer',
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
-                        transition: 'all 0.3s ease'
-                      }}
+                      className="back-button topics"
                     >
                       ← Back to Comparison
                     </button>
                   </div>
                 </div>
                 
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-                  color: 'white', 
-                  padding: '16px 24px', 
-                  borderRadius: '12px', 
-                  marginBottom: '24px',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)',
-                  animation: 'pulse 2s infinite'
-                }}>
-                  ⚠️ YOU ARE AMONG BOTTOM 50% STUDENTS - Your Score: 33.8% | Class Avg: 51.5%
+                <div className="alert-banner alert-warning">
+                  ⚠ YOU ARE AMONG BOTTOM 50% STUDENTS - Your Score: 33.8% | Class Avg: 51.5%
                 </div>
 
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                  border: '1px solid #f1f5f9'
-                }}>
+                <div className="chart-container-enhanced">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={studentClassworkProgressionData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -768,17 +515,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   </ResponsiveContainer>
                 </div>
                 
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', 
-                  color: 'white', 
-                  padding: '12px 20px', 
-                  borderRadius: '10px', 
-                  display: 'inline-block',
-                  marginTop: '16px',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)'
-                }}>
+                <div className="improvement-trend">
                   📉 Improvement Trend: -1.02% per assignment
                 </div>
               </div>
@@ -787,38 +524,19 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         )}
 
         {scoreProgressionSubTab === 'chapterwise' && (
-          <div style={{ 
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateY(20px)' : 'translateY(0)',
-            transition: 'all 0.4s ease'
-          }}>
+          <div className={isTransitioning ? 'content-sliding' : ''}>
             {scoreProgressionView === 'combined' && (
               <>
-                <h3 style={{ 
-                  fontSize: '28px', 
-                  fontWeight: 'bold', 
-                  marginBottom: '24px', 
-                  color: '#1f2937',
-                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
+                <h3 className="section-title">
                   🎯 Homework vs Classwork: Topic-wise Performance Analysis
                 </h3>
                 
-                <p style={{ color: '#64748b', marginBottom: '30px', fontSize: '16px' }}>
+                <p className="section-subtitle">
                   Average Performance Comparison by TOPIC - Click on lines for detailed analysis
                 </p>
 
                 {/* Line Chart */}
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  marginBottom: '30px',
-                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #f1f5f9'
-                }}>
+                <div className="chart-container">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={topicWisePerformanceData} margin={{ bottom: 100 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -860,16 +578,8 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                 </div>
 
                 {/* Bar Chart */}
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #f1f5f9'
-                }}>
-                  <h4 style={{ marginBottom: '20px', color: '#374151', fontSize: '18px', fontWeight: '600' }}>
-                    📊 Grouped Bar Comparison View
-                  </h4>
+                <div className="chart-container">
+                  <h4 className="section-subtitle">📊 Grouped Bar Comparison View</h4>
                   <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={topicWisePerformanceData} margin={{ bottom: 100 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -888,16 +598,10 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                       <Bar dataKey="classwork" fill="#8b5cf6" name="Classwork" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
-                  <div style={{ 
-                    textAlign: 'center', 
-                    marginTop: '16px', 
-                    padding: '12px',
-                    backgroundColor: '#f8fafc',
-                    borderRadius: '8px',
-                    color: '#64748b',
-                    fontSize: '14px'
-                  }}>
-                    📈 Use buttons above to switch between comparison views and detailed timeline views
+                  <div className="info-card">
+                    <p className="info-text">
+                      📈 Use buttons above to switch between comparison views and detailed timeline views
+                    </p>
                   </div>
                 </div>
               </>
@@ -906,192 +610,90 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         )}
 
         {scoreProgressionSubTab === 'summary' && (
-          <div style={{ 
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateY(20px)' : 'translateY(0)',
-            transition: 'all 0.4s ease'
-          }}>
-            <div style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              borderRadius: '20px',
-              padding: '24px',
-              marginBottom: '30px',
-              color: 'white',
-              boxShadow: '0 10px 40px rgba(102, 126, 234, 0.3)'
-            }}>
-              <h3 style={{ 
-                fontSize: '28px', 
-                fontWeight: 'bold', 
-                marginBottom: '8px',
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-              }}>
+          <div className={isTransitioning ? 'content-sliding' : ''}>
+            <div className="gradient-header">
+              <h3 className="gradient-header-title">
                 📊 HOMEWORK vs CLASSWORK COMPARISON
               </h3>
-              <p style={{ opacity: 0.9, fontSize: '16px' }}>Comprehensive Performance Analysis & Insights</p>
+              <p className="gradient-header-subtitle">Comprehensive Performance Analysis & Insights</p>
             </div>
 
-            {/* Mobile-style Cards */}
-            <div style={{ display: 'grid', gap: '20px' }}>
+            {/* Analysis Cards */}
+            <div className="analysis-cards-grid">
               {/* Overall Performance Card */}
-              <div style={{ 
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '24px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                border: '1px solid #f1f5f9'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '12px',
-                  marginBottom: '20px'
-                }}>
-                  <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
-                    borderRadius: '12px', 
-                    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px'
-                  }}>
-                    📊
-                  </div>
-                  <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                    Overall Performance
-                  </h4>
+              <div className="analysis-card">
+                <div className="analysis-card-header">
+                  <div className="analysis-card-icon blue">📊</div>
+                  <h4 className="analysis-card-title">Overall Performance</h4>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                  <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#dbeafe', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1d4ed8' }}>66.8%</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Homework Average</div>
+                <div className="analysis-card-content three-cols">
+                  <div className="performance-metric blue">
+                    <div className="performance-value">66.8%</div>
+                    <div className="performance-label">Homework Average</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#fee2e2', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626' }}>33.8%</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Classwork Average</div>
+                  <div className="performance-metric red">
+                    <div className="performance-value red">33.8%</div>
+                    <div className="performance-label">Classwork Average</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#fef3c7', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#d97706' }}>-33.0%</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Performance Gap</div>
+                  <div className="performance-metric yellow">
+                    <div className="performance-value yellow">-33.0%</div>
+                    <div className="performance-label">Performance Gap</div>
                   </div>
                 </div>
               </div>
 
               {/* Score Analysis Card */}
-              <div style={{ 
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '24px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                border: '1px solid #f1f5f9'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '12px',
-                  marginBottom: '20px'
-                }}>
-                  <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
-                    borderRadius: '12px', 
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px'
-                  }}>
-                    📈
-                  </div>
-                  <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                    Score Analysis
-                  </h4>
+              <div className="analysis-card">
+                <div className="analysis-card-header">
+                  <div className="analysis-card-icon green">📈</div>
+                  <h4 className="analysis-card-title">Score Analysis</h4>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                  <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#dcfce7', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>24.5</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>HW Avg Score</div>
+                <div className="analysis-card-content three-cols">
+                  <div className="performance-metric green">
+                    <div className="performance-value green">24.5</div>
+                    <div className="performance-label">HW Avg Score</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#fee2e2', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626' }}>11.3</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>CW Avg Score</div>
+                  <div className="performance-metric red">
+                    <div className="performance-value red">11.3</div>
+                    <div className="performance-label">CW Avg Score</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#fce7f3', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#be185d' }}>-13.2</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Score Difference</div>
+                  <div className="performance-metric pink">
+                    <div className="performance-value pink">-13.2</div>
+                    <div className="performance-label">Score Difference</div>
                   </div>
                 </div>
               </div>
 
               {/* Topics Analysis */}
-              <div style={{ 
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '24px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                border: '1px solid #f1f5f9'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '12px',
-                  marginBottom: '20px'
-                }}>
-                  <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
-                    borderRadius: '12px', 
-                    background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px'
-                  }}>
-                    🎯
-                  </div>
-                  <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                    Topics Analysis
-                  </h4>
+              <div className="analysis-card">
+                <div className="analysis-card-header">
+                  <div className="analysis-card-icon purple">🎯</div>
+                  <h4 className="analysis-card-title">Topics Analysis</h4>
                 </div>
                 
-                <div style={{ marginBottom: '24px' }}>
-                  <h5 style={{ color: '#22c55e', marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>
+                <div>
+                  <h5 className="section-subtitle" style={{ color: '#22c55e', fontWeight: '600' }}>
                     📈 Topics with Improvement (CW {'>='} HW):
                   </h5>
-                  <div style={{ display: 'grid', gap: '8px' }}>
+                  <div className="topic-list">
                     {detailedComparisonData.topicsWithImprovement.map((topic, index) => (
-                      <div key={index} style={{ 
-                        padding: '12px 16px', 
-                        backgroundColor: '#f0fdf4', 
-                        borderRadius: '8px',
-                        border: '1px solid #bbf7d0',
-                        display: 'flex',
-                        justifyContent: 'space-between'
-                      }}>
-                        <span style={{ color: '#374151', fontWeight: '500' }}>{topic.topic}</span>
-                        <span style={{ color: '#22c55e', fontWeight: 'bold' }}>+{topic.improvement}%</span>
+                      <div key={index} className="topic-improvement-item">
+                        <span className="topic-name">{topic.topic}</span>
+                        <span className="topic-improvement">+{topic.improvement}%</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div>
-                  <h5 style={{ color: '#ef4444', marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>
+                <div style={{ marginTop: '24px' }}>
+                  <h5 className="section-subtitle" style={{ color: '#ef4444', fontWeight: '600' }}>
                     📉 Topics with Decline (CW {'<'} HW):
                   </h5>
-                  <div style={{ display: 'grid', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
+                  <div className="topic-list topic-list-scrollable">
                     {detailedComparisonData.topicsWithDecline.slice(0, 6).map((topic, index) => (
-                      <div key={index} style={{ 
-                        padding: '10px 14px', 
-                        backgroundColor: '#fef2f2', 
-                        borderRadius: '8px',
-                        border: '1px solid #fecaca',
-                        display: 'flex',
-                        justifyContent: 'space-between'
-                      }}>
-                        <span style={{ color: '#374151', fontWeight: '500', fontSize: '14px' }}>{topic.topic}</span>
-                        <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '14px' }}>{topic.decline}%</span>
+                      <div key={index} className="topic-decline-item">
+                        <span className="topic-name small">{topic.topic}</span>
+                        <span className="topic-decline small">{topic.decline}%</span>
                       </div>
                     ))}
                   </div>
@@ -1099,65 +701,34 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
               </div>
 
               {/* Detailed Comparison Table */}
-              <div style={{ 
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '24px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                border: '1px solid #f1f5f9'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '12px',
-                  marginBottom: '20px'
-                }}>
-                  <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
-                    borderRadius: '12px', 
-                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px'
-                  }}>
-                    📋
-                  </div>
-                  <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                    Detailed Topic Comparison
-                  </h4>
+              <div className="analysis-card">
+                <div className="analysis-card-header">
+                  <div className="analysis-card-icon orange">📋</div>
+                  <h4 className="analysis-card-title">Detailed Topic Comparison</h4>
                 </div>
                 
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="detailed-table-container">
+                  <table className="detailed-table">
                     <thead>
-                      <tr style={{ backgroundColor: '#f8fafc' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Topic</th>
-                        <th style={{ padding: '12px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>HW Avg (%)</th>
-                        <th style={{ padding: '12px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>CW Avg (%)</th>
-                        <th style={{ padding: '12px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Gap</th>
-                        <th style={{ padding: '12px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Status</th>
+                      <tr>
+                        <th>Topic</th>
+                        <th className="center">HW Avg (%)</th>
+                        <th className="center">CW Avg (%)</th>
+                        <th className="center">Gap</th>
+                        <th className="center">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {detailedComparisonData.detailedTopicComparison.slice(0, 5).map((row, index) => (
-                        <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
-                          <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>{row.topic}</td>
-                          <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>{row.hwAvg}%</td>
-                          <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>{row.cwAvg}%</td>
-                          <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 'bold', color: row.gap > 0 ? '#22c55e' : '#ef4444', borderBottom: '1px solid #f1f5f9' }}>
+                        <tr key={index}>
+                          <td>{row.topic}</td>
+                          <td className="center">{row.hwAvg}%</td>
+                          <td className="center">{row.cwAvg}%</td>
+                          <td className={`center ${row.gap > 0 ? 'gap-positive' : 'gap-negative'}`}>
                             {row.gap > 0 ? '+' : ''}{row.gap}%
                           </td>
-                          <td style={{ padding: '12px', textAlign: 'center', fontSize: '12px', borderBottom: '1px solid #f1f5f9' }}>
-                            <span style={{
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              fontSize: '11px',
-                              fontWeight: '600',
-                              backgroundColor: row.status === 'CW Better' ? '#dcfce7' : '#fee2e2',
-                              color: row.status === 'CW Better' ? '#16a34a' : '#dc2626'
-                            }}>
+                          <td className="center">
+                            <span className={row.status === 'CW Better' ? 'status-cw-better' : 'status-hw-better'}>
                               {row.status}
                             </span>
                           </td>
@@ -1177,74 +748,30 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
   // Enhanced Topic Analysis Tab
   const renderTopicAnalysisTab = () => {
     return (
-      <div className="tab-content" style={{ opacity: isTransitioning ? 0.5 : 1, transition: 'opacity 0.3s ease' }}>
-        {/* Enhanced Summary Cards */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(4, 1fr)', 
-          gap: '20px', 
-          marginBottom: '30px',
-          transform: isTransitioning ? 'translateY(-10px)' : 'translateY(0)',
-          transition: 'transform 0.3s ease'
-        }}>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3)'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>7</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>Topics Analyzed</div>
+      <div className={`tab-content ${isTransitioning ? 'transitioning' : ''}`}>
+        {/* Summary Cards */}
+        <div className={`summary-cards-grid ${isTransitioning ? 'transitioning' : ''}`}>
+          <div className="metric-card metric-card-purple">
+            <div className="metric-value">7</div>
+            <div className="metric-label">Topics Analyzed</div>
           </div>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(34, 197, 94, 0.3)'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>66.7%</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>Best Performance</div>
+          <div className="metric-card metric-card-green">
+            <div className="metric-value">66.7%</div>
+            <div className="metric-label">Best Performance</div>
           </div>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(245, 158, 11, 0.3)'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>Quadratic</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>Most Active Topic</div>
+          <div className="metric-card metric-card-yellow">
+            <div className="metric-value">Quadratic</div>
+            <div className="metric-label">Most Active Topic</div>
           </div>
-          <div style={{ 
-            padding: '24px', 
-            borderRadius: '16px', 
-            background: 'linear-gradient(135deg, #ec4899, #be185d)', 
-            color: 'white',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(236, 72, 153, 0.3)'
-          }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>62.5%</div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>Latest Average</div>
+          <div className="metric-card metric-card-pink">
+            <div className="metric-value">62.5%</div>
+            <div className="metric-label">Latest Average</div>
           </div>
         </div>
 
-        {/* Enhanced Sub Navigation */}
-        <div style={{ 
-          marginBottom: '30px',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0'
-          }}>
+        {/* Sub Navigation */}
+        <div className="sub-nav-container">
+          <div className="sub-nav-tabs">
             {[
               { key: 'datewise', icon: '📅', label: 'Date-wise Comparison' },
               { key: 'chapterwise', icon: '🎯', label: 'Chapter-wise Comparison' },
@@ -1253,62 +780,28 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
               <button 
                 key={tab.key}
                 onClick={() => handleTopicSubTabChange(tab.key)}
-                style={{
-                  flex: 1,
-                  padding: '16px 24px',
-                  border: 'none',
-                  backgroundColor: topicAnalysisSubTab === tab.key ? '#8b5cf6' : 'transparent',
-                  color: topicAnalysisSubTab === tab.key ? 'white' : '#64748b',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  transition: 'all 0.3s ease',
-                  borderRight: index < 2 ? '1px solid #e2e8f0' : 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  justifyContent: 'center'
-                }}
+                className={`sub-tab-button topics ${topicAnalysisSubTab === tab.key ? 'active' : ''}`}
               >
-                <span style={{ fontSize: '18px' }}>{tab.icon}</span>
+                <span className="sub-tab-icon">{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Enhanced Sub Tab Content */}
+        {/* Sub Tab Content */}
         {topicAnalysisSubTab === 'datewise' && (
-          <div style={{ 
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateX(-20px)' : 'translateX(0)',
-            transition: 'all 0.3s ease'
-          }}>
+          <div className={isTransitioning ? 'content-transitioning' : ''}>
             {topicAnalysisView === 'combined' && (
               <>
-                <div style={{ marginBottom: '30px' }}>
-                  <h3 style={{ 
-                    fontSize: '28px', 
-                    fontWeight: 'bold', 
-                    marginBottom: '8px', 
-                    color: '#1f2937',
-                    background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}>
+                <div className="section-header">
+                  <h3 className="section-title topics">
                     📅 Homework vs Classwork: Date-wise Performance Analysis
                   </h3>
-                  <p style={{ color: '#64748b', fontSize: '16px' }}>Score Comparison Over Time with All Submission Dates</p>
+                  <p className="section-subtitle">Score Comparison Over Time with All Submission Dates</p>
                 </div>
 
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #f1f5f9',
-                  marginBottom: '20px'
-                }}>
+                <div className="chart-container">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={studentDateWiseComparisonData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -1349,15 +842,9 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   </ResponsiveContainer>
                 </div>
 
-                {/* Vertical Bar Chart (from image 6) */}
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #f1f5f9'
-                }}>
-                  <h4 style={{ marginBottom: '20px', color: '#374151', fontSize: '18px', fontWeight: '600' }}>
+                {/* Vertical Bar Chart */}
+                <div className="chart-container">
+                  <h4 className="section-subtitle">
                     📊 Performance Comparison (Grouped Bar Chart)
                   </h4>
                   <ResponsiveContainer width="100%" height={350}>
@@ -1378,39 +865,15 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                       <Bar dataKey="classwork" fill="#8b5cf6" name="Classwork Performance" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
-                  <div style={{ 
-                    textAlign: 'center', 
-                    marginTop: '16px',
-                    padding: '12px',
-                    backgroundColor: '#f0f9ff',
-                    borderRadius: '8px',
-                    border: '1px solid #bae6fd'
-                  }}>
-                    <p style={{ 
-                      color: '#0369a1', 
-                      fontSize: '14px', 
-                      fontWeight: '600',
-                      margin: 0
-                    }}>
-                      💡 Blue bars = Homework Performance, Purple bars = Classwork Performance - paired chronologically by dates: Jun 23, Jun 24, Jun 25, Jun 27, Jun 29, etc.
+                  <div className="info-card">
+                    <p className="info-text">
+                      💡 Blue bars = Homework Performance, Purple bars = Classwork Performance - paired chronologically by dates
                     </p>
                   </div>
                 </div>
 
-                <div style={{ 
-                  textAlign: 'center', 
-                  marginTop: '20px', 
-                  padding: '16px',
-                  backgroundColor: '#f0f9ff',
-                  borderRadius: '12px',
-                  border: '1px solid #bae6fd'
-                }}>
-                  <p style={{ 
-                    color: '#0369a1', 
-                    fontSize: '15px', 
-                    fontWeight: '600',
-                    margin: 0
-                  }}>
+                <div className="info-card">
+                  <p className="info-text">
                     💡 Click on the lines in the first chart to view topic-specific performance analysis
                   </p>
                 </div>
@@ -1418,71 +881,32 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             )}
 
             {topicAnalysisView === 'homework' && (
-              <div style={{ 
-                opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}>
+              <div className={isTransitioning ? 'content-scaling' : ''}>
                 <div style={{ marginBottom: '20px' }}>
                   <button 
                     onClick={() => handleViewTransition('combined', setTopicAnalysisView)}
-                    style={{ 
-                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
-                      color: 'white', 
-                      border: 'none', 
-                      padding: '12px 18px', 
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      fontSize: '14px',
-                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                      transition: 'all 0.3s ease'
-                    }}
+                    className="back-button"
                   >
                     ← Back to Comparison
                   </button>
                 </div>
                 
-                <h3 style={{ 
-                  fontSize: '24px', 
-                  fontWeight: 'bold', 
-                  color: '#1f2937',
-                  marginBottom: '20px'
-                }}>
-                  📚 Homework Topic Performance Analysis
-                </h3>
-                
-                <p style={{ marginBottom: '20px', color: '#64748b' }}>Performance by Topic Over Time</p>
+                <h3 className="control-title">📚 Homework Topic Performance Analysis</h3>
+                <p className="section-subtitle">Performance by Topic Over Time</p>
                 
                 {/* Filter Buttons */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                <div className="filter-buttons" style={{ marginBottom: '20px' }}>
                   {['1D', '5D', '10D', '15D', '1M', 'MAX'].map((filter) => (
                     <button 
                       key={filter} 
-                      style={{
-                        padding: '8px 16px',
-                        border: filter === 'MAX' ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
-                        backgroundColor: filter === 'MAX' ? '#8b5cf6' : 'white',
-                        color: filter === 'MAX' ? 'white' : '#64748b',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`filter-button topics ${filter === 'MAX' ? 'active' : ''}`}
                     >
                       {filter}
                     </button>
                   ))}
                 </div>
 
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                  border: '1px solid #f1f5f9'
-                }}>
+                <div className="chart-container-enhanced">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={[
                       { date: 'Jun 23', performance: 5 },
@@ -1509,8 +933,8 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   </ResponsiveContainer>
                 </div>
                 
-                <div style={{ marginTop: '20px', padding: '16px', background: '#f3f4f6', borderRadius: '12px' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>📊 Performance Summary:</div>
+                <div className="performance-summary">
+                  <div className="performance-summary-title">📊 Performance Summary:</div>
                   <div><strong>Topic:</strong> Quadratic Applications</div>
                   <div><strong>Date:</strong> Jul 04</div>
                   <div><strong>Average Performance:</strong> 62.5%</div>
@@ -1519,71 +943,32 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             )}
 
             {topicAnalysisView === 'classwork' && (
-              <div style={{ 
-                opacity: isTransitioning ? 0 : 1,
-                transform: isTransitioning ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}>
+              <div className={isTransitioning ? 'content-scaling' : ''}>
                 <div style={{ marginBottom: '20px' }}>
                   <button 
                     onClick={() => handleViewTransition('combined', setTopicAnalysisView)}
-                    style={{ 
-                      background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
-                      color: 'white', 
-                      border: 'none', 
-                      padding: '12px 18px', 
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      fontSize: '14px',
-                      boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
-                      transition: 'all 0.3s ease'
-                    }}
+                    className="back-button topics"
                   >
                     ← Back to Comparison
                   </button>
                 </div>
                 
-                <h3 style={{ 
-                  fontSize: '24px', 
-                  fontWeight: 'bold', 
-                  color: '#1f2937',
-                  marginBottom: '20px'
-                }}>
-                  📚 Classwork Topic Performance Analysis
-                </h3>
-                
-                <p style={{ marginBottom: '20px', color: '#64748b' }}>Performance by Topic Over Time</p>
+                <h3 className="control-title">📚 Classwork Topic Performance Analysis</h3>
+                <p className="section-subtitle">Performance by Topic Over Time</p>
                 
                 {/* Filter Buttons */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                <div className="filter-buttons" style={{ marginBottom: '20px' }}>
                   {['1D', '5D', '10D', '15D', '1M', 'MAX'].map((filter) => (
                     <button 
                       key={filter} 
-                      style={{
-                        padding: '8px 16px',
-                        border: filter === 'MAX' ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
-                        backgroundColor: filter === 'MAX' ? '#8b5cf6' : 'white',
-                        color: filter === 'MAX' ? 'white' : '#64748b',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`filter-button topics ${filter === 'MAX' ? 'active' : ''}`}
                     >
                       {filter}
                     </button>
                   ))}
                 </div>
 
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                  border: '1px solid #f1f5f9'
-                }}>
+                <div className="chart-container-enhanced">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={[
                       { date: 'Jun 25', performance: 25 },
@@ -1609,8 +994,8 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   </ResponsiveContainer>
                 </div>
                 
-                <div style={{ marginTop: '20px', padding: '16px', background: '#f3f4f6', borderRadius: '12px' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>📊 Performance Summary:</div>
+                <div className="performance-summary">
+                  <div className="performance-summary-title">📊 Performance Summary:</div>
                   <div><strong>Topic:</strong> Quadratic Applications</div>
                   <div><strong>Date:</strong> Jul 04</div>
                   <div><strong>Average Performance:</strong> 62.5%</div>
@@ -1621,38 +1006,19 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         )}
 
         {topicAnalysisSubTab === 'chapterwise' && (
-          <div style={{ 
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateY(20px)' : 'translateY(0)',
-            transition: 'all 0.4s ease'
-          }}>
+          <div className={isTransitioning ? 'content-sliding' : ''}>
             {topicAnalysisView === 'combined' && (
               <>
-                <h3 style={{ 
-                  fontSize: '28px', 
-                  fontWeight: 'bold', 
-                  marginBottom: '24px', 
-                  color: '#1f2937',
-                  background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
+                <h3 className="section-title topics">
                   🎯 Homework vs Classwork: Interactive Topic Analysis
                 </h3>
                 
-                <p style={{ color: '#64748b', marginBottom: '30px', fontSize: '16px' }}>
+                <p className="section-subtitle">
                   Click buttons above to see detailed timelines for each data type
                 </p>
 
                 {/* Interactive Line Chart */}
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  marginBottom: '30px',
-                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #f1f5f9'
-                }}>
+                <div className="chart-container">
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={topicWisePerformanceData} margin={{ bottom: 100 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -1694,14 +1060,8 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                 </div>
 
                 {/* Bar Chart */}
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '16px', 
-                  padding: '24px', 
-                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #f1f5f9'
-                }}>
-                  <h4 style={{ marginBottom: '20px', color: '#374151', fontSize: '18px', fontWeight: '600' }}>
+                <div className="chart-container">
+                  <h4 className="section-subtitle">
                     💡 Use buttons above to switch between comparison views and detailed timeline views
                   </h4>
                   <ResponsiveContainer width="100%" height={400}>
@@ -1729,118 +1089,53 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         )}
 
         {topicAnalysisSubTab === 'summary' && (
-          <div style={{ 
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateY(20px)' : 'translateY(0)',
-            transition: 'all 0.4s ease'
-          }}>
-            {/* Same enhanced summary content as score progression but for topics */}
-            <div style={{ 
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-              borderRadius: '20px',
-              padding: '24px',
-              marginBottom: '30px',
-              color: 'white',
-              boxShadow: '0 10px 40px rgba(139, 92, 246, 0.3)'
-            }}>
-              <h3 style={{ 
-                fontSize: '28px', 
-                fontWeight: 'bold', 
-                marginBottom: '8px',
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-              }}>
+          <div className={isTransitioning ? 'content-sliding' : ''}>
+            <div className="gradient-header topics">
+              <h3 className="gradient-header-title">
                 📊 TOPIC ANALYSIS COMPARISON SUMMARY
               </h3>
-              <p style={{ opacity: 0.9, fontSize: '16px' }}>Comprehensive Topic Performance Analysis & Insights</p>
+              <p className="gradient-header-subtitle">Comprehensive Topic Performance Analysis & Insights</p>
             </div>
 
-            <div style={{ display: 'grid', gap: '20px' }}>
-              <div style={{ 
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '24px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                border: '1px solid #f1f5f9'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '12px',
-                  marginBottom: '20px'
-                }}>
-                  <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
-                    borderRadius: '12px', 
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px'
-                  }}>
-                    🏆
-                  </div>
-                  <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                    Best Performing Topics
-                  </h4>
+            <div className="analysis-cards-grid">
+              <div className="analysis-card">
+                <div className="analysis-card-header">
+                  <div className="analysis-card-icon green">🏆</div>
+                  <h4 className="analysis-card-title">Best Performing Topics</h4>
                 </div>
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  <div style={{ padding: '16px', backgroundColor: '#dcfce7', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-                    <div style={{ fontWeight: 'bold', color: '#16a34a', marginBottom: '4px' }}>Calculus - Integration</div>
-                    <div style={{ color: '#374151', fontSize: '14px' }}>100% (Homework) - Outstanding performance</div>
+                <div className="analysis-card-content">
+                  <div className="best-performance-item">
+                    <div className="performance-topic good">Calculus - Integration</div>
+                    <div className="performance-description">100% (Homework) - Outstanding performance</div>
                   </div>
-                  <div style={{ padding: '16px', backgroundColor: '#dcfce7', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-                    <div style={{ fontWeight: 'bold', color: '#16a34a', marginBottom: '4px' }}>Coordinate Geometry</div>
-                    <div style={{ color: '#374151', fontSize: '14px' }}>93% (Classwork) - Excellent classwork performance</div>
+                  <div className="best-performance-item">
+                    <div className="performance-topic good">Coordinate Geometry</div>
+                    <div className="performance-description">93% (Classwork) - Excellent classwork performance</div>
                   </div>
-                  <div style={{ padding: '16px', backgroundColor: '#dcfce7', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-                    <div style={{ fontWeight: 'bold', color: '#16a34a', marginBottom: '4px' }}>Algebra - Rational Functions</div>
-                    <div style={{ color: '#374151', fontSize: '14px' }}>80% (Homework) - Strong homework performance</div>
+                  <div className="best-performance-item">
+                    <div className="performance-topic good">Algebra - Rational Functions</div>
+                    <div className="performance-description">80% (Homework) - Strong homework performance</div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ 
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '24px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                border: '1px solid #f1f5f9'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '12px',
-                  marginBottom: '20px'
-                }}>
-                  <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
-                    borderRadius: '12px', 
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px'
-                  }}>
-                    ⚠️
-                  </div>
-                  <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                    Topics Needing Attention
-                  </h4>
+              <div className="analysis-card">
+                <div className="analysis-card-header">
+                  <div className="analysis-card-icon red">⚠</div>
+                  <h4 className="analysis-card-title">Topics Needing Attention</h4>
                 </div>
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  <div style={{ padding: '16px', backgroundColor: '#fee2e2', borderRadius: '12px', border: '1px solid #fecaca' }}>
-                    <div style={{ fontWeight: 'bold', color: '#dc2626', marginBottom: '4px' }}>Calculus - Integration (Classwork)</div>
-                    <div style={{ color: '#374151', fontSize: '14px' }}>9% - Major performance gap needs immediate attention</div>
+                <div className="analysis-card-content">
+                  <div className="worst-performance-item">
+                    <div className="performance-topic bad">Calculus - Integration (Classwork)</div>
+                    <div className="performance-description">9% - Major performance gap needs immediate attention</div>
                   </div>
-                  <div style={{ padding: '16px', backgroundColor: '#fee2e2', borderRadius: '12px', border: '1px solid #fecaca' }}>
-                    <div style={{ fontWeight: 'bold', color: '#dc2626', marginBottom: '4px' }}>Algebra - Linear Equations (Classwork)</div>
-                    <div style={{ color: '#374151', fontSize: '14px' }}>13% - Significant gap requiring focused practice</div>
+                  <div className="worst-performance-item">
+                    <div className="performance-topic bad">Algebra - Linear Equations (Classwork)</div>
+                    <div className="performance-description">13% - Significant gap requiring focused practice</div>
                   </div>
-                  <div style={{ padding: '16px', backgroundColor: '#fee2e2', borderRadius: '12px', border: '1px solid #fecaca' }}>
-                    <div style={{ fontWeight: 'bold', color: '#dc2626', marginBottom: '4px' }}>Statistics (Classwork)</div>
-                    <div style={{ color: '#374151', fontSize: '14px' }}>20% - Needs improvement and additional support</div>
+                  <div className="worst-performance-item">
+                    <div className="performance-topic bad">Statistics (Classwork)</div>
+                    <div className="performance-description">20% - Needs improvement and additional support</div>
                   </div>
                 </div>
               </div>
@@ -1855,75 +1150,28 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
   const renderMistakeProgressAnalysisTab = () => {
     return (
       <div className="tab-content">
-        {/* Chapter Explorer Header (from image 10) */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #fbbf24 0%, #ec4899 100%)',
-          borderRadius: '20px',
-          padding: '24px',
-          marginBottom: '30px',
-          color: 'white',
-          boxShadow: '0 10px 40px rgba(251, 191, 36, 0.3)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '24px', marginBottom: '8px' }}>🔍 Quick Chapter Explorer</div>
-          <div style={{ fontSize: '16px', opacity: 0.9 }}>📚 Explore Questions by Chapter! 📊</div>
-          <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>
+        {/* Chapter Explorer Header */}
+        <div className="chapter-explorer-header">
+          <div className="chapter-explorer-title">🔍 Quick Chapter Explorer</div>
+          <div className="chapter-explorer-subtitle">📚 Explore Questions by Chapter! 📊</div>
+          <div className="chapter-explorer-description">
             Choose any chapter below to instantly see all your questions from that topic!
           </div>
         </div>
 
-        {/* Chapter Explorer Grid (from image 10) */}
+        {/* Chapter Explorer Grid */}
         <div style={{ marginBottom: '40px' }}>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(2, 1fr)', 
-            gap: '16px',
-            maxWidth: '800px',
-            margin: '0 auto'
-          }}>
+          <div className="chapter-grid">
             {chapterExplorerData.map((chapter, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedChapterFilter(chapter.chapter)}
-                style={{
-                  padding: '16px 20px',
-                  backgroundColor: 'white',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  textAlign: 'left',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
-                  e.target.style.borderColor = '#3b82f6';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                  e.target.style.borderColor = '#e2e8f0';
-                }}
+                className="chapter-button"
               >
                 <div>
-                  <div style={{ 
-                    fontSize: '16px', 
-                    fontWeight: '600', 
-                    color: '#1f2937',
-                    marginBottom: '4px'
-                  }}>
-                    📚 {chapter.chapter}
-                  </div>
+                  <div className="chapter-name">📚 {chapter.chapter}</div>
                 </div>
-                <div style={{ 
-                  fontSize: '18px', 
-                  fontWeight: 'bold',
-                  color: chapter.percentage >= 70 ? '#22c55e' : chapter.percentage >= 40 ? '#f59e0b' : '#ef4444'
-                }}>
+                <div className={`chapter-percentage ${chapter.percentage >= 70 ? 'high' : chapter.percentage >= 40 ? 'medium' : 'low'}`}>
                   ({chapter.percentage}%)
                 </div>
               </button>
@@ -1931,26 +1179,14 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
           </div>
         </div>
 
-        {/* Answer Distribution (Enhanced from image 11) */}
+        {/* Answer Distribution */}
         <div style={{ marginBottom: '40px' }}>
-          <h3 style={{ 
-            fontSize: '24px', 
-            fontWeight: 'bold', 
-            marginBottom: '20px', 
-            color: '#1f2937',
-            textAlign: 'center'
-          }}>
+          <h3 className="control-title" style={{ textAlign: 'center' }}>
             📊 How Well Did I Do? (Answer Categories)
           </h3>
           
-          <div style={{ 
-            backgroundColor: 'white', 
-            borderRadius: '16px', 
-            padding: '24px', 
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid #f1f5f9'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+          <div className="pie-chart-container">
+            <div className="pie-chart-content">
               <div style={{ flex: 1 }}>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -1970,102 +1206,50 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                     <Tooltip formatter={(value, name) => [`${value} Questions`, name]} />
                   </PieChart>
                 </ResponsiveContainer>
-                <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#374151' }}>Total</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>30</div>
-                  <div style={{ fontSize: '14px', color: '#64748b' }}>Questions</div>
+                <div className="pie-total">
+                  <div className="pie-total-label">Total</div>
+                  <div className="pie-total-value">30</div>
+                  <div className="pie-total-unit">Questions</div>
                 </div>
               </div>
               
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {answerDistributionData.map((item, index) => (
-                    <div key={index} style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      padding: '12px',
-                      backgroundColor: '#f8f9fa',
-                      borderRadius: '8px',
-                      borderLeft: `4px solid ${item.color}`
-                    }}>
-                      <div style={{ 
-                        width: '20px', 
-                        height: '20px', 
-                        backgroundColor: item.color, 
-                        borderRadius: '50%',
-                        marginRight: '12px'
-                      }}></div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 'bold', color: '#374151' }}>{item.name}</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>{item.value} questions</div>
-                      </div>
-                      <div style={{ 
-                        fontSize: '20px', 
-                        fontWeight: 'bold', 
-                        color: item.color 
-                      }}>
-                        {item.percentage}%
-                      </div>
+              <div className="pie-chart-legend">
+                {answerDistributionData.map((item, index) => (
+                  <div key={index} className="legend-item" style={{ borderLeftColor: item.color }}>
+                    <div className="legend-dot" style={{ backgroundColor: item.color }}></div>
+                    <div className="legend-content">
+                      <div className="legend-name">{item.name}</div>
+                      <div className="legend-count">{item.value} questions</div>
                     </div>
-                  ))}
-                </div>
+                    <div className="legend-percentage" style={{ color: item.color }}>
+                      {item.percentage}%
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Question Explorer (from images 12-15) */}
+        {/* Question Explorer */}
         <div style={{ marginBottom: '40px' }}>
-          <h3 style={{ 
-            fontSize: '24px', 
-            fontWeight: 'bold', 
-            marginBottom: '20px', 
-            color: '#1f2937'
-          }}>
+          <h3 className="control-title">
             🔍 Explore Your Questions In Different Ways
           </h3>
           
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
-            gap: '24px', 
-            marginBottom: '30px' 
-          }}>
+          <div className="filter-section">
             {/* Filter By Performance Percentage */}
-            <div style={{ 
-              padding: '20px', 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' 
-            }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                marginBottom: '16px'
-              }}>
-                <div style={{ fontSize: '20px' }}>📊</div>
-                <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#374151', margin: 0 }}>
-                  Filter By Performance Percentage
-                </h4>
+            <div className="filter-card">
+              <div className="filter-header">
+                <div className="filter-icon">📊</div>
+                <h4 className="filter-title">Filter By Performance Percentage</h4>
               </div>
-              <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '16px' }}>
-                Choose A Performance Range:
-              </p>
+              <p className="filter-description">Choose A Performance Range:</p>
               
               <select
                 value={selectedPerformanceFilter}
                 onChange={(e) => setSelectedPerformanceFilter(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  backgroundColor: 'white',
-                  cursor: 'pointer'
-                }}
+                className="filter-select"
               >
                 {performanceRanges.map(range => (
                   <option key={range} value={range}>{range}</option>
@@ -2074,40 +1258,17 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             </div>
 
             {/* Filter By Chapter */}
-            <div style={{ 
-              padding: '20px', 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' 
-            }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                marginBottom: '16px'
-              }}>
-                <div style={{ fontSize: '20px' }}>📚</div>
-                <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#374151', margin: 0 }}>
-                  Filter By Chapter
-                </h4>
+            <div className="filter-card">
+              <div className="filter-header">
+                <div className="filter-icon">📚</div>
+                <h4 className="filter-title">Filter By Chapter</h4>
               </div>
-              <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '16px' }}>
-                Choose A Chapter:
-              </p>
+              <p className="filter-description">Choose A Chapter:</p>
               
               <select
                 value={selectedChapterFilter}
                 onChange={(e) => setSelectedChapterFilter(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  backgroundColor: 'white',
-                  cursor: 'pointer'
-                }}
+                className="filter-select"
               >
                 {chaptersList.map(chapter => (
                   <option key={chapter} value={chapter}>{chapter}</option>
@@ -2119,100 +1280,73 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
         {/* Filtered Results Section */}
         <div style={{ marginBottom: '40px' }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            marginBottom: '20px'
-          }}>
-            <div style={{ fontSize: '20px' }}>📋</div>
-            <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#374151', margin: 0 }}>
-              Filtered Results - 30 Questions Found
-            </h4>
+          <div className="results-header">
+            <div className="filter-icon">📋</div>
+            <h4 className="results-title">Filtered Results - 30 Questions Found</h4>
           </div>
           
           {/* Summary of Filtered Results */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(4, 1fr)', 
-            gap: '16px', 
-            marginBottom: '24px',
-            padding: '20px',
-            backgroundColor: '#f0f9ff',
-            borderRadius: '12px',
-            border: '1px solid #bfdbfe'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Average Performance</div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>66.8%</div>
+          <div className="results-summary">
+            <div className="results-metric">
+              <div className="results-metric-label">Average Performance</div>
+              <div className="results-metric-value">66.8%</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Room for Improvement</div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>33.2%</div>
+            <div className="results-metric">
+              <div className="results-metric-label">Room for Improvement</div>
+              <div className="results-metric-value">33.2%</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Chapters Covered</div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>10 Chapters</div>
+            <div className="results-metric">
+              <div className="results-metric-label">Chapters Covered</div>
+              <div className="results-metric-value">10 Chapters</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Questions Found</div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>30 Questions</div>
+            <div className="results-metric">
+              <div className="results-metric-label">Questions Found</div>
+              <div className="results-metric-value">30 Questions</div>
             </div>
           </div>
 
           {/* Question Details Table */}
-          <div style={{ 
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f8fafc' }}>
-                    <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Question ID</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Chapter</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Date</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Question</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>My Score</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Performance</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Mistake Tracker</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Current Status</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Student Mistake</th>
-                    <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#374151', borderBottom: '2px solid #e2e8f0' }}>Correct Approach</th>
+          <div className="data-table-container">
+            <table className="enhanced-data-table">
+              <thead>
+                <tr className="table-header-row">
+                  <th className="table-header-enhanced">Question ID</th>
+                  <th className="table-header-enhanced">Chapter</th>
+                  <th className="table-header-enhanced">Date</th>
+                  <th className="table-header-enhanced">Question</th>
+                  <th className="table-header-enhanced table-header-center">My Score</th>
+                  <th className="table-header-enhanced table-header-center">Performance</th>
+                  <th className="table-header-enhanced">Mistake Tracker</th>
+                  <th className="table-header-enhanced table-header-center">Current Status</th>
+                  <th className="table-header-enhanced">Student Mistake</th>
+                  <th className="table-header-enhanced">Correct Approach</th>
+                </tr>
+              </thead>
+              <tbody>
+                {questionDetailsData.map((row, index) => (
+                  <tr key={index}>
+                    <td>{row.id}</td>
+                    <td>{row.chapter}</td>
+                    <td>{row.date}</td>
+                    <td className="table-cell-truncate">{row.question}</td>
+                    <td className="table-cell-center">{row.score}</td>
+                    <td className="table-cell-center">{row.performance}</td>
+                    <td>First submission, no prior mistakes</td>
+                    <td className="table-cell-center">
+                      <span className={`status-badge ${
+                        row.status === 'Irrelevant' ? 'status-irrelevant' :
+                        row.status === 'Numerical Error' ? 'status-numerical-error' :
+                        'status-default'
+                      }`}>
+                        {row.status}
+                      </span>
+                    </td>
+                    <td>{row.mistake}</td>
+                    <td>Minimize the distance function using calculus</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {questionDetailsData.map((row, index) => (
-                    <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>{row.id}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>{row.chapter}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>{row.date}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9', maxWidth: '200px' }}>{row.question}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>{row.score}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>{row.performance}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>First submission, no prior mistakes</td>
-                      <td style={{ padding: '12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          backgroundColor: row.status === 'Irrelevant' ? '#fee2e2' : row.status === 'Numerical Error' ? '#fef3c7' : '#f1f5f9',
-                          color: row.status === 'Irrelevant' ? '#dc2626' : row.status === 'Numerical Error' ? '#d97706' : '#6b7280'
-                        }}>
-                          {row.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>{row.mistake}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', color: '#374151', borderBottom: '1px solid #f1f5f9' }}>Minimize the distance function using calculus</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -2223,15 +1357,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     return (
       <div>
         {/* Enhanced Student Analysis Main Tabs */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '4px', 
-          marginBottom: '30px', 
-          backgroundColor: '#f8fafc',
-          padding: '6px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-        }}>
+        <div className="main-tabs-container">
           {[
             { key: 'progression', icon: '📈', label: 'Score Progression', color: '#3b82f6' },
             { key: 'topics', icon: '⏱️', label: 'Topic Analysis', color: '#8b5cf6' },
@@ -2241,59 +1367,31 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             <button
               key={tab.key}
               onClick={() => setStudentAnalysisMainTab(tab.key)}
-              style={{
-                flex: 1,
-                padding: '16px 20px',
-                border: 'none',
-                backgroundColor: studentAnalysisMainTab === tab.key ? tab.color : 'transparent',
-                color: studentAnalysisMainTab === tab.key ? 'white' : '#64748b',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontWeight: '600',
-                fontSize: '15px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                justifyContent: 'center',
-                boxShadow: studentAnalysisMainTab === tab.key ? `0 4px 16px ${tab.color}40` : 'none',
-                transform: studentAnalysisMainTab === tab.key ? 'translateY(-2px)' : 'translateY(0)'
-              }}
+              className={`main-tab-button ${tab.key} ${studentAnalysisMainTab === tab.key ? 'active' : ''}`}
             >
-              <span style={{ fontSize: '18px' }}>{tab.icon}</span>
+              <span>{tab.icon}</span>
               {tab.label}
             </button>
           ))}
         </div>
 
         {/* Enhanced Content Area with animations */}
-        <div style={{ 
-          minHeight: '500px',
-          opacity: isTransitioning ? 0.8 : 1,
-          transform: isTransitioning ? 'scale(0.98)' : 'scale(1)',
-          transition: 'all 0.3s ease'
-        }}>
+        <div className={isTransitioning ? 'loading' : ''} style={{ minHeight: '500px' }}>
           {studentAnalysisMainTab === 'progression' && renderScoreProgressionTab()}
           {studentAnalysisMainTab === 'topics' && renderTopicAnalysisTab()}
           {studentAnalysisMainTab === 'mistakes' && renderMistakeProgressAnalysisTab()}
           {studentAnalysisMainTab === 'summary' && (
-            <div className="tab-content" style={{ 
-              padding: '24px',
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #f1f5f9'
-            }}>
-              <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px', color: '#1f2937' }}>📋 Student Performance Summary</h3>
-              <div style={{ display: 'grid', gap: '24px' }}>
-                <div style={{ padding: '20px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>🎯 Overall Performance</h4>
-                  <p style={{ color: '#6b7280', lineHeight: '1.6' }}>The student shows strong performance in homework assignments but struggles with classwork. This suggests good preparation and understanding when given time, but difficulties with time-constrained assessments.</p>
+            <div className="summary-content">
+              <h3 className="summary-title">📋 Student Performance Summary</h3>
+              <div className="summary-grid">
+                <div className="summary-card" style={{ backgroundColor: '#f8fafc' }}>
+                  <h4 className="summary-card-header">🎯 Overall Performance</h4>
+                  <p className="summary-card-content">The student shows strong performance in homework assignments but struggles with classwork. This suggests good preparation and understanding when given time, but difficulties with time-constrained assessments.</p>
                 </div>
                 
-                <div style={{ padding: '20px', backgroundColor: '#f0f9ff', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
-                  <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>📊 Key Metrics</h4>
-                  <ul style={{ color: '#6b7280', listStyle: 'disc', paddingLeft: '20px', lineHeight: '1.6' }}>
+                <div className="summary-card" style={{ backgroundColor: '#f0f9ff' }}>
+                  <h4 className="summary-card-header">📊 Key Metrics</h4>
+                  <ul className="summary-list">
                     <li><strong>Homework Average:</strong> 66.8% (Above class average of 62.2%)</li>
                     <li><strong>Classwork Average:</strong> 33.8% (Below class average of 51.5%)</li>
                     <li><strong>Performance Gap:</strong> -33.0% (Significant difference between HW and CW)</li>
@@ -2301,9 +1399,9 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   </ul>
                 </div>
 
-                <div style={{ padding: '20px', backgroundColor: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-                  <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>💡 Recommendations</h4>
-                  <ul style={{ color: '#6b7280', listStyle: 'disc', paddingLeft: '20px', lineHeight: '1.6' }}>
+                <div className="summary-card" style={{ backgroundColor: '#f0fdf4' }}>
+                  <h4 className="summary-card-header">💡 Recommendations</h4>
+                  <ul className="summary-list">
                     <li>Focus on time management skills for classwork</li>
                     <li>Practice more timed exercises</li>
                     <li>Reinforce conceptual understanding through targeted practice</li>
@@ -2337,7 +1435,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             {/* Select Class */}
             <div className="class-selector-container">
-              <span className="class-selector-label" style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px', display: 'block' }}>Select Class</span>
+              <span className="class-selector-label">Select Class</span>
               <select
                 value={selectedClass.name}
                 onChange={(e) => {
@@ -2369,7 +1467,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
             {/* Select Student */}
             <div className="class-selector-container">
-              <span className="class-selector-label" style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px', display: 'block' }}>Select Student</span>
+              <span className="class-selector-label">Select Student</span>
               <select
                 value={selectedStudent?.rollNo || ''}
                 onChange={(e) => {
@@ -2403,182 +1501,14 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         </div>
       </div>
 
-      {/* Main Student Analysis Content without sidebar */}
+      {/* Main Student Analysis Content */}
       <div style={{ width: '100%', padding: '20px 0' }}>
         {selectedStudent ? renderStudentAnalysisContent() : renderNoStudentSelected()}
       </div>
-
-      {/* Enhanced CSS animations */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.8;
-          }
-        }
-
-        .tab-content {
-          animation: fadeIn 0.4s ease-out;
-        }
-
-        .summary-cards-grid {
-          animation: slideUp 0.6s ease-out;
-        }
-
-        .chart-container {
-          animation: scaleIn 0.5s ease-out;
-        }
-
-        .metric-card-blue,
-        .metric-card-red,
-        .metric-card-green,
-        .metric-card-yellow,
-        .metric-card-pink {
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .metric-card-blue:hover,
-        .metric-card-red:hover,
-        .metric-card-green:hover,
-        .metric-card-yellow:hover,
-        .metric-card-pink:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .sub-tab-button {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sub-tab-button:hover {
-          transform: translateY(-1px);
-        }
-
-        .empty-state {
-          text-align: center;
-          padding: 60px 20px;
-          animation: fadeIn 0.6s ease-out;
-        }
-
-        .empty-state-icon {
-          font-size: 64px;
-          margin-bottom: 20px;
-          opacity: 0.7;
-        }
-
-        .empty-state-title {
-          font-size: 24px;
-          font-weight: bold;
-          color: #374151;
-          margin-bottom: 12px;
-        }
-
-        .empty-state-text {
-          color: #64748b;
-          font-size: 16px;
-          line-height: 1.6;
-          max-width: 400px;
-          margin: 0 auto;
-        }
-
-        /* Enhanced button animations */
-        button {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Enhanced table styling */
-        table tr:hover {
-          background-color: #f8fafc;
-        }
-
-        /* Enhanced card hover effects */
-        .summary-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Smooth transitions for all elements */
-        * {
-          transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        /* Enhanced loading states */
-        .loading {
-          opacity: 0.7;
-          pointer-events: none;
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-          .summary-cards-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-          }
-          
-          .class-header-top {
-            flex-direction: column;
-            gap: 16px;
-          }
-          
-          .tab-content {
-            padding: 16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .summary-cards-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   );
 };
 
 export default StudentAnalysis;
+      
+            

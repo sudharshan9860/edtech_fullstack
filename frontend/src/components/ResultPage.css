@@ -1,11 +1,9 @@
 /* Updated ResultPage.css with fixed buttons layout */
 
+/* Content padding to prevent overlap with fixed buttons */
 .result-page-container {
-  padding: 0;
-  margin: 0;
-  height: 100vh;
-  overflow: hidden;
-}
+    padding-bottom: 100px;
+  }
 
 .result-row {
   height: 100%;
@@ -15,45 +13,45 @@
 /* Fixed Back Button - Top Left */
 .fixed-back-button {
   position: fixed;
-  bottom: 30px;
-  left: 3vh;
-  z-index: 999;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
 }
 
+
 .back-btn-fixed {
-  background: white;
-  border: 2px solid #00C1D4;
-  color: #001B6C;
-  padding: 10px 20px;
-  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 8px 16px;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0, 193, 212, 0.2);
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   min-width: 100px;
 }
 
 .back-btn-fixed:hover {
-  background: linear-gradient(to right, #00C1D4, #001B6C);
-  color: white;
+  background: rgba(255, 255, 255, 1);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 193, 212, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Fixed Bottom Buttons */
 .fixed-bottom-buttons {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  bottom: 20px;
+  right: 20px;
   display: flex;
   gap: 15px;
-  z-index:999;
+  z-index: 1001;
 }
 
 .dashboard-btn-fixed,
 .practice-btn-fixed {
   padding: 12px 24px;
-  border-radius: 25px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -64,27 +62,27 @@
 }
 
 .dashboard-btn-fixed {
-  background: white;
-  border: 2px solid #00C1D4 !important;
-  color: #001B6C;
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .practice-btn-fixed {
-  background: linear-gradient(to right, #00C1D4, #001B6C);
+  background: linear-gradient(135deg, #10B981, #059669);
   color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .dashboard-btn-fixed:hover {
-  background: rgba(0, 193, 212, 0.1);
+  background: linear-gradient(135deg, #60A5FA, #3B82F6);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 193, 212, 0.2);
-  color: #001B6C;
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
 }
 
 .practice-btn-fixed:hover {
-  background: linear-gradient(to right, #001B6C, #00C1D4);
+  background: linear-gradient(135deg, #34D399, #10B981);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 193, 212, 0.3);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
 }
 
 /* Left Column - Image Container */
@@ -560,9 +558,8 @@
   }
   
   .result-content {
-    padding: 30px;
-    padding-bottom: 120px;
-  }
+  padding-bottom: 20px;
+}
   
   .fixed-bottom-buttons {
     flex-direction: column;
@@ -573,9 +570,8 @@
   
   .dashboard-btn-fixed,
   .practice-btn-fixed {
-    min-width: 120px;
-    font-size: 13px;
-    padding: 10px 18px;
+    font-size: 11px;
+    padding: 8px 10px;
   }
 }
 
@@ -594,14 +590,13 @@
   }
   
   .fixed-back-button {
-    top: 10vh;
-    left: 3vh;
+    top: 10px;
+    left: 10px;
   }
   
   .back-btn-fixed {
-    padding: 8px 16px;
-    font-size: 13px;
-    min-width: 80px;
+    padding: 5px 10px;
+    font-size: 11px;
   }
   .content-column {
     height: 100vh;
@@ -609,10 +604,14 @@
   }
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .result-content {
-    padding: 25px;
-    padding-bottom: 160px;
+  .fixed-bottom-buttons {
+    bottom: 15px;
+    right: 15px;
+    left: 15px;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .content-column {
@@ -650,20 +649,22 @@
   }
   
   .fixed-back-button {
-    top: 10vh;
-    left: 3vh;
+    top: 15px;
+    left: 15px;
   }
   
   .back-btn-fixed {
     padding: 6px 12px;
     font-size: 12px;
-    min-width: 60px;
   }
 }
 
 @media (max-width: 576px) {
-  .result-page-container {
-    padding: 0;
+  .fixed-bottom-buttons {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    gap: 8px;
   }
 
   .result-title {
@@ -794,7 +795,7 @@
    FIXED BUTTONS FOR RESULT PAGE
 ======================================== */
 
-/* Fixed Back Button - Top Left */
+/* Dark mode support for fixed buttons */
 .dark-mode .fixed-back-button .back-btn-fixed {
   background: rgba(51, 65, 85, 0.95) !important;
   border: 2px solid rgba(71, 85, 105, 0.8) !important;
@@ -811,7 +812,7 @@
   color: #f1f5f9 !important;
 }
 
-/* Fixed Bottom Buttons */
+/* Dark mode for bottom buttons */
 .dark-mode .fixed-bottom-buttons .dashboard-btn-fixed {
   background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
   border: 2px solid rgba(59, 130, 246, 0.6) !important;
