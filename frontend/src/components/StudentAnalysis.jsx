@@ -1,5 +1,3 @@
-// Modified StudentAnalysis.jsx with requested changes
-
 import React, { useState } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
