@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   PieChart, Pie, Cell, LineChart, Line, ReferenceLine
@@ -6,15 +6,15 @@ import {
 import './StudentAnalysis.css';
 
 const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, classesData, onClassChange }) => {
-  // Main tab state - Updated tab names
+  // Main tab state
   const [studentAnalysisMainTab, setStudentAnalysisMainTab] = useState('score-progression');
   
   // View states for interactive charts
-  const [scoreDateView, setScoreDateView] = useState('combined'); // 'combined', 'homework', 'classwork'
-  const [chapterView, setChapterView] = useState('combined'); // 'combined', 'homework', 'classwork'
+  const [scoreDateView, setScoreDateView] = useState('combined');
+  const [chapterView, setChapterView] = useState('combined');
   
   // Summary tab filters
-  const [summaryFilter, setSummaryFilter] = useState('all'); // 'all', 'homework', 'classwork'
+  const [summaryFilter, setSummaryFilter] = useState('all');
   
   // Mistake Analysis states
   const [selectedChapterFilter, setSelectedChapterFilter] = useState('All Chapters');
@@ -22,6 +22,36 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
   // Animation states
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Function to get students for selected class
+  const getStudentsForClass = () => {
+    if (!selectedClass || !classesData[selectedClass.id]) {
+      // Return sample students if no class data
+      return [
+        { id: 1, name: "Arjun Patel", rollNo: "10HPS21", class: "6th", efficiency: 78 },
+        { id: 2, name: "Sneha Gupta", rollNo: "10HPS17", class: "6th", efficiency: 82 },
+        { id: 3, name: "Rohit Sharma", rollNo: "10HPS18", class: "6th", efficiency: 75 },
+        { id: 4, name: "Priya Sharma", rollNo: "10HPS02", class: "6th", efficiency: 85 },
+        { id: 5, name: "Ravi Kumar", rollNo: "10HPS19", class: "6th", efficiency: 72 },
+        { id: 6, name: "Anita Singh", rollNo: "10HPS20", class: "6th", efficiency: 89 }
+      ];
+    }
+    
+    // Add rollNo to existing students if not present
+    const students = classesData[selectedClass.id].students || [];
+    return students.map((student, index) => ({
+      ...student,
+      rollNo: student.rollNo || `10HPS${String(index + 21).padStart(2, '0')}`
+    }));
+  };
+
+  // Auto-select first student if none selected (for testing)
+  useEffect(() => {
+    const students = getStudentsForClass();
+    if (!selectedStudent && students.length > 0 && onStudentSelect) {
+      onStudentSelect(students[0]);
+    }
+  }, [selectedClass, classesData, selectedStudent, onStudentSelect]);
 
   // Enhanced data for Score Date-wise Progression
   const studentDateWiseComparisonData = [
@@ -47,534 +77,586 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     { topic: 'Coordinate Geometry', homework: 66, classwork: 93 }
   ];
 
-  // NCERT Weightage Data (New addition for Mistake Analysis)
-  const ncertWeightageData = [
-    { chapter: 'Algebra - Linear Equations', weightage: '8%', studentPerformance: '75%', importance: 'High' },
-    { chapter: 'Calculus - Integration', weightage: '15%', studentPerformance: '0%', importance: 'Very High' },
-    { chapter: 'Quadratic Applications', weightage: '12%', studentPerformance: '38%', importance: 'High' },
-    { chapter: 'Trigonometry', weightage: '10%', studentPerformance: '81%', importance: 'Medium' },
-    { chapter: 'Statistics', weightage: '8%', studentPerformance: '78%', importance: 'Medium' },
-    { chapter: 'Probability', weightage: '7%', studentPerformance: '72%', importance: 'Medium' },
-    { chapter: 'Coordinate Geometry', weightage: '6%', studentPerformance: '64%', importance: 'Low' },
-    { chapter: 'Functions and Graphs', weightage: '5%', studentPerformance: '43%', importance: 'Low' }
-  ];
-
-  // Answer Categories Data for Mistake Analysis
+  // Answer Categories Data for Pie Chart
   const answerCategoriesData = [
     { name: 'Correct', value: 43.3, count: 13, color: '#22c55e' },
-    { name: 'Partially Correct', value: 10, count: 3, color: '#f59e0b' },
+    { name: 'Partially-Correct', value: 10, count: 3, color: '#f59e0b' },
     { name: 'Numerical Error', value: 13.3, count: 4, color: '#ef4444' },
     { name: 'Irrelevant', value: 23.3, count: 7, color: '#8b5cf6' },
     { name: 'Unattempted', value: 10, count: 3, color: '#6b7280' }
   ];
 
-  // Performance filters for mistake analysis
-  const performanceFilters = [
-    'All Percentages',
-    '0-19% (Need Help! 🔴)',
-    '20-39% (Keep Trying! 💪)',
-    '40-59% (Good Work! 😊)',
-    '60-79% (Great Job! 👍)',
-    '80-100% (Amazing! 🌟)'
+  // Mistake Analysis Questions Data
+  const mistakeAnalysisData = [
+    {
+      id: 'Q1',
+      chapter: 'Quadratic Applications',
+      date: '2023-06-23',
+      question: 'Find the shortest distance...',
+      myScore: '0/20',
+      performance: '0.0%',
+      mistakeTracker: 'First submission, no prior mistakes',
+      currentStatus: 'IRRELEVANT',
+      studentMistake: 'Irrelevant formula application',
+      correctApproach: 'Minimize the distance function using calculus'
+    },
+    {
+      id: 'Q2',
+      chapter: 'Quadratic Applications',
+      date: '2023-06-25',
+      question: 'Find the vertex of the parabola...',
+      myScore: '0/8',
+      performance: '0.0%',
+      mistakeTracker: 'First submission, no prior mistakes',
+      currentStatus: 'NO ATTEMPT',
+      studentMistake: 'Fig = 5',
+      correctApproach: 'Minimize the distance function using calculus'
+    },
+    {
+      id: 'Q3',
+      chapter: 'Algebra - Linear Equations',
+      date: '2023-06-23',
+      question: 'Solve the system: 2x + 3y = ...',
+      myScore: '3/6',
+      performance: '50.0%',
+      mistakeTracker: 'First submission, no prior mistakes',
+      currentStatus: 'NUMERICAL ERROR',
+      studentMistake: '5y = 6',
+      correctApproach: 'Minimize the distance function using calculus'
+    },
+    {
+      id: 'Q4',
+      chapter: 'Coordinate Geometry',
+      date: '2023-06-23',
+      question: 'Find the equation of line passing...',
+      myScore: '1/5',
+      performance: '20.0%',
+      mistakeTracker: 'First submission, no prior mistakes',
+      currentStatus: 'CONCEPTUAL ERROR',
+      studentMistake: 'Area = ½ × base × height',
+      correctApproach: 'Minimize the distance function using calculus'
+    },
+    {
+      id: 'Q5',
+      chapter: 'Coordinate Geometry',
+      date: '2023-06-25',
+      question: 'Evaluate sin(30°) + cos(60°)',
+      myScore: '2/4',
+      performance: '50.0%',
+      mistakeTracker: 'First submission, no prior mistakes',
+      currentStatus: 'VALUE ERROR',
+      studentMistake: 'cos(60°) = 0.5',
+      correctApproach: 'Minimize the distance function using calculus'
+    }
   ];
 
-  const chaptersList = [
-    'All Chapters',
-    'Algebra - Linear Equations',
-    'Algebra - Rational Functions',
-    'Calculus - Derivatives',
-    'Calculus - Integration',
-    'Coordinate Geometry',
-    'Functions and Graphs',
-    'Probability',
-    'Quadratic Applications',
-    'Statistics',
-    'Trigonometry'
+  // Priority chapters data based on NCERT weightage
+  const priorityChaptersData = [
+    {
+      chapter: 'Calculus - Integration',
+      performance: '0%',
+      weightage: '15%',
+      priority: 'High',
+      priorityColor: '#fee2e2',
+      recommendation: '🔥 High Priority'
+    },
+    {
+      chapter: 'Quadratic Applications',
+      performance: '38%',
+      weightage: '12%',
+      priority: 'Medium',
+      priorityColor: '#fef3c7',
+      recommendation: '⚠ Medium Priority'
+    },
+    {
+      chapter: 'Trigonometry',
+      performance: '81%',
+      weightage: '10%',
+      priority: 'Maintain',
+      priorityColor: '#d1fae5',
+      recommendation: '✅ Maintain'
+    }
   ];
 
-  // Animation handlers
-  const handleViewTransition = (newView, setViewFunction) => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setViewFunction(newView);
-      setIsTransitioning(false);
-    }, 300);
+  // Function to get filtered chart data based on view
+  const getFilteredDateData = () => {
+    if (scoreDateView === 'homework') {
+      return studentDateWiseComparisonData.map(item => ({
+        date: item.date,
+        homework: item.homework
+      }));
+    } else if (scoreDateView === 'classwork') {
+      return studentDateWiseComparisonData.map(item => ({
+        date: item.date,
+        classwork: item.classwork
+      }));
+    }
+    return studentDateWiseComparisonData;
   };
 
-  // Get students for the selected class
-  const getStudentsForClass = () => {
-    const sampleStudents = [
-      { id: 1, name: 'Sanjay Kumar', rollNo: '10HPS01', class: 'Class 12th', efficiency: 78 },
-      { id: 2, name: 'Priya Sharma', rollNo: '10HPS02', class: 'Class 12th', efficiency: 73 },
-      { id: 3, name: 'Ahmed Khan', rollNo: '10HPS03', class: 'Class 12th', efficiency: 85 },
-      { id: 4, name: 'Rahul Verma', rollNo: '10HPS04', class: 'Class 12th', efficiency: 58 },
-      { id: 5, name: 'Anita Singh', rollNo: '11HPS01', class: 'Class 11th', efficiency: 92 }
-    ];
-    return sampleStudents;
+  const getFilteredChapterData = () => {
+    if (chapterView === 'homework') {
+      return topicWisePerformanceData.map(item => ({
+        topic: item.topic,
+        homework: item.homework
+      }));
+    } else if (chapterView === 'classwork') {
+      return topicWisePerformanceData.map(item => ({
+        topic: item.topic,
+        classwork: item.classwork
+      }));
+    }
+    return topicWisePerformanceData;
   };
 
-  // 1. Modified Score Date-wise Progression Tab
+  // Enhanced Score Date-wise Progression with chart controls
   const renderScoreDatewiseProgression = () => {
-    const getChartData = () => {
-      switch (scoreDateView) {
-        case 'homework':
-          return studentDateWiseComparisonData.map(item => ({
-            ...item,
-            classwork: null
-          }));
-        case 'classwork':
-          return studentDateWiseComparisonData.map(item => ({
-            ...item,
-            homework: null
-          }));
-        default:
-          return studentDateWiseComparisonData;
-      }
-    };
-
-    const handleLineClick = (dataKey) => {
-      if (dataKey === 'homework') {
-        handleViewTransition('homework', setScoreDateView);
-      } else if (dataKey === 'classwork') {
-        handleViewTransition('classwork', setScoreDateView);
-      }
-    };
-
+    const chartData = getFilteredDateData();
+    
     return (
-      <div className="score-datewise-container">
-        <div className="gradient-header">
-          <h2 className="gradient-header-title">📅 Homework vs Classwork: Date-wise Performance Analysis</h2>
-          <p className="gradient-header-subtitle">Score Comparison Over Time with All Submission Dates</p>
-        </div>
-
-        {/* View Toggle Buttons */}
-        <div className="view-toggle-buttons">
-          <button 
-            className={`toggle-btn ${scoreDateView === 'combined' ? 'active' : ''}`}
-            onClick={() => handleViewTransition('combined', setScoreDateView)}
-          >
-            📊 Combined View
-          </button>
-          <button 
-            className={`toggle-btn ${scoreDateView === 'homework' ? 'active' : ''}`}
-            onClick={() => handleViewTransition('homework', setScoreDateView)}
-          >
-            📚 Homework Only
-          </button>
-          <button 
-            className={`toggle-btn ${scoreDateView === 'classwork' ? 'active' : ''}`}
-            onClick={() => handleViewTransition('classwork', setScoreDateView)}
-          >
-            ✏️ Classwork Only
-          </button>
-        </div>
-
-        {/* Performance Metrics Cards */}
-        <div className="performance-metrics-grid">
-          <div className="metric-card blue">
-            <div className="metric-value">6</div>
-            <div className="metric-label">Total Dates</div>
-          </div>
-          <div className="metric-card green">
-            <div className="metric-value">532%</div>
-            <div className="metric-label">HW Growth Rate</div>
-          </div>
-          <div className="metric-card yellow">
-            <div className="metric-value">33%</div>
-            <div className="metric-label">CW Growth Rate</div>
-          </div>
-          <div className="metric-card pink">
-            <div className="metric-value">26 pts</div>
-            <div className="metric-label">Max Gap (HW-CW)</div>
+      <div className="score-progression-container">
+        <div className="enhanced-header">
+          <div className="header-content">
+            <h2 className="chart-title">📈 Homework vs Classwork: Date-wise Performance Analysis</h2>
+            <p className="chart-subtitle">Score Comparison Over Time with All Submission Dates</p>
           </div>
         </div>
 
-        {/* Interactive Line Chart */}
-        <div className="chart-container">
-          <h3 className="chart-title">Score Comparison Over Time with All Submission Dates</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={getChartData()}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" fontSize={12} />
-              <YAxis fontSize={12} domain={[0, 100]} />
-              <Tooltip 
-                formatter={(value, name) => [value ? `${value}%` : 'N/A', name === 'homework' ? 'Homework' : 'Classwork']}
-                labelFormatter={(label) => `Date: ${label}`}
-              />
-              <Legend />
-              {scoreDateView !== 'classwork' && (
-                <Line 
-                  type="monotone" 
-                  dataKey="homework" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
-                  name="Homework Scores"
-                  onClick={() => handleLineClick('homework')}
-                  style={{ cursor: 'pointer' }}
+        <div className="chart-with-controls">
+          <div className="chart-main-area">
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="#6b7280"
+                  fontSize={12}
                 />
-              )}
-              {scoreDateView !== 'homework' && (
-                <Line 
-                  type="monotone" 
-                  dataKey="classwork" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 6 }}
-                  name="Classwork Scores"
-                  onClick={() => handleLineClick('classwork')}
-                  style={{ cursor: 'pointer' }}
+                <YAxis 
+                  stroke="#6b7280"
+                  fontSize={12}
+                  domain={[0, 100]}
                 />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-          <div className="chart-interaction-hint">
-            💡 Click on the lines to view detailed performance progression with class ranking
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Legend />
+                {(scoreDateView === 'combined' || scoreDateView === 'homework') && (
+                  <Line 
+                    type="monotone" 
+                    dataKey="homework" 
+                    stroke="#22c55e" 
+                    strokeWidth={3}
+                    name="Homework Performance (%)"
+                    dot={{ fill: '#22c55e', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7, fill: '#16a34a' }}
+                  />
+                )}
+                {(scoreDateView === 'combined' || scoreDateView === 'classwork') && (
+                  <Line 
+                    type="monotone" 
+                    dataKey="classwork" 
+                    stroke="#ef4444" 
+                    strokeWidth={3}
+                    name="Classwork Performance (%)"
+                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7, fill: '#dc2626' }}
+                  />
+                )}
+                <ReferenceLine y={100} stroke="#94a3b8" strokeDasharray="5 5" />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-        </div>
 
-        {/* Improvement Trend Display */}
-        {scoreDateView === 'homework' && (
-          <div className="trend-analysis">
-            <div className="trend-card success">
-              <h4>📈 Homework Improvement Trend: 15.07% per assignment</h4>
-              <p>You are among the top 60% of students in homework performance!</p>
+          <div className="chart-controls">
+            <div className="time-range-controls">
+              <button className="time-btn active">1D</button>
+              <button className="time-btn">5D</button>
+              <button className="time-btn">10D</button>
+              <button className="time-btn">15D</button>
+              <button className="time-btn">1M</button>
+              <button className="time-btn">Max</button>
+            </div>
+            
+            <div className="view-toggle-controls">
+              <div className="control-label">📊 View Options:</div>
+              <button 
+                className={`view-btn ${scoreDateView === 'combined' ? 'active' : ''}`}
+                onClick={() => setScoreDateView('combined')}
+              >
+                📊 Combined View
+              </button>
+              <button 
+                className={`view-btn ${scoreDateView === 'homework' ? 'active' : ''}`}
+                onClick={() => setScoreDateView('homework')}
+              >
+                📚 Homework Only
+              </button>
+              <button 
+                className={`view-btn ${scoreDateView === 'classwork' ? 'active' : ''}`}
+                onClick={() => setScoreDateView('classwork')}
+              >
+                ✏️ Classwork Only
+              </button>
+            </div>
+
+            <div className="performance-indicator">
+              <div className="indicator-item">
+                <span className="indicator-label">Improvement Trend:</span>
+                <span className="indicator-value positive">15.07% per assignment</span>
+              </div>
+              <div className="ranking-badge">
+                <div className="badge-content">
+                  <span className="badge-icon">🏆</span>
+                  <div className="badge-text">
+                    <div className="badge-title">YOU ARE AMONG TOP 20% STUDENTS</div>
+                    <div className="badge-stats">
+                      <span>Your Score: 66.8%</span>
+                      <span>Class Avg: 62.2%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        )}
-
-        {scoreDateView === 'classwork' && (
-          <div className="trend-analysis">
-            <div className="trend-card warning">
-              <h4>⚠️ Classwork Performance Needs Attention</h4>
-              <p>Currently in the bottom 50% - Focus on time management and quick problem-solving!</p>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     );
   };
 
-  // 2. Modified Chapter Analysis Tab
+  // Enhanced Chapter Analysis
   const renderChapterAnalysis = () => {
-    const getChartData = () => {
-      switch (chapterView) {
-        case 'homework':
-          return topicWisePerformanceData.map(item => ({
-            ...item,
-            classwork: null
-          }));
-        case 'classwork':
-          return topicWisePerformanceData.map(item => ({
-            ...item,
-            homework: null
-          }));
-        default:
-          return topicWisePerformanceData;
-      }
-    };
-
-    const handleTopicLineClick = (dataKey) => {
-      if (dataKey === 'homework') {
-        handleViewTransition('homework', setChapterView);
-      } else if (dataKey === 'classwork') {
-        handleViewTransition('classwork', setChapterView);
-      }
-    };
-
+    const chartData = getFilteredChapterData();
+    
     return (
       <div className="chapter-analysis-container">
-        <div className="gradient-header topics">
-          <h2 className="gradient-header-title">🎯 Homework vs Classwork: Interactive Topic Analysis</h2>
-          <p className="gradient-header-subtitle">Click buttons above to see detailed timelines for each data type</p>
-        </div>
-
-        {/* View Toggle Buttons */}
-        <div className="view-toggle-buttons">
-          <button 
-            className={`toggle-btn ${chapterView === 'combined' ? 'active' : ''}`}
-            onClick={() => handleViewTransition('combined', setChapterView)}
-          >
-            📊 Combined View
-          </button>
-          <button 
-            className={`toggle-btn ${chapterView === 'homework' ? 'active' : ''}`}
-            onClick={() => handleViewTransition('homework', setChapterView)}
-          >
-            📚 Homework Only
-          </button>
-          <button 
-            className={`toggle-btn ${chapterView === 'classwork' ? 'active' : ''}`}
-            onClick={() => handleViewTransition('classwork', setChapterView)}
-          >
-            ✏️ Classwork Only
-          </button>
-        </div>
-
-        {/* Chapter Performance Metrics */}
-        <div className="performance-metrics-grid">
-          <div className="metric-card purple">
-            <div className="metric-value">7</div>
-            <div className="metric-label">Topics Analyzed</div>
-          </div>
-          <div className="metric-card green">
-            <div className="metric-value">66.7%</div>
-            <div className="metric-label">Best Performance</div>
-          </div>
-          <div className="metric-card orange">
-            <div className="metric-value">Quadratic</div>
-            <div className="metric-label">Most Active Topic</div>
-          </div>
-          <div className="metric-card pink">
-            <div className="metric-value">62.5%</div>
-            <div className="metric-label">Latest Average</div>
+        <div className="enhanced-header">
+          <div className="header-content">
+            <h2 className="chart-title">📚 Topic Analysis</h2>
+            <p className="chart-subtitle">Performance comparison across different topics</p>
           </div>
         </div>
 
-        {/* Interactive Topic Performance Chart */}
-        <div className="chart-container">
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={getChartData()}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="topic" 
-                fontSize={10} 
-                angle={-45} 
-                textAnchor="end" 
-                height={100}
-              />
-              <YAxis fontSize={12} domain={[0, 100]} />
-              <Tooltip 
-                formatter={(value, name) => [value ? `${value}%` : 'N/A', name === 'homework' ? 'Homework' : 'Classwork']}
-              />
-              <Legend />
-              {chapterView !== 'classwork' && (
-                <Line 
-                  type="monotone" 
-                  dataKey="homework" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
-                  name="Homework Average (Click to see timeline)"
-                  onClick={() => handleTopicLineClick('homework')}
-                  style={{ cursor: 'pointer' }}
+        <div className="chart-with-controls">
+          <div className="chart-main-area">
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="topic" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={100}
+                  fontSize={11}
+                  stroke="#6b7280"
                 />
-              )}
-              {chapterView !== 'homework' && (
-                <Line 
-                  type="monotone" 
-                  dataKey="classwork" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 6 }}
-                  name="Classwork Average (Click to see timeline)"
-                  onClick={() => handleTopicLineClick('classwork')}
-                  style={{ cursor: 'pointer' }}
+                <YAxis stroke="#6b7280" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
                 />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+                <Legend />
+                {(chapterView === 'combined' || chapterView === 'homework') && (
+                  <Bar 
+                    dataKey="homework" 
+                    fill="#22c55e" 
+                    name="Homework Performance"
+                    radius={[2, 2, 0, 0]}
+                  />
+                )}
+                {(chapterView === 'combined' || chapterView === 'classwork') && (
+                  <Bar 
+                    dataKey="classwork" 
+                    fill="#ef4444" 
+                    name="Classwork Performance"
+                    radius={[2, 2, 0, 0]}
+                  />
+                )}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-        {/* Chapter-wise Bar Chart */}
-        <div className="chart-container">
-          <h4>💡 Use buttons above to switch between comparison views and detailed timeline views</h4>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={getChartData()}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="topic" 
-                fontSize={10} 
-                angle={-45} 
-                textAnchor="end" 
-                height={100}
-              />
-              <YAxis fontSize={12} domain={[0, 100]} />
-              <Tooltip />
-              <Legend />
-              {chapterView !== 'classwork' && (
-                <Bar dataKey="homework" fill="#3b82f6" name="Homework" />
-              )}
-              {chapterView !== 'homework' && (
-                <Bar dataKey="classwork" fill="#8b5cf6" name="Classwork" />
-              )}
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="chart-controls">
+            <div className="time-range-controls">
+              <button className="time-btn active">1D</button>
+              <button className="time-btn">5D</button>
+              <button className="time-btn">10D</button>
+              <button className="time-btn">15D</button>
+              <button className="time-btn">1M</button>
+              <button className="time-btn">Max</button>
+            </div>
+            
+            <div className="view-toggle-controls">
+              <div className="control-label">📊 View Options:</div>
+              <button 
+                className={`view-btn ${chapterView === 'combined' ? 'active' : ''}`}
+                onClick={() => setChapterView('combined')}
+              >
+                📊 Combined View
+              </button>
+              <button 
+                className={`view-btn ${chapterView === 'homework' ? 'active' : ''}`}
+                onClick={() => setChapterView('homework')}
+              >
+                📚 Homework Only
+              </button>
+              <button 
+                className={`view-btn ${chapterView === 'classwork' ? 'active' : ''}`}
+                onClick={() => setChapterView('classwork')}
+              >
+                ✏️ Classwork Only
+              </button>
+            </div>
+
+            <div className="chapter-insights">
+              <div className="insight-item">
+                <span className="insight-icon">💡</span>
+                <span className="insight-text">Focus on Calculus Integration</span>
+              </div>
+              <div className="insight-item">
+                <span className="insight-icon">📈</span>
+                <span className="insight-text">Strong in Coordinate Geometry</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   };
 
-  // 3. Modified Mistake-Progress-Analysis Tab
+  // Enhanced Mistake Progress Analysis
   const renderMistakeProgressAnalysisTab = () => {
+    const filteredQuestions = mistakeAnalysisData.filter(question => {
+      const chapterMatch = selectedChapterFilter === 'All Chapters' || question.chapter === selectedChapterFilter;
+      const performanceMatch = selectedPerformanceFilter === 'All Percentages' || 
+        (selectedPerformanceFilter === '0-25%' && parseFloat(question.performance) <= 25) ||
+        (selectedPerformanceFilter === '26-50%' && parseFloat(question.performance) > 25 && parseFloat(question.performance) <= 50) ||
+        (selectedPerformanceFilter === '51-75%' && parseFloat(question.performance) > 50 && parseFloat(question.performance) <= 75) ||
+        (selectedPerformanceFilter === '76-100%' && parseFloat(question.performance) > 75);
+      
+      return chapterMatch && performanceMatch;
+    });
+
     return (
       <div className="mistake-analysis-container">
-        <div className="gradient-header">
-          <h2 className="gradient-header-title">🔍 Mistake-Progress-Analysis</h2>
-          <p className="gradient-header-subtitle">Detailed performance analysis for 10HPS02 - Rohit Sharma</p>
+        <div className="enhanced-header">
+          <h2 className="section-title">🔍 Mistake-Progress-Analysis</h2>
         </div>
 
-        {/* Answer Categories Analysis */}
-        <div className="analysis-section">
-          <h3 className="section-title">📊 How Well Did I Do? (Answer Categories)</h3>
-          
-          <div className="answer-categories-container">
+        {/* How Well Did I Do Section */}
+        <div className="answer-categories-section">
+          <h3 className="categories-title">📊 How Well Did I Do? (Answer Categories)</h3>
+          <div className="categories-content">
             <div className="pie-chart-container">
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
                   <Pie
                     data={answerCategoriesData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
+                    innerRadius={80}
+                    outerRadius={160}
+                    paddingAngle={2}
                     dataKey="value"
                   >
                     {answerCategoriesData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
+                  <Tooltip 
+                    formatter={(value, name) => [`${value}%`, name]}
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="pie-center-text">
+              <div className="chart-center-info">
                 <div className="total-label">Total</div>
-                <div className="total-value">30</div>
-                <div className="total-sublabel">Questions</div>
+                <div className="total-number">30</div>
+                <div className="total-description">Questions</div>
               </div>
             </div>
-
+            
             <div className="categories-legend">
               {answerCategoriesData.map((category, index) => (
                 <div key={index} className="legend-item">
-                  <div 
-                    className="legend-color" 
-                    style={{ backgroundColor: category.color }}
-                  ></div>
-                  <div className="legend-details">
+                  <div className="legend-indicator" style={{ backgroundColor: category.color }}></div>
+                  <div className="legend-content">
                     <div className="legend-name">{category.name}</div>
-                    <div className="legend-count">{category.count} questions</div>
+                    <div className="legend-stats">
+                      <span className="legend-count">{category.count} questions</span>
+                    </div>
                   </div>
-                  <div className="legend-percentage">{category.value}%</div>
+                  <div className="legend-percentage" style={{ color: category.color }}>
+                    {category.value}%
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* NEW: NCERT Weightage Analysis */}
-        <div className="analysis-section">
-          <h3 className="section-title">🎯 Smart Study Recommendations Based on Performance & Final Exam Weightage</h3>
-          
-          <div className="ncert-weightage-container">
-            <div className="focus-recommendation">
-              <h4 className="focus-title">🎯 Focus on these Chapters:</h4>
-              <div className="focus-chapters">
-                <span className="chapter-name">Algebra - Linear Equations</span>
-                <span className="chapter-name">Calculus - Integration</span>
-                <span className="chapter-name">Quadratic Applications</span>
+        {/* Enhanced Priority Chapters Section */}
+        <div className="priority-chapters-section">
+          <h3 className="subsection-title">🎯 Priority Chapters (Based on NCERT Weightage)</h3>
+          <div className="priority-cards-grid">
+            {priorityChaptersData.map((chapter, index) => (
+              <div 
+                key={index} 
+                className="priority-card" 
+                style={{ backgroundColor: chapter.priorityColor }}
+              >
+                <div className="priority-header">
+                  <div className="priority-indicator">
+                    {chapter.priority === 'High' && '🔥 High Priority:'}
+                    {chapter.priority === 'Medium' && '⚠ Medium Priority:'}
+                    {chapter.priority === 'Maintain' && '✅ Maintain:'}
+                  </div>
+                </div>
+                <div className="priority-content">
+                  <div className="chapter-name">{chapter.chapter}</div>
+                  <div className="priority-stats">
+                    <span>({chapter.performance} performance, {chapter.weightage} weightage)</span>
+                  </div>
+                </div>
               </div>
-              <p className="focus-reason">Because they have Low Performance & High Exam Weightage! ✅</p>
-              <div className="focus-details">
-                <div>Algebra - Linear Equations (8% performance) • Calculus - Integration (0% performance) • Quadratic Applications (38% performance)</div>
-              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Filter Section */}
+        <div className="filters-section">
+          <h3 className="subsection-title">🔍 Explore Your Questions In Different Ways</h3>
+          <div className="filters-grid">
+            <div className="filter-group">
+              <label className="filter-label">📊 Filter By Performance Percentage</label>
+              <div className="filter-subtitle">Choose A Performance Range:</div>
+              <select 
+                value={selectedPerformanceFilter}
+                onChange={(e) => setSelectedPerformanceFilter(e.target.value)}
+                className="filter-dropdown"
+              >
+                <option value="All Percentages">All Percentages</option>
+                <option value="0-25%">0-25%</option>
+                <option value="26-50%">26-50%</option>
+                <option value="51-75%">51-75%</option>
+                <option value="76-100%">76-100%</option>
+              </select>
             </div>
 
-            <div className="weightage-table-container">
-              <table className="weightage-table">
-                <thead>
-                  <tr>
-                    <th>Chapter/Topic</th>
-                    <th>NCERT Weightage</th>
-                    <th>Your Performance</th>
-                    <th>Priority Level</th>
-                    <th>Recommendation</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ncertWeightageData.map((item, index) => (
-                    <tr key={index} className={item.importance === 'Very High' ? 'high-priority' : item.importance === 'High' ? 'medium-priority' : 'low-priority'}>
-                      <td className="chapter-cell">{item.chapter}</td>
-                      <td className="weightage-cell">{item.weightage}</td>
-                      <td className="performance-cell">
-                        <div className="performance-bar">
-                          <div 
-                            className="performance-fill" 
-                            style={{ width: item.studentPerformance }}
-                          ></div>
-                        </div>
-                        <span>{item.studentPerformance}</span>
-                      </td>
-                      <td className={`priority-cell ${item.importance.toLowerCase().replace(' ', '-')}`}>
-                        {item.importance}
-                      </td>
-                      <td className="recommendation-cell">
-                        {parseInt(item.studentPerformance) < 50 && item.weightage.replace('%', '') > 7 ? 
-                          '🔥 Focus Now!' : 
-                          parseInt(item.studentPerformance) > 70 ? 
-                          '✅ Maintain' : 
-                          '📚 Practice More'
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="filter-group">
+              <label className="filter-label">📚 Filter By Chapter</label>
+              <div className="filter-subtitle">Choose A Chapter:</div>
+              <select 
+                value={selectedChapterFilter}
+                onChange={(e) => setSelectedChapterFilter(e.target.value)}
+                className="filter-dropdown"
+              >
+                <option value="All Chapters">All Chapters</option>
+                <option value="Quadratic Applications">Quadratic Applications</option>
+                <option value="Algebra - Linear Equations">Algebra - Linear Equations</option>
+                <option value="Coordinate Geometry">Coordinate Geometry</option>
+                <option value="Calculus - Integration">Calculus - Integration</option>
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Question Explorer */}
-        <div className="analysis-section">
-          <h3 className="section-title">🔍 Explore Your Questions In Different Ways</h3>
-          
-          <div className="filter-controls-grid">
-            <div className="filter-group">
-              <h4>📊 Filter By Performance Percentage</h4>
-              <p>Choose A Performance Range:</p>
-              <select 
-                value={selectedPerformanceFilter} 
-                onChange={(e) => setSelectedPerformanceFilter(e.target.value)}
-                className="filter-dropdown"
-              >
-                {performanceFilters.map(filter => (
-                  <option key={filter} value={filter}>{filter}</option>
-                ))}
-              </select>
-            </div>
+        {/* Results Section */}
+        <div className="results-section">
+          <div className="results-header">
+            <h3 className="results-title">📋 Filtered Results - {filteredQuestions.length} Questions Found</h3>
+            <p className="results-subtitle">Showing questions based on your selected filters</p>
+          </div>
 
-            <div className="filter-group">
-              <h4>📚 Filter By Chapter</h4>
-              <p>Choose A Chapter:</p>
-              <select 
-                value={selectedChapterFilter} 
-                onChange={(e) => setSelectedChapterFilter(e.target.value)}
-                className="filter-dropdown"
-              >
-                {chaptersList.map(chapter => (
-                  <option key={chapter} value={chapter}>{chapter}</option>
-                ))}
-              </select>
+          {/* Summary Metrics */}
+          <div className="results-metrics">
+            <div className="metric-card">
+              <div className="metric-label">Average Performance</div>
+              <div className="metric-value">66.8%</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Room for Improvement</div>
+              <div className="metric-value">33.2%</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Chapters Covered</div>
+              <div className="metric-value">10 Chapters</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Questions Found</div>
+              <div className="metric-value">{filteredQuestions.length} Questions</div>
             </div>
           </div>
 
-          <div className="filtered-results">
-            <h4>📋 Filtered Results - 30 Questions Found</h4>
-            <p>Showing questions based on your selected filters</p>
+          {/* Questions Table */}
+          <div className="questions-table-container">
+            <table className="questions-table">
+              <thead>
+                <tr>
+                  <th>Question ID</th>
+                  <th>Chapter</th>
+                  <th>Date</th>
+                  <th>Question</th>
+                  <th>My Score</th>
+                  <th>Performance</th>
+                  <th>Mistake Tracker</th>
+                  <th>Current Status</th>
+                  <th>Student Mistake</th>
+                  <th>Correct Approach</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredQuestions.map((question) => (
+                  <tr key={question.id} className="question-row">
+                    <td className="question-id">{question.id}</td>
+                    <td className="chapter-cell">{question.chapter}</td>
+                    <td className="date-cell">{question.date}</td>
+                    <td className="question-cell">{question.question}</td>
+                    <td className="score-cell">{question.myScore}</td>
+                    <td className="performance-cell">{question.performance}</td>
+                    <td className="tracker-cell">{question.mistakeTracker}</td>
+                    <td className={`status-cell status-${question.currentStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {question.currentStatus}
+                    </td>
+                    <td className="mistake-cell">{question.studentMistake}</td>
+                    <td className="approach-cell">{question.correctApproach}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     );
   };
 
-  // 4. Modified Summary Tab with Filters
+  // Enhanced Summary Tab
   const renderSummaryTab = () => {
-    const getFilteredSummaryData = () => {
+    const getSummaryData = () => {
       const baseData = {
+        overallPerformance: 50.3,
         homeworkAverage: 66.8,
         classworkAverage: 33.8,
         performanceGap: -33.0,
-        improvementRate: 15.07
+        improvementRate: 15.07,
+        totalAssessments: 6,
+        chaptersAnalyzed: 10,
+        questionsAttempted: 30,
+        overallAccuracy: 43.3
       };
 
       switch (summaryFilter) {
@@ -596,24 +678,23 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
           return {
             ...baseData,
             focus: 'Overall Performance',
-            mainMetric: (baseData.homeworkAverage + baseData.classworkAverage) / 2,
+            mainMetric: baseData.overallPerformance,
             insight: 'Large gap between homework and classwork performance indicates time management issues'
           };
       }
     };
 
-    const summaryData = getFilteredSummaryData();
+    const summaryData = getSummaryData();
 
     return (
-      <div className="summary-container">
-        <div className="gradient-header">
-          <h2 className="gradient-header-title">📋 Student Performance Summary</h2>
-          <p className="gradient-header-subtitle">Comprehensive analysis across all performance areas</p>
+      <div className="enhanced-summary-container">
+        <div className="enhanced-header">
+          <h2 className="section-title">📋 Student Performance Summary</h2>
         </div>
 
         {/* Summary Filters */}
         <div className="summary-filters">
-          <h3>📊 Filter Summary View:</h3>
+          <h3 className="filter-section-title">📊 Filter Summary View:</h3>
           <div className="filter-buttons">
             <button 
               className={`filter-btn ${summaryFilter === 'all' ? 'active' : ''}`}
@@ -636,106 +717,128 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
           </div>
         </div>
 
-        {/* Summary Cards Grid */}
-        <div className="summary-cards-grid">
-          <div className="summary-card performance-overview">
-            <h4 className="summary-card-header">🎯 {summaryData.focus} Overview</h4>
-            <div className="summary-metric-large">{summaryData.mainMetric.toFixed(1)}%</div>
-            <p className="summary-insight">{summaryData.insight}</p>
+        {/* Main Summary Cards */}
+        <div className="summary-grid">
+          <div className="summary-card main-performance">
+            <div className="card-header">
+              <span className="card-icon">🎯</span>
+              <div className="card-title">{summaryData.focus} Overview</div>
+            </div>
+            <div className="main-metric">{summaryData.mainMetric}%</div>
+            <div className="metric-description">{summaryData.insight}</div>
           </div>
 
           <div className="summary-card key-metrics">
-            <h4 className="summary-card-header">📊 Key Metrics</h4>
-            <ul className="summary-list">
-              {summaryFilter !== 'classwork' && (
-                <li><strong>Homework Average:</strong> {summaryData.homeworkAverage}% (Above class average of 62.2%)</li>
-              )}
-              {summaryFilter !== 'homework' && (
-                <li><strong>Classwork Average:</strong> {summaryData.classworkAverage}% (Below class average of 51.5%)</li>
-              )}
-              {summaryFilter === 'all' && (
-                <li><strong>Performance Gap:</strong> {summaryData.performanceGap}% (Significant difference between HW and CW)</li>
-              )}
-              <li><strong>Improvement Rate:</strong> {summaryData.improvementRate}% in homework assignments</li>
-            </ul>
+            <div className="card-header">
+              <span className="card-icon">📊</span>
+              <div className="card-title">Key Metrics</div>
+            </div>
+            <div className="metrics-list">
+              <div className="metric-item">
+                <span className="metric-label">Homework Average:</span>
+                <span className="metric-value">{summaryData.homeworkAverage}%</span>
+                <span className="metric-note">(Above class average of 62.2%)</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Classwork Average:</span>
+                <span className="metric-value">{summaryData.classworkAverage}%</span>
+                <span className="metric-note">(Below class average of 51.5%)</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Performance Gap:</span>
+                <span className="metric-value negative">{summaryData.performanceGap}%</span>
+                <span className="metric-note">(Significant difference between HW and CW)</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Improvement Rate:</span>
+                <span className="metric-value positive">{summaryData.improvementRate}%</span>
+                <span className="metric-note">in homework assignments</span>
+              </div>
+            </div>
           </div>
 
           <div className="summary-card recommendations">
-            <h4 className="summary-card-header">💡 Recommendations</h4>
-            <ul className="summary-list">
-              {summaryFilter === 'homework' ? (
-                <>
-                  <li>Maintain current homework study strategies</li>
-                  <li>Continue consistent assignment completion</li>
-                  <li>Share homework techniques with classwork preparation</li>
-                </>
-              ) : summaryFilter === 'classwork' ? (
-                <>
-                  <li>Focus on time management skills for classwork</li>
-                  <li>Practice more timed exercises</li>
-                  <li>Reduce careless errors through careful review processes</li>
-                </>
-              ) : (
-                <>
-                  <li>Focus on time management skills for classwork</li>
-                  <li>Practice more timed exercises</li>
-                  <li>Reinforce conceptual understanding through targeted practice</li>
-                  <li>Reduce careless errors through careful review processes</li>
-                </>
-              )}
-            </ul>
-          </div>
-
-          <div className="summary-card chapter-focus">
-            <h4 className="summary-card-header">🎯 Priority Chapters (Based on NCERT Weightage)</h4>
-            <div className="priority-chapters">
-              <div className="priority-item high">
-                <span className="priority-label">🔥 High Priority:</span>
-                <span>Calculus - Integration (0% performance, 15% weightage)</span>
+            <div className="card-header">
+              <span className="card-icon">💡</span>
+              <div className="card-title">Recommendations</div>
+            </div>
+            <div className="recommendations-list">
+              <div className="recommendation-item">
+                <span className="rec-icon">⏰</span>
+                <span>Focus on time management skills for classwork</span>
               </div>
-              <div className="priority-item medium">
-                <span className="priority-label">⚠️ Medium Priority:</span>
-                <span>Quadratic Applications (38% performance, 12% weightage)</span>
+              <div className="recommendation-item">
+                <span className="rec-icon">🔄</span>
+                <span>Practice more timed exercises</span>
               </div>
-              <div className="priority-item low">
-                <span className="priority-label">✅ Maintain:</span>
-                <span>Trigonometry (81% performance, 10% weightage)</span>
+              <div className="recommendation-item">
+                <span className="rec-icon">🎯</span>
+                <span>Reinforce conceptual understanding through targeted practice</span>
+              </div>
+              <div className="recommendation-item">
+                <span className="rec-icon">✅</span>
+                <span>Reduce careless errors through careful review processes</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Summary Statistics */}
-        <div className="summary-statistics">
-          <h3>📈 Performance Statistics Summary</h3>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-value">{studentDateWiseComparisonData.length}</div>
+        {/* Statistics Summary */}
+        <div className="statistics-summary">
+          <h3 className="stats-title">📈 Performance Statistics Summary</h3>
+          <div className="stats-cards">
+            <div className="stat-card">
+              <div className="stat-number">{summaryData.totalAssessments}</div>
               <div className="stat-label">Total Assessment Dates</div>
             </div>
-            <div className="stat-item">
-              <div className="stat-value">{topicWisePerformanceData.length}</div>
+            <div className="stat-card">
+              <div className="stat-number">{summaryData.chaptersAnalyzed}</div>
               <div className="stat-label">Chapters Analyzed</div>
             </div>
-            <div className="stat-item">
-              <div className="stat-value">30</div>
+            <div className="stat-card">
+              <div className="stat-number">{summaryData.questionsAttempted}</div>
               <div className="stat-label">Total Questions Attempted</div>
             </div>
-            <div className="stat-item">
-              <div className="stat-value">43.3%</div>
+            <div className="stat-card">
+              <div className="stat-number">{summaryData.overallAccuracy}%</div>
               <div className="stat-label">Overall Accuracy Rate</div>
             </div>
+          </div>
+        </div>
+
+        {/* NCERT Priority Chapters */}
+        <div className="priority-chapters-summary">
+          <h3 className="priority-title">🎯 Priority Chapters (Based on NCERT Weightage)</h3>
+          <div className="priority-summary-cards">
+            {priorityChaptersData.map((chapter, index) => (
+              <div 
+                key={index} 
+                className="priority-summary-card"
+                style={{ backgroundColor: chapter.priorityColor }}
+              >
+                <div className="priority-badge">
+                  {chapter.priority === 'High' && '🔥'}
+                  {chapter.priority === 'Medium' && '⚠'}
+                  {chapter.priority === 'Maintain' && '✅'}
+                  <span className="priority-text">{chapter.recommendation}</span>
+                </div>
+                <div className="priority-details">
+                  <div className="chapter-title">{chapter.chapter}</div>
+                  <div className="chapter-stats">({chapter.performance} performance, {chapter.weightage} weightage)</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     );
   };
 
-  // Main render function
+  // Main render function for student analysis content
   const renderStudentAnalysisContent = () => {
     return (
-      <div>
-        {/* Updated Main Tabs with new names */}
+      <div className="student-analysis-content">
+        {/* Updated Main Tabs */}
         <div className="main-tabs-container">
           {[
             { key: 'score-progression', icon: '📈', label: 'Score- Date-wise progression', color: '#3b82f6' },
@@ -748,14 +851,14 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
               onClick={() => setStudentAnalysisMainTab(tab.key)}
               className={`main-tab-button ${tab.key} ${studentAnalysisMainTab === tab.key ? 'active' : ''}`}
             >
-              <span>{tab.icon}</span>
-              {tab.label}
+              <span className="tab-icon">{tab.icon}</span>
+              <span className="tab-label">{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Content Area */}
-        <div className={isTransitioning ? 'loading' : ''} style={{ minHeight: '500px' }}>
+        <div className={`content-area ${isTransitioning ? 'loading' : ''}`}>
           {studentAnalysisMainTab === 'score-progression' && renderScoreDatewiseProgression()}
           {studentAnalysisMainTab === 'chapter-analysis' && renderChapterAnalysis()}
           {studentAnalysisMainTab === 'mistakes' && renderMistakeProgressAnalysisTab()}
@@ -766,25 +869,25 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
   };
 
   return (
-    <div className="class-analysis-main-content">
-      <div className="class-analysis-header">
-        <div className="class-header-top">
-          <div className="class-header-info">
-            <div className="class-header-icon">👤</div>
+    <div className="student-analysis-main-content">
+      <div className="student-analysis-header">
+        <div className="header-top">
+          <div className="header-info">
+            <div className="header-icon">👤</div>
             <div>
-              <h2 className="class-header-title">Student Analysis Dashboard</h2>
-              <p className="class-header-subtitle">
+              <h2 className="header-title">Student Analysis Dashboard</h2>
+              <p className="header-subtitle">
                 {selectedStudent ? 
-                  `Detailed performance analysis for ${selectedStudent.rollNo} - ${selectedStudent.name || 'Unknown Student'}` : 
-                  'Select a student to view detailed analysis'
+                  `Detailed performance analysis for ${selectedStudent.rollNo} - ${selectedStudent.name}` : 
+                  'Select a student from the dropdown above to view detailed analysis'
                 }
               </p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <div className="selectors-container">
             {/* Select Class */}
-            <div className="class-selector-container">
-              <span className="class-selector-label">Select Class</span>
+            <div className="selector-group">
+              <span className="selector-label">Select Class</span>
               <select
                 value={selectedClass.name}
                 onChange={(e) => {
@@ -793,13 +896,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                     onClassChange(classData);
                   }
                 }}
-                style={{
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  backgroundColor: 'white'
-                }}
+                className="selector-dropdown"
               >
                 <option value="Class 6th">Class 6th</option>
                 <option value="Class 7th">Class 7th</option>
@@ -812,25 +909,28 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             </div>
 
             {/* Select Student */}
-            <div className="class-selector-container">
-              <span className="class-selector-label">Select Student</span>
+            <div className="selector-group">
+              <span className="selector-label">Select Student</span>
               <select
                 value={selectedStudent ? selectedStudent.rollNo : ''}
                 onChange={(e) => {
-                  const student = getStudentsForClass().find(s => s.rollNo === e.target.value);
-                  onStudentSelect(student);
+                  const studentRollNo = e.target.value;
+                  if (studentRollNo) {
+                    const student = getStudentsForClass().find(s => s.rollNo === studentRollNo);
+                    if (student && onStudentSelect) {
+                      onStudentSelect(student);
+                    }
+                  } else {
+                    if (onStudentSelect) {
+                      onStudentSelect(null);
+                    }
+                  }
                 }}
-                style={{
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  backgroundColor: 'white'
-                }}
+                className="selector-dropdown"
               >
                 <option value="">Select Student</option>
                 {getStudentsForClass().map(student => (
-                  <option key={student.id} value={student.rollNo}>
+                  <option key={student.id || student.rollNo} value={student.rollNo}>
                     {student.rollNo} - {student.name}
                   </option>
                 ))}
@@ -842,8 +942,11 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
       {selectedStudent ? renderStudentAnalysisContent() : (
         <div className="no-student-selected">
-          <h3>👆 Please select a student to view analysis</h3>
-          <p>Choose a student from the dropdown above to see detailed performance analysis.</p>
+          <div className="empty-state-content">
+            <div className="empty-state-icon">👆</div>
+            <h3 className="empty-state-title">Please select a student to view analysis</h3>
+            <p className="empty-state-text">Choose a student from the dropdown above to see detailed performance analysis.</p>
+          </div>
         </div>
       )}
     </div>
