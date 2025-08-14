@@ -312,3 +312,150 @@
   border: 2px solid rgba(51, 65, 85, 0.8) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
+
+/* Add these styles to your existing QuestionListModal.css */
+
+/* Radio button styling for single question selection */
+.question-item input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  accent-color: #007bff;
+  cursor: pointer;
+  transform: scale(1.2);
+}
+
+/* Enhanced question item styling */
+.question-item {
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.question-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.question-item.selected {
+  border-color: #007bff;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f8f9ff 100%);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.25);
+}
+
+/* Question content layout */
+.question-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.question-number {
+  background: #007bff;
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.question-text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.question-level {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+.question-level.easy {
+  background: #d4edda;
+  color: #155724;
+}
+
+.question-level.medium {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.question-level.hard {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Image preview styling */
+.question-image-preview {
+  margin-top: 12px;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* Modal styling enhancements */
+.question-modal .modal-title {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.question-modal .modal-header {
+  border-bottom: 2px solid #e9ecef;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.question-modal .modal-footer {
+  border-top: 2px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+/* Instruction text styling */
+.text-muted {
+  font-style: italic;
+  color: #6c757d !important;
+  text-align: center;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px dashed #dee2e6;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .question-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .question-item input[type="radio"] {
+    align-self: center;
+    margin-bottom: 8px;
+  }
+  
+  .question-number {
+    align-self: center;
+  }
+}

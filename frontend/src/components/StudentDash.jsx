@@ -461,33 +461,56 @@ const handleQuestionClick = (questionObj, index) => {
   });
 };
 
-// ADD this function after handleQuestionClick:
-const handleQuestionClickFromModal = (questionObj, index) => {
-  handleQuestionClick(questionObj, index);
+// Updated question click handler for single question navigation
+const handleQuestionClickFromModal = (questionText, index, questionImage, questionId) => {
+  console.log("Question selected from modal:", {
+    questionText,
+    index,
+    questionImage,
+    questionId
+  });
+
+  // Navigate directly to solve question page
+  navigate('/solvequestion', {
+    state: {
+      question: questionText,
+      questionId: questionId,
+      image: questionImage, // ✅ FIXED: Use 'image' field name consistently
+      fromQuestionSelection: true,
+      questionIndex: index,
+       class_id: selectedClass,
+      subject_id: selectedSubject,
+      topic_ids: selectedChapters,
+      subtopic: questionLevel
+    }
+  });
+
+  // Close the modal
   setShowQuestionListModal(false);
 };
 
-// Updated handleMultipleSelectSubmit function to preserve question IDs
-  const handleMultipleSelectSubmit = (selectedQuestionsData) => {
-  setSelectedQuestions(selectedQuestionsData);
-  setShowQuestionList(false);
-
-  const firstQuestion = selectedQuestionsData[0];
+// Updated handler for the submit button (backup - won't be used much now)
+const handleMultipleSelectSubmit = (selectedQuestionsData) => {
+  console.log("Question selected:", selectedQuestionsData);
   
-  navigate("/solvequestion", {
-    state: {
-      question: firstQuestion.question,
-      questionNumber: firstQuestion.index + 1,
-      questionList,
-      class_id: selectedClass,
-      subject_id: selectedSubject,
-      topic_ids: selectedChapters,
-      subtopic: questionType === "external" ? questionLevel : "",
-      worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
-      image: firstQuestion.image,
-      selectedQuestions: selectedQuestionsData,
-    },
-  });
+  if (selectedQuestionsData && selectedQuestionsData.length > 0) {
+    const selectedQuestion = selectedQuestionsData[0];
+    
+    navigate('/solvequestion', {
+      state: {
+        question: selectedQuestion.question,
+        questionId: selectedQuestion.id,
+        questionImage: selectedQuestion.image,
+        fromQuestionSelection: true,
+        class_id: selectedClass,
+        subject_id: selectedSubject,
+        topic_ids: selectedChapters,
+        subtopic: questionLevel
+      }
+    });
+  }
+  
+  setShowQuestionListModal(false);
 };
 
   // If you want confetti when the modal opens, you can also add this:
@@ -1339,19 +1362,19 @@ const playSuccessSound = () => {
             </div>
           </div>
 
-          {/* Recent Sessions */}
+          {/* Recent Sessions */} 
          <UnifiedSessions />
         </Container>
       </div>
 
       {/* Enhanced Question List Modal */}
-      {/* REPLACE your existing QuestionListModal usage with this: */}
+          {/* Enhanced Question List Modal */}
           <QuestionListModal
             show={showQuestionListModal}
             onHide={() => setShowQuestionListModal(false)}
             questionList={questionList}
-            onQuestionClick={handleQuestionClickFromModal} // Use the new handler
-            isMultipleSelect={questionType === "external"}
+            onQuestionClick={handleQuestionClickFromModal}
+            isMultipleSelect={questionType === "external" || questionType === "Set of Questions"} // Updated condition
             onMultipleSelectSubmit={handleMultipleSelectSubmit}
             worksheetName={questionType === "worksheets" ? selectedWorksheet : ""}
           />

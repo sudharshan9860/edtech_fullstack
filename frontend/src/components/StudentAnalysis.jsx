@@ -645,194 +645,222 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
   };
 
   // Enhanced Summary Tab
-  const renderSummaryTab = () => {
-    const getSummaryData = () => {
-      const baseData = {
-        overallPerformance: 50.3,
-        homeworkAverage: 66.8,
-        classworkAverage: 33.8,
-        performanceGap: -33.0,
-        improvementRate: 15.07,
-        totalAssessments: 6,
-        chaptersAnalyzed: 10,
-        questionsAttempted: 30,
-        overallAccuracy: 43.3
-      };
-
-      switch (summaryFilter) {
-        case 'homework':
-          return {
-            ...baseData,
-            focus: 'Homework Performance',
-            mainMetric: baseData.homeworkAverage,
-            insight: 'Strong homework performance with consistent improvement trend'
-          };
-        case 'classwork':
-          return {
-            ...baseData,
-            focus: 'Classwork Performance', 
-            mainMetric: baseData.classworkAverage,
-            insight: 'Classwork needs significant improvement - focus on time management'
-          };
-        default:
-          return {
-            ...baseData,
-            focus: 'Overall Performance',
-            mainMetric: baseData.overallPerformance,
-            insight: 'Large gap between homework and classwork performance indicates time management issues'
-          };
-      }
+  // Enhanced Summary Tab - Fixed and Compact Version
+const renderSummaryTab = () => {
+  const getSummaryData = () => {
+    const baseData = {
+      overallPerformance: 50.3,
+      homeworkAverage: 66.8,
+      classworkAverage: 33.8,
+      performanceGap: -33.0,
+      improvementRate: 15.07,
+      totalAssessments: 6,
+      chaptersAnalyzed: 10,
+      questionsAttempted: 30,
+      overallAccuracy: 43.3
     };
 
-    const summaryData = getSummaryData();
+    switch (summaryFilter) {
+      case 'homework':
+        return {
+          ...baseData,
+          focus: 'Homework Performance',
+          mainMetric: baseData.homeworkAverage,
+          insight: 'Strong homework performance with consistent improvement trend'
+        };
+      case 'classwork':
+        return {
+          ...baseData,
+          focus: 'Classwork Performance', 
+          mainMetric: baseData.classworkAverage,
+          insight: 'Classwork needs significant improvement - focus on time management'
+        };
+      default:
+        return {
+          ...baseData,
+          focus: 'Overall Performance',
+          mainMetric: baseData.overallPerformance,
+          insight: 'Large gap between homework and classwork performance indicates time management issues'
+        };
+    }
+  };
 
-    return (
-      <div className="enhanced-summary-container">
-        <div className="enhanced-header">
-          <h2 className="section-title">📋 Student Performance Summary</h2>
+  const summaryData = getSummaryData();
+
+  const priorityChaptersData = [
+    { 
+      chapter: 'Calculus - Integration', 
+      performance: '0%', 
+      weightage: '15%', 
+      recommendation: 'High Priority',
+      priorityColor: '#fee2e2',
+      priority: 'High'
+    },
+    { 
+      chapter: 'Quadratic Applications', 
+      performance: '38%', 
+      weightage: '12%', 
+      recommendation: 'Medium Priority',
+      priorityColor: '#fef3c7',
+      priority: 'Medium'
+    },
+    { 
+      chapter: 'Trigonometry', 
+      performance: '81%', 
+      weightage: '10%', 
+      recommendation: 'Maintain',
+      priorityColor: '#d1fae5',
+      priority: 'Maintain'
+    }
+  ];
+
+  return (
+    <div className="enhanced-summary-container">
+      {/* Compact Header */}
+      <div className="compact-header">
+        <h2 className="summary-title">📋 Student Performance Summary</h2>
+      </div>
+
+      {/* Compact Filters */}
+      <div className="compact-filters">
+        <span className="filter-label">📊 View:</span>
+        <div className="filter-buttons-compact">
+          <button 
+            className={`filter-btn-compact ${summaryFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setSummaryFilter('all')}
+          >
+            📈 All Data
+          </button>
+          <button 
+            className={`filter-btn-compact ${summaryFilter === 'homework' ? 'active' : ''}`}
+            onClick={() => setSummaryFilter('homework')}
+          >
+            📚 Homework
+          </button>
+          <button 
+            className={`filter-btn-compact ${summaryFilter === 'classwork' ? 'active' : ''}`}
+            onClick={() => setSummaryFilter('classwork')}
+          >
+            ✏️ Classwork
+          </button>
         </div>
+      </div>
 
-        {/* Summary Filters */}
-        <div className="summary-filters">
-          <h3 className="filter-section-title">📊 Filter Summary View:</h3>
-          <div className="filter-buttons">
-            <button 
-              className={`filter-btn ${summaryFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setSummaryFilter('all')}
-            >
-              📈 All Data
-            </button>
-            <button 
-              className={`filter-btn ${summaryFilter === 'homework' ? 'active' : ''}`}
-              onClick={() => setSummaryFilter('homework')}
-            >
-              📚 Homework Only
-            </button>
-            <button 
-              className={`filter-btn ${summaryFilter === 'classwork' ? 'active' : ''}`}
-              onClick={() => setSummaryFilter('classwork')}
-            >
-              ✏️ Classwork Only
-            </button>
+      {/* Statistics Summary - Moved to top, compact layout */}
+      <div className="statistics-summary-compact">
+        <h3 className="stats-title-compact">📈 Performance Statistics</h3>
+        <div className="stats-grid-compact">
+          <div className="stat-card-compact">
+            <div className="stat-number-compact">{summaryData.totalAssessments}</div>
+            <div className="stat-label-compact">Assessments</div>
           </div>
-        </div>
-
-        {/* Main Summary Cards */}
-        <div className="summary-grid">
-          <div className="summary-card main-performance">
-            <div className="card-header">
-              <span className="card-icon">🎯</span>
-              <div className="card-title">{summaryData.focus} Overview</div>
-            </div>
-            <div className="main-metric">{summaryData.mainMetric}%</div>
-            <div className="metric-description">{summaryData.insight}</div>
+          <div className="stat-card-compact">
+            <div className="stat-number-compact">{summaryData.chaptersAnalyzed}</div>
+            <div className="stat-label-compact">Chapters</div>
           </div>
-
-          <div className="summary-card key-metrics">
-            <div className="card-header">
-              <span className="card-icon">📊</span>
-              <div className="card-title">Key Metrics</div>
-            </div>
-            <div className="metrics-list">
-              <div className="metric-item">
-                <span className="metric-label">Homework Average:</span>
-                <span className="metric-value">{summaryData.homeworkAverage}%</span>
-                <span className="metric-note">(Above class average of 62.2%)</span>
-              </div>
-              <div className="metric-item">
-                <span className="metric-label">Classwork Average:</span>
-                <span className="metric-value">{summaryData.classworkAverage}%</span>
-                <span className="metric-note">(Below class average of 51.5%)</span>
-              </div>
-              <div className="metric-item">
-                <span className="metric-label">Performance Gap:</span>
-                <span className="metric-value negative">{summaryData.performanceGap}%</span>
-                <span className="metric-note">(Significant difference between HW and CW)</span>
-              </div>
-              <div className="metric-item">
-                <span className="metric-label">Improvement Rate:</span>
-                <span className="metric-value positive">{summaryData.improvementRate}%</span>
-                <span className="metric-note">in homework assignments</span>
-              </div>
-            </div>
+          <div className="stat-card-compact">
+            <div className="stat-number-compact">{summaryData.questionsAttempted}</div>
+            <div className="stat-label-compact">Questions</div>
           </div>
-
-          <div className="summary-card recommendations">
-            <div className="card-header">
-              <span className="card-icon">💡</span>
-              <div className="card-title">Recommendations</div>
-            </div>
-            <div className="recommendations-list">
-              <div className="recommendation-item">
-                <span className="rec-icon">⏰</span>
-                <span>Focus on time management skills for classwork</span>
-              </div>
-              <div className="recommendation-item">
-                <span className="rec-icon">🔄</span>
-                <span>Practice more timed exercises</span>
-              </div>
-              <div className="recommendation-item">
-                <span className="rec-icon">🎯</span>
-                <span>Reinforce conceptual understanding through targeted practice</span>
-              </div>
-              <div className="recommendation-item">
-                <span className="rec-icon">✅</span>
-                <span>Reduce careless errors through careful review processes</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Statistics Summary */}
-        <div className="statistics-summary">
-          <h3 className="stats-title">📈 Performance Statistics Summary</h3>
-          <div className="stats-cards">
-            <div className="stat-card">
-              <div className="stat-number">{summaryData.totalAssessments}</div>
-              <div className="stat-label">Total Assessment Dates</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{summaryData.chaptersAnalyzed}</div>
-              <div className="stat-label">Chapters Analyzed</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{summaryData.questionsAttempted}</div>
-              <div className="stat-label">Total Questions Attempted</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{summaryData.overallAccuracy}%</div>
-              <div className="stat-label">Overall Accuracy Rate</div>
-            </div>
+          <div className="stat-card-compact">
+            <div className="stat-number-compact">{summaryData.overallAccuracy}%</div>
+            <div className="stat-label-compact">Accuracy</div>
           </div>
         </div>
+      </div>
 
-        {/* NCERT Priority Chapters */}
-        <div className="priority-chapters-summary">
-          <h3 className="priority-title">🎯 Priority Chapters (Based on NCERT Weightage)</h3>
-          <div className="priority-summary-cards">
+      <div className="summary-grid-compact">
+        {/* Overall Performance Overview - Compact */}
+        <div className="performance-overview-compact">
+          <div className="card-header-compact">
+            <span className="card-icon-compact">🎯</span>
+            <span className="card-title-compact">{summaryData.focus}</span>
+          </div>
+          
+          <div className="main-metric-compact">{summaryData.mainMetric}%</div>
+          <div className="metric-insight-compact">{summaryData.insight}</div>
+          
+          <div className="metrics-grid-compact">
+            <div className="metric-item-compact">
+              <span className="metric-label-compact">Homework Avg:</span>
+              <span className="metric-value-compact">{summaryData.homeworkAverage}%</span>
+            </div>
+            <div className="metric-item-compact">
+              <span className="metric-label-compact">Classwork Avg:</span>
+              <span className="metric-value-compact">{summaryData.classworkAverage}%</span>
+            </div>
+            <div className="metric-item-compact">
+              <span className="metric-label-compact">Performance Gap:</span>
+              <span className="metric-value-compact negative">{summaryData.performanceGap}%</span>
+            </div>
+            <div className="metric-item-compact">
+              <span className="metric-label-compact">Improvement Rate:</span>
+              <span className="metric-value-compact positive">+{summaryData.improvementRate}%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Priority Chapters - Compact */}
+        <div className="priority-chapters-compact">
+          <div className="card-header-compact">
+            <span className="card-icon-compact">🎯</span>
+            <span className="card-title-compact">Priority Chapters (NCERT Weightage)</span>
+          </div>
+          
+          <div className="priority-list-compact">
             {priorityChaptersData.map((chapter, index) => (
               <div 
                 key={index} 
-                className="priority-summary-card"
+                className="priority-item-compact"
                 style={{ backgroundColor: chapter.priorityColor }}
               >
-                <div className="priority-badge">
+                <div className="priority-badge-compact">
                   {chapter.priority === 'High' && '🔥'}
-                  {chapter.priority === 'Medium' && '⚠'}
+                  {chapter.priority === 'Medium' && '⚠️'}
                   {chapter.priority === 'Maintain' && '✅'}
-                  <span className="priority-text">{chapter.recommendation}</span>
+                  <span className="priority-text-compact">{chapter.recommendation}</span>
                 </div>
-                <div className="priority-details">
-                  <div className="chapter-title">{chapter.chapter}</div>
-                  <div className="chapter-stats">({chapter.performance} performance, {chapter.weightage} weightage)</div>
+                <div className="priority-info-compact">
+                  <div className="chapter-name-compact">{chapter.chapter}</div>
+                  <div className="chapter-stats-compact">
+                    {chapter.performance} performance • {chapter.weightage} weightage
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-    );
-  };
+
+      {/* Recommendations - Compact */}
+      <div className="recommendations-compact">
+        <div className="card-header-compact">
+          <span className="card-icon-compact">💡</span>
+          <span className="card-title-compact">Recommendations</span>
+        </div>
+        
+        <div className="recommendations-grid-compact">
+          <div className="recommendation-item-compact">
+            <span className="rec-icon-compact">🎯</span>
+            <span className="rec-text-compact">Focus on time management skills for classwork</span>
+          </div>
+          <div className="recommendation-item-compact">
+            <span className="rec-icon-compact">⏱️</span>
+            <span className="rec-text-compact">Practice more timed exercises</span>
+          </div>
+          <div className="recommendation-item-compact">
+            <span className="rec-icon-compact">🎯</span>
+            <span className="rec-text-compact">Reinforce conceptual understanding through targeted practice</span>
+          </div>
+          <div className="recommendation-item-compact">
+            <span className="rec-icon-compact">✅</span>
+            <span className="rec-text-compact">Reduce careless errors through careful review processes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
   // Main render function for student analysis content
   const renderStudentAnalysisContent = () => {

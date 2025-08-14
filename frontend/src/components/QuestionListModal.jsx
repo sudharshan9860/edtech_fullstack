@@ -22,66 +22,103 @@ const QuestionListModal = ({
     console.log("Question clicked in modal:", questionData, index);
     
     if (isMultipleSelect) {
-      setSelectedQuestions((prev) => {
-        const isSelected = prev.includes(index);
-        if (isSelected) {
-          return prev.filter((i) => i !== index);
-        } else {
-          if (prev.length < 5) {
-            return [...prev, index];
-          }
-          return prev;
-        }
-      });
+      // MODIFIED: Only allow selection of 1 question
+      setSelectedQuestions([index]); // Always replace with new selection
+      
+      // MODIFIED: Auto-submit when a question is selected
+      setTimeout(() => {
+        handleSingleQuestionSubmit(questionData, index);
+      }, 100); // Small delay to show selection visually
+      
     } else {
+      // Handle different image field names and formats
+      let imageUrl = null;
+      if (questionData.question_image) {
+        if (questionData.question_image.startsWith('data:image')) {
+          imageUrl = questionData.question_image;
+        } else {
+          imageUrl = `data:image/png;base64,${questionData.question_image}`;
+        }
+      } else if (questionData.image) {
+        imageUrl = questionData.image;
+      } else if (questionData.questionImage) {
+        imageUrl = questionData.questionImage;
+      }
+
       // Ensure we're passing proper string content and IDs
       const selectedQuestion = {
-        // Ensure question is a string
         question: typeof questionData.question === 'string' 
           ? questionData.question 
           : questionData.question?.text || questionData.question?.question || String(questionData.question || ''),
-        // Pass proper IDs
         id: questionData.id || questionData.question_id || questionData._id,
-        // Handle image properly
-        image: questionData.question_image
-          ? `data:image/png;base64,${questionData.question_image}`
-          : questionData.image || null,
-        // Additional metadata
+        image: imageUrl,
         level: questionData.level || 'Medium',
         originalIndex: index
       };
 
       console.log("Processed selected question:", selectedQuestion);
-      
-      // Call the parent handler with processed data
       onQuestionClick(selectedQuestion.question, index, selectedQuestion.image, selectedQuestion.id);
     }
   };
 
+  // NEW: Handle single question submission and navigation
+  const handleSingleQuestionSubmit = (questionData, index) => {
+    console.log("Raw question data:", questionData);
+    
+    // Handle different image field names and formats
+    let imageUrl = null;
+    if (questionData.question_image) {
+      // If it's already base64 with data URL prefix
+      if (questionData.question_image.startsWith('data:image')) {
+        imageUrl = questionData.question_image;
+      } else {
+        // Add base64 prefix if missing
+        imageUrl = `data:image/png;base64,${questionData.question_image}`;
+      }
+    } else if (questionData.image) {
+      imageUrl = questionData.image;
+    } else if (questionData.questionImage) {
+      imageUrl = questionData.questionImage;
+    }
+
+    const selectedQuestion = {
+      question: typeof questionData.question === 'string'
+        ? questionData.question
+        : questionData.question?.text || questionData.question?.question || String(questionData.question || ''),
+      id: questionData.id || questionData.question_id || questionData._id,
+      image: imageUrl,
+      level: questionData.level || 'Medium',
+      originalIndex: index
+    };
+
+    console.log("Navigating to solve question with:", selectedQuestion);
+    console.log("Image URL:", imageUrl);
+    
+    // Close modal first
+    onHide();
+    
+    // Navigate to solve question page with the selected question data
+    navigate("/solvequestion", {
+      state: {
+        question: selectedQuestion.question,
+        questionId: selectedQuestion.id,
+        image: selectedQuestion.image, // Use 'image' instead of 'questionImage'
+        level: selectedQuestion.level,
+        fromQuestionSelection: true
+      }
+    });
+  };
+
   const handleMultipleSelectSubmit = () => {
-    if (selectedQuestions.length >= 1 && selectedQuestions.length <= 5) {
-      const selectedQuestionsData = selectedQuestions.map((index) => ({
-        // Ensure question is a string
-        question: typeof questionList[index].question === 'string'
-          ? questionList[index].question
-          : questionList[index].question?.text || questionList[index].question?.question || String(questionList[index].question || ''),
-        // Pass proper IDs
-        id: questionList[index].id || questionList[index].question_id || questionList[index]._id,
-        // Handle image properly
-        image: questionList[index].question_image
-          ? `data:image/png;base64,${questionList[index].question_image}`
-          : questionList[index].image || null,
-        index: index,
-        level: questionList[index].level || 'Medium'
-      }));
-      
-      console.log("Multiple questions selected:", selectedQuestionsData);
-      onMultipleSelectSubmit(selectedQuestionsData);
+    // This function is kept for compatibility but modified for single selection
+    if (selectedQuestions.length === 1) {
+      const index = selectedQuestions[0];
+      const questionData = questionList[index];
+      handleSingleQuestionSubmit(questionData, index);
     }
   };
 
   const handleSolveWorksheet = () => {
-    // Navigate to worksheet submission page with worksheet name and questions
     navigate("/worksheet-submission", {
       state: {
         worksheetName: worksheetName,
@@ -96,7 +133,6 @@ const QuestionListModal = ({
     onHide();
   };
 
-  // Safe function to render question content
   const renderQuestionContent = (questionData) => {
     let questionText = '';
     
@@ -126,7 +162,7 @@ const QuestionListModal = ({
           {worksheetName 
             ? `Worksheet: ${worksheetName}` 
             : isMultipleSelect 
-              ? "Select up to 5 Questions" 
+              ? "Select a Question" // MODIFIED: Changed from "Select up to 5 Questions"
               : "Question List"}
         </Modal.Title>
       </Modal.Header>
@@ -145,7 +181,8 @@ const QuestionListModal = ({
                 >
                   {isMultipleSelect && !worksheetName && (
                     <input
-                      type="checkbox"
+                      type="radio" // MODIFIED: Changed from checkbox to radio button
+                      name="questionSelection" // MODIFIED: Added name for radio group
                       checked={selectedQuestions.includes(index)}
                       onChange={() => handleQuestionClick(questionData, index)}
                     />
@@ -193,16 +230,11 @@ const QuestionListModal = ({
             Solve Worksheet
           </Button>
         )}
-        {isMultipleSelect && !worksheetName && (
-          <Button
-            variant="primary"
-            onClick={handleMultipleSelectSubmit}
-            disabled={
-              selectedQuestions.length < 1 || selectedQuestions.length > 5
-            }
-          >
-            Submit Selected Questions ({selectedQuestions.length}/5)
-          </Button>
+        {/* MODIFIED: Hide submit button for multiple select since auto-navigation occurs */}
+        {isMultipleSelect && !worksheetName && selectedQuestions.length === 0 && (
+          <div className="text-muted">
+            Click on any question to start solving
+          </div>
         )}
         <Button variant="secondary" onClick={handleModalClose}>
           Close

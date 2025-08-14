@@ -1,4 +1,4 @@
-// ClassAnalysis.jsx
+// ClassAnalysis.jsx - Updated with all requested changes
 
 import React, { useState } from 'react';
 import { 
@@ -12,6 +12,10 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
   const [classAnalysisTab, setClassAnalysisTab] = useState('overview');
   const [selectedChapter, setSelectedChapter] = useState('All Chapters');
+  
+  // New state for Submitted Results filters
+  const [dateFilter, setDateFilter] = useState('');
+  const [submissionFilter, setSubmissionFilter] = useState('all'); // all, homework, classwork
 
   // Updated data with 5 students instead of 3
   const studentPerformanceComparisonData = [
@@ -30,8 +34,8 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     completionRate: 92
   };
 
-  // Color-coded Top Performers data
-  const getTopPerformersWithColors = () => {
+  // Updated Top Performers data with single color
+  const getTopPerformersData = () => {
     const data = [
       { student: '10HPS21', average: 58 },
       { student: '10HPS19', average: 52 },
@@ -40,9 +44,10 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
       { student: '10HPS18', average: 42 }
     ];
 
-    return data.map((item, index) => ({
+    // All bars will have the same color
+    return data.map((item) => ({
       ...item,
-      color: index < 2 ? '#22c55e' : index < 4 ? '#f59e0b' : '#f97316'
+      color: '#3b82f6' // Single blue color for all performers
     }));
   };
 
@@ -78,13 +83,17 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     { topic: 'Coordinate Geometry', average: 71.4 }
   ];
 
-  // Chapter-specific sub-topic data
+  // Chapter-specific sub-topic data - reformatted for bar chart
   const getChapterSubTopics = (chapter) => {
     const subTopicData = {
       'Algebra': {
         subTopics: [
-          { name: 'Rational Functions', overallAvg: 64.0, hwAvg: 84.0, cwAvg: 54.0, totalQuestions: 15 },
-          { name: 'Linear Equations', overallAvg: 46.7, hwAvg: 58.3, cwAvg: 40.8, totalQuestions: 30 }
+          { name: 'Linear Equations', overallAvg: 46.7, hwAvg: 58.3, cwAvg: 40.8, totalQuestions: 30 },
+          { name: 'Rational Functions', overallAvg: 64.0, hwAvg: 84.0, cwAvg: 54.0, totalQuestions: 15 }
+        ],
+        chartData: [
+          { topic: 'Linear Equations', average: 46.7 },
+          { topic: 'Rational Functions', average: 64.0 }
         ],
         stats: {
           subTopicsFound: 2,
@@ -95,8 +104,12 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
       },
       'Calculus': {
         subTopics: [
-          { name: 'Integration', overallAvg: 58.1, hwAvg: 96.7, cwAvg: 45.3, totalQuestions: 20 },
-          { name: 'Derivatives', overallAvg: 52.2, hwAvg: 55.1, cwAvg: 47.5, totalQuestions: 40 }
+          { name: 'Derivatives', overallAvg: 52.2, hwAvg: 55.1, cwAvg: 47.5, totalQuestions: 40 },
+          { name: 'Integration', overallAvg: 58.1, hwAvg: 96.7, cwAvg: 45.3, totalQuestions: 20 }
+        ],
+        chartData: [
+          { topic: 'Derivatives', average: 52.2 },
+          { topic: 'Integration', average: 58.1 }
         ],
         stats: {
           subTopicsFound: 2,
@@ -107,6 +120,32 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
       }
     };
     return subTopicData[chapter] || null;
+  };
+
+  // Sample data for Submitted Results
+  const submittedResultsData = [
+    { studentId: '10HPS17', marks: 67, homeworkSubmitted: true, classworkSubmitted: true, date: '2025-08-10' },
+    { studentId: '10HPS18', marks: 42, homeworkSubmitted: true, classworkSubmitted: false, date: '2025-08-10' },
+    { studentId: '10HPS19', marks: 52, homeworkSubmitted: true, classworkSubmitted: true, date: '2025-08-11' },
+    { studentId: '10HPS20', marks: 48, homeworkSubmitted: false, classworkSubmitted: true, date: '2025-08-11' },
+    { studentId: '10HPS21', marks: 58, homeworkSubmitted: true, classworkSubmitted: true, date: '2025-08-12' }
+  ];
+
+  // Filter submitted results based on filters
+  const getFilteredResults = () => {
+    let filtered = [...submittedResultsData];
+    
+    if (dateFilter) {
+      filtered = filtered.filter(item => item.date === dateFilter);
+    }
+    
+    if (submissionFilter === 'homework') {
+      filtered = filtered.filter(item => item.homeworkSubmitted);
+    } else if (submissionFilter === 'classwork') {
+      filtered = filtered.filter(item => item.classworkSubmitted);
+    }
+    
+    return filtered;
   };
 
   // Class Overview Dashboard
@@ -217,9 +256,9 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     );
   };
 
-  // Enhanced Class Progress Trends with Color Coding
+  // Enhanced Class Progress Trends with Single Color
   const renderClassProgressTrends = () => {
-    const topPerformersData = getTopPerformersWithColors();
+    const topPerformersData = getTopPerformersData();
     
     return (
       <div className="progress-trends-container">
@@ -256,27 +295,15 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
                   ticks={[0, 20, 40, 60, 80, 100]}
                 />
                 <Tooltip formatter={(value) => [value + '%', 'Average Score']} />
-                <Bar dataKey="average" radius={[4, 4, 0, 0]}>
-                  {topPerformersData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
+                <Bar dataKey="average" fill="#3b82f6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           
           <div className="performance-legend">
             <div className="legend-item">
-              <div className="legend-color green"></div>
-              <span>Top Performers</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-color yellow"></div>
-              <span>Middle Performers</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-color orange"></div>
-              <span>Needs Improvement</span>
+              <div className="legend-color all-performers"></div>
+              <span>All Performers</span>
             </div>
           </div>
         </div>
@@ -284,7 +311,7 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     );
   };
 
-  // Enhanced Topic Analysis with Chapter Selection
+  // Enhanced Topic Analysis with Bar Chart for Sub-topics
   const renderTopicAnalysis = () => {
     const chapterData = getChapterSubTopics(selectedChapter);
     
@@ -370,28 +397,36 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
           </>
         ) : chapterData ? (
           <>
-            {/* Chapter Sub-topic Performance */}
+            {/* Chapter Sub-topic Performance as Bar Chart */}
             <div className="chapter-analysis-section">
               <h3 className="section-title">🎯 Class Sub-topic Performance: {selectedChapter}</h3>
               <p className="section-subtitle">Sub-topics Ranked by Class Performance (Lowest to Highest)</p>
               
-              <div className="subtopic-charts">
-                {chapterData.subTopics.map((subtopic, index) => (
-                  <div key={index} className="subtopic-chart">
-                    <h4 className="subtopic-title">{subtopic.name}</h4>
-                    <div className="subtopic-bar">
-                      <div 
-                        className="subtopic-progress" 
-                        style={{ width: `${subtopic.overallAvg}%` }}
-                      ></div>
-                    </div>
-                    <div className="subtopic-stats">
-                      <span>Overall: {subtopic.overallAvg}%</span>
-                      <span>HW: {subtopic.hwAvg}%</span>
-                      <span>CW: {subtopic.cwAvg}%</span>
-                    </div>
-                  </div>
-                ))}
+              {/* Bar Chart for Sub-topics */}
+              <div className="subtopic-bar-chart">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart 
+                    data={chapterData.chartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="topic" 
+                      fontSize={12}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      fontSize={12} 
+                      domain={[0, 100]} 
+                      tickCount={6}
+                      ticks={[0, 20, 40, 60, 80, 100]}
+                    />
+                    <Tooltip formatter={(value) => [value + '%', 'Average']} />
+                    <Bar dataKey="average" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
               {/* Chapter Statistics */}
@@ -467,13 +502,86 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
     );
   };
 
-  // Enhanced Summary with Achievement-style layout
+  // New Submitted Results Tab
+  const renderSubmittedResults = () => {
+    const filteredResults = getFilteredResults();
+    
+    return (
+      <div className="submitted-results-container">
+        <div className="submitted-results-header">
+          <h2 className="submitted-results-title">📝 Submitted Results</h2>
+          <p className="submitted-results-subtitle">Track student submissions and marks</p>
+        </div>
+
+        {/* Filters Section */}
+        <div className="filters-section">
+          <div className="filter-group">
+            <label className="filter-label">Date:</label>
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="filter-input"
+            />
+          </div>
+          
+          <div className="filter-group">
+            <label className="filter-label">Show:</label>
+            <select
+              value={submissionFilter}
+              onChange={(e) => setSubmissionFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All</option>
+              <option value="homework">Only Homework</option>
+              <option value="classwork">Only Classwork</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Results Table */}
+        <div className="submitted-results-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Marks</th>
+                <th>Homework</th>
+                <th>Classwork</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredResults.map((result, index) => (
+                <tr key={index}>
+                  <td>{result.studentId}</td>
+                  <td>{result.marks}</td>
+                  <td>
+                    <span className={`submission-status ${result.homeworkSubmitted ? 'submitted' : 'not-submitted'}`}>
+                      {result.homeworkSubmitted ? '✓ Submitted' : '✗ Not Submitted'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`submission-status ${result.classworkSubmitted ? 'submitted' : 'not-submitted'}`}>
+                      {result.classworkSubmitted ? '✓ Submitted' : '✗ Not Submitted'}
+                    </span>
+                  </td>
+                  <td>{result.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  // Enhanced Summary with All Tab Data
   const renderSummary = () => {
     return (
       <div className="summary-container">
         <div className="summary-header">
           <h2 className="summary-title">📋 CLASSROOM PERFORMANCE SUMMARY</h2>
-          <div className="summary-badge">Class Overview</div>
         </div>
 
         {/* Achievement Cards */}
@@ -491,7 +599,7 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
             <div className="achievement-card silver">
               <div className="achievement-icon">📈</div>
               <div className="achievement-content">
-                <div className="achievement-title">Best Subject</div>
+                <div className="achievement-title">Best Chapter</div>
                 <div className="achievement-value">Coordinate Geometry - 71.4%</div>
               </div>
             </div>
@@ -506,66 +614,91 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
           </div>
         </div>
 
-        {/* Performance Stats */}
-        <div className="performance-stats-section">
-          <h3 className="section-title">📊 CLASS STATISTICS</h3>
-          <div className="stats-grid">
-            <div className="stat-box">
-              <div className="stat-icon">👥</div>
-              <div className="stat-content">
-                <div className="stat-number">5</div>
-                <div className="stat-label">Total Students</div>
-              </div>
+        {/* Class Overview Summary */}
+        <div className="summary-section">
+          <h3 className="summary-section-title">📊 Class Overview</h3>
+          <div className="summary-content">
+            <div className="summary-item">
+              <span className="summary-label">Total Students:</span>
+              <span className="summary-value">{summaryCardsData.totalStudents}</span>
             </div>
-            
-            <div className="stat-box">
-              <div className="stat-icon">📚</div>
-              <div className="stat-content">
-                <div className="stat-number">60</div>
-                <div className="stat-label">Total Assignments</div>
-              </div>
+            <div className="summary-item">
+              <span className="summary-label">Average Score:</span>
+              <span className="summary-value">{summaryCardsData.averageScore}%</span>
             </div>
-            
-            <div className="stat-box">
-              <div className="stat-icon">📈</div>
-              <div className="stat-content">
-                <div className="stat-number">56.5%</div>
-                <div className="stat-label">Class Average</div>
-              </div>
+            <div className="summary-item">
+              <span className="summary-label">Total Assignments:</span>
+              <span className="summary-value">{summaryCardsData.assignments}</span>
             </div>
-            
-            <div className="stat-box">
-              <div className="stat-icon">🎯</div>
-              <div className="stat-content">
-                <div className="stat-number">10</div>
-                <div className="stat-label">Topics Covered</div>
-              </div>
+            <div className="summary-item">
+              <span className="summary-label">Completion Rate:</span>
+              <span className="summary-value">{summaryCardsData.completionRate}%</span>
             </div>
           </div>
         </div>
 
-        {/* Student Rankings */}
-        <div className="rankings-section">
-          <h3 className="section-title">🏅 STUDENT RANKINGS</h3>
-          <div className="ranking-list">
-            {[
-              { position: 1, student: '10HPS21', score: 69.5, trend: 'up' },
-              { position: 2, student: '10HPS17', score: 67.0, trend: 'up' },
-              { position: 3, student: '10HPS18', score: 62.0, trend: 'neutral' },
-              { position: 4, student: '10HPS19', score: 57.0, trend: 'down' },
-              { position: 5, student: '10HPS20', score: 55.0, trend: 'down' }
-            ].map((student) => (
-              <div key={student.position} className={`ranking-item rank-${student.position}`}>
-                <div className="rank-number">{student.position}</div>
-                <div className="student-info">
-                  <div className="student-name">{student.student}</div>
-                  <div className="student-score">{student.score}%</div>
-                </div>
-                <div className={`trend-indicator ${student.trend}`}>
-                  {student.trend === 'up' ? '↑' : student.trend === 'down' ? '↓' : '→'}
-                </div>
-              </div>
-            ))}
+        {/* Progress Trends Summary */}
+        <div className="summary-section">
+          <h3 className="summary-section-title">📈 Progress Trends</h3>
+          <div className="summary-content">
+            <div className="summary-item">
+              <span className="summary-label">Top Performer:</span>
+              <span className="summary-value">10HPS21 (58%)</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Lowest Performer:</span>
+              <span className="summary-value">10HPS18 (42%)</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Class Average:</span>
+              <span className="summary-value">49.2%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Topic Analysis Summary */}
+        <div className="summary-section">
+          <h3 className="summary-section-title">🎯 Topic Analysis</h3>
+          <div className="summary-content">
+            <div className="summary-item">
+              <span className="summary-label">Total Topics:</span>
+              <span className="summary-value">10</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Best Topic:</span>
+              <span className="summary-value">Coordinate Geometry (71.4%)</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Weakest Topic:</span>
+              <span className="summary-value">Linear Equations (46.7%)</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Topics Average:</span>
+              <span className="summary-value">58.3%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Submitted Results Summary */}
+        <div className="summary-section">
+          <h3 className="summary-section-title">📝 Submission Summary</h3>
+          <div className="summary-content">
+            <div className="summary-item">
+              <span className="summary-label">Total Submissions:</span>
+              <span className="summary-value">5</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Homework Completion:</span>
+              <span className="summary-value">80%</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Classwork Completion:</span>
+              <span className="summary-value">80%</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Average Marks:</span>
+              <span className="summary-value">52.8</span>
+            </div>
           </div>
         </div>
 
@@ -637,7 +770,7 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
         </div>
       </div>
 
-      {/* Sub-tabs for class analysis */}
+      {/* Updated Sub-tabs with 5 tabs */}
       <div className="class-sub-tabs">
         <button
           onClick={() => setClassAnalysisTab('overview')}
@@ -658,6 +791,12 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
           🎯 Topic Analysis
         </button>
         <button
+          onClick={() => setClassAnalysisTab('submitted')}
+          className={`class-sub-tab ${classAnalysisTab === 'submitted' ? 'active' : ''}`}
+        >
+          📝 Submitted Results
+        </button>
+        <button
           onClick={() => setClassAnalysisTab('summary')}
           className={`class-sub-tab ${classAnalysisTab === 'summary' ? 'active' : ''}`}
         >
@@ -670,6 +809,7 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
         {classAnalysisTab === 'overview' && renderClassOverviewDashboard()}
         {classAnalysisTab === 'trends' && renderClassProgressTrends()}
         {classAnalysisTab === 'topics' && renderTopicAnalysis()}
+        {classAnalysisTab === 'submitted' && renderSubmittedResults()}
         {classAnalysisTab === 'summary' && renderSummary()}
       </div>
     </div>

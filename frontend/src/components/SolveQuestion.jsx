@@ -61,8 +61,10 @@ function SolveQuestion() {
   } = location.state || {};
 
   const { questionNumber } = location.state || {};
-  const question_image =
-    location.state?.image || questionList?.[index]?.image || "";
+  const question_image = location.state?.image || 
+                      location.state?.questionImage || 
+                      questionList?.[index]?.image || 
+                      questionList?.[index]?.question_image || "";
 
   const [currentQuestion, setCurrentQuestion] = useState({
     question: question,
@@ -98,34 +100,35 @@ function SolveQuestion() {
   }, [location.state, currentQuestion, selectedQuestions, questionList]);
 
   // Update currentQuestion when location state changes
-  useEffect(() => {
-    if (location.state && location.state.questionId) {
-      const newQuestionId = location.state?.questionId || `question_${index}_${Date.now()}`;
-      
-      const newQuestion = {
-        question: location.state.question || "",
-        questionNumber:
-          location.state.questionNumber ||
-          (index !== undefined ? index + 1 : 1),
-        image: location.state.image || "",
-        id: location.state.questionId, // Use only the original backend question ID
-        originalQuestionId: location.state.questionId
-      };
+  // Update currentQuestion when location state changes
+useEffect(() => {
+  if (location.state && location.state.questionId) {
+    console.log("Location state received:", location.state);
+    
+    const newQuestion = {
+      question: location.state.question || "",
+      questionNumber: location.state.questionNumber || (index !== undefined ? index + 1 : 1),
+      image: location.state.image || location.state.questionImage || "", // ✅ FIXED: Handle both field names
+      id: location.state.questionId,
+      originalQuestionId: location.state.questionId
+    };
 
-      setCurrentQuestion(newQuestion);
-      setContextQuestion(newQuestion); // Update the context with the new question
+    console.log("Setting new question with image:", newQuestion.image);
+    
+    setCurrentQuestion(newQuestion);
+    setContextQuestion(newQuestion);
 
-      // Stop previous timer and start a new one
-      stopTimer();
-      startTimer(location.state.questionId);
+    // Stop previous timer and start a new one
+    stopTimer();
+    startTimer(location.state.questionId);
 
-      // Reset other state
-      setImages([]);
-      setError(null);
-      setUploadProgress(0);
-      setProcessingButton(null);
-    }
-  }, [location.state, index, setContextQuestion]);
+    // Reset other state
+    setImages([]);
+    setError(null);
+    setUploadProgress(0);
+    setProcessingButton(null);
+  }
+}, [location.state, index, setContextQuestion]);
 
   // Helper function to convert base64 to Blob
   const base64ToBlob = (base64Data, mimeType) => {
@@ -382,22 +385,6 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
     }
   };
 
-  // New handler for Gap Analysis
-  const handleGapAnalysis = () => {
-    // Stop the timer before navigating
-    stopTimer();
-
-    navigate("/gap-analysis", {
-      state: {
-        question: currentQuestion.question,
-        questionImage: currentQuestion.image,
-        class_id,
-        subject_id,
-        topic_ids,
-      },
-    });
-  };
-
   // UPDATE: Modified sendFormData function to include question_id
   const sendFormData = async (flags = {}, actionType) => {
     setProcessingButton(actionType);
@@ -611,9 +598,6 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
     };
   }, [images]);
 
- // Replace the existing button layout section in your SolveQuestion.jsx (around line 654)
-// Find the section that starts with {/* Button Layout */} and replace it with this:
-
   return (
     <div className="solve-question-wrapper">
       <div className="solve-question-container">
@@ -783,9 +767,9 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
           <div style={{ height: '120px' }}></div>
         </div>
 
-        {/* FIXED BOTTOM BUTTON CONTAINER - NEW ADDITION */}
+        {/* FIXED BOTTOM BUTTON CONTAINER - CORRECTED */}
         <div className="fixed-bottom-buttons-container">
-          {/* Top Row with Navigation */}
+          {/* Top Row with Navigation - Full Width Buttons */}
           <Row className="mb-2">
             <Col xs={6}>
               <Button
@@ -793,8 +777,14 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
                 onClick={handleBackClick}
                 className="btn-back w-100"
                 disabled={isAnyButtonProcessing()}
+                style={{ 
+                  padding: '12px 20px',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  borderRadius: '8px'
+                }}
               >
-                Back
+                ← Back
               </Button>
             </Col>
             <Col xs={6}>
@@ -803,20 +793,33 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
                 onClick={() => setShowQuestionListModal(true)}
                 className="btn-question-list w-100"
                 disabled={isAnyButtonProcessing()}
+                style={{ 
+                  padding: '12px 20px',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  borderRadius: '8px'
+                }}
               >
-                Question List
+                📋 Question List
               </Button>
             </Col>
           </Row>
 
-          {/* Bottom Row with Action Buttons */}
-          <Row>
-            <Col xs={6} md={3} className="mb-1">
+          {/* Bottom Row with Action Buttons - Evenly Spaced */}
+          <Row className="g-2">
+            <Col xs={4}>
               <Button
-                variant={isSolveEnabled ? "primary" : "secondary"}
+                variant={isSolveEnabled ? "success" : "secondary"}
                 onClick={handleSolve}
                 className="w-100 solve-btn"
                 disabled={!isSolveEnabled || isAnyButtonProcessing()}
+                style={{ 
+                  padding: '14px 8px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  minHeight: '50px'
+                }}
               >
                 {isButtonProcessing("solve") ? (
                   <>
@@ -826,20 +829,32 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
                       size="sm"
                       role="status"
                       aria-hidden="true"
-                    />{" "}
-                    Processing...
+                    />
+                    <br />
+                    <small>Processing...</small>
                   </>
                 ) : (
-                  "Solve"
+                  <>
+                    🔍
+                    <br />
+                    <span>Solve</span>
+                  </>
                 )}
               </Button>
             </Col>
-            <Col xs={6} md={3} className="mb-1">
+            <Col xs={4}>
               <Button
                 variant="primary"
                 onClick={handleCorrect}
                 className="w-100 btn-correct"
                 disabled={images.length === 0 || isAnyButtonProcessing()}
+                style={{ 
+                  padding: '14px 8px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  minHeight: '50px'
+                }}
               >
                 {isButtonProcessing("correct") ? (
                   <>
@@ -849,20 +864,32 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
                       size="sm"
                       role="status"
                       aria-hidden="true"
-                    />{" "}
-                    Processing...
+                    />
+                    <br />
+                    <small>Processing...</small>
                   </>
                 ) : (
-                  "Auto-Correct"
+                  <>
+                    ✅
+                    <br />
+                    <span>Auto-Correct</span>
+                  </>
                 )}
               </Button>
             </Col>
-            <Col xs={6} md={3} className="mb-1">
+            <Col xs={4}>
               <Button
-                variant="primary"
+                variant="info"
                 onClick={handleExplain}
                 className="w-100 explain-btn"
                 disabled={isAnyButtonProcessing()}
+                style={{ 
+                  padding: '14px 8px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  minHeight: '50px'
+                }}
               >
                 {isButtonProcessing("explain") ? (
                   <>
@@ -872,22 +899,17 @@ if (currentQuestion.originalQuestionId || currentQuestion.id) {
                       size="sm"
                       role="status"
                       aria-hidden="true"
-                    />{" "}
-                    Processing...
+                    />
+                    <br />
+                    <small>Processing...</small>
                   </>
                 ) : (
-                  "Explain"
+                  <>
+                    💡
+                    <br />
+                    <span>Explain</span>
+                  </>
                 )}
-              </Button>
-            </Col>
-            <Col xs={6} md={3} className="mb-1">
-              <Button
-                variant="info"
-                onClick={handleGapAnalysis}
-                className="w-100 gap-btn"
-                disabled={isAnyButtonProcessing()}
-              >
-                Gap Analysis
               </Button>
             </Col>
           </Row>
