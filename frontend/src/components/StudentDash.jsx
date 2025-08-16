@@ -146,26 +146,26 @@ function StudentDash() {
   useEffect(() => {
     async function fetchData() {
       try {
-        console.log("🔍 Fetching classes...");
+        // console.log("🔍 Fetching classes...");
         const classResponse = await axiosInstance.get("/classes/");
-        console.log("📋 Classes API Response:", classResponse.data);
+        // console.log("📋 Classes API Response:", classResponse.data);
         
         const classesData = classResponse.data.data;
         setClasses(classesData);
 
         // Set default class based on username
         const defaultClass = extractClassFromUsername(username);
-        console.log("👤 Username:", username, "Extracted Class:", defaultClass);
+        // console.log("👤 Username:", username, "Extracted Class:", defaultClass);
         
         if (defaultClass) {
           const matchingClass = classesData.find(cls => 
             cls.class_name.includes(defaultClass) || cls.class_code === defaultClass
           );
-          console.log("🎯 Matching class found:", matchingClass);
+          // console.log("🎯 Matching class found:", matchingClass);
           
           if (matchingClass) {
             setSelectedClass(matchingClass.class_code);
-            console.log("✅ Auto-selected class:", matchingClass.class_code);
+            // console.log("✅ Auto-selected class:", matchingClass.class_code);
           }
         }
       } catch (error) {
@@ -180,13 +180,13 @@ function StudentDash() {
     async function fetchSubjects() {
       if (selectedClass) {
         try {
-          console.log("🔍 Fetching subjects for class:", selectedClass);
+          // console.log("🔍 Fetching subjects for class:", selectedClass);
           
           const subjectResponse = await axiosInstance.post("/subjects/", {
             class_id: selectedClass,
           });
           
-          console.log("📚 Subjects API Response:", subjectResponse.data);
+          // console.log("📚 Subjects API Response:", subjectResponse.data);
           
           const subjectsData = subjectResponse.data.data;
           setSubjects(subjectsData);
@@ -197,9 +197,9 @@ function StudentDash() {
           );
           if (mathSubject) {
             setSelectedSubject(mathSubject.subject_code);
-            console.log("📐 Auto-selected Math subject:", mathSubject);
+            // console.log("📐 Auto-selected Math subject:", mathSubject);
           } else {
-            console.log("⚠ No Math subject found, available subjects:", subjectsData);
+            // console.log("⚠ No Math subject found, available subjects:", subjectsData);
           }
 
           // Reset dependent fields
@@ -222,30 +222,30 @@ function StudentDash() {
     async function fetchChapters() {
       if (selectedSubject && selectedClass) {
         try {
-          console.log("🔍 Fetching chapters with parameters:");
-          console.log("   📖 Subject ID:", selectedSubject);
-          console.log("   🏫 Class ID:", selectedClass);
+          // console.log("🔍 Fetching chapters with parameters:");
+          // console.log("   📖 Subject ID:", selectedSubject);
+          // console.log("   🏫 Class ID:", selectedClass);
           
           const chapterResponse = await axiosInstance.post("/chapters/", {
             subject_id: selectedSubject,
             class_id: selectedClass,
           });
           
-          console.log("📚 Chapters API Response:", chapterResponse.data);
-          console.log("📊 Response structure:", {
-            hasData: !!chapterResponse.data.data,
-            dataLength: chapterResponse.data.data?.length,
-            firstChapter: chapterResponse.data.data?.[0]
-          });
+          // console.log("📚 Chapters API Response:", chapterResponse.data);
+          // console.log("📊 Response structure:", {
+          //   hasData: !!chapterResponse.data.data,
+          //   dataLength: chapterResponse.data.data?.length,
+          //   firstChapter: chapterResponse.data.data?.[0]
+          // });
           
           if (chapterResponse.data && chapterResponse.data.data) {
             setChapters(chapterResponse.data.data);
-            console.log("✅ Chapters set successfully:", chapterResponse.data.data.length, "chapters");
-            console.log("📝 First few chapters:", chapterResponse.data.data.slice(0, 3));
+            // console.log("✅ Chapters set successfully:", chapterResponse.data.data.length, "chapters");
+            // console.log("📝 First few chapters:", chapterResponse.data.data.slice(0, 3));
             
             // Log the structure of chapters to verify field names
             if (chapterResponse.data.data.length > 0) {
-              console.log("🔍 Chapter structure:", Object.keys(chapterResponse.data.data[0]));
+              // console.log("🔍 Chapter structure:", Object.keys(chapterResponse.data.data[0]));
             }
           } else {
             console.warn("⚠ No chapters data found in response");
@@ -262,9 +262,9 @@ function StudentDash() {
           setChapters([]);
         }
       } else {
-        console.log("⚠ Cannot fetch chapters - missing requirements:");
-        console.log("   📖 Selected Subject:", selectedSubject);
-        console.log("   🏫 Selected Class:", selectedClass);
+        // console.log("⚠ Cannot fetch chapters - missing requirements:");
+        // console.log("   📖 Selected Subject:", selectedSubject);
+        // console.log("   🏫 Selected Class:", selectedClass);
       }
     }
     fetchChapters();
@@ -345,22 +345,23 @@ function StudentDash() {
       worksheet_name: questionType === "worksheets" ? selectedWorksheet : null,
     };
 
-    console.log("Request data for question generation:", requestData);
+    // console.log("Request data for question generation:", requestData);
 
     try {
       const response = await axiosInstance.post("/question-images/", requestData);
-      console.log("the response data is :", response.data);
+      // console.log("the response data is :", response.data);
 
       // Process questions with images
       const questionsWithImages = (response.data.questions || []).map((question, index) => ({
         ...question,
         id: index,
+        question_id:question.id,
         question: question.question,
         image: question.question_image
           ? `data:image/png;base64,${question.question_image}`
           : null,
       }));
-
+      console.log("Processed questions with images:", questionsWithImages);
       setQuestionList(questionsWithImages);
       setSelectedQuestions([]);
 
@@ -373,14 +374,15 @@ function StudentDash() {
   };
 
   // Enhanced question click handler
-  const handleQuestionClick = (question, index, image) => {
-    console.log("Question clicked:", { question, index, image });
+  const handleQuestionClick = (question, index, image,question_id) => {
+    console.log("Question clicked:", { question, index, image, question_id });
     
     setShowQuestionList(false);
     
     navigate("/solvequestion", {
       state: {
         question,
+        question_id: question_id,
         questionNumber: index + 1,
         questionList,
         class_id: selectedClass,
@@ -390,6 +392,7 @@ function StudentDash() {
         worksheet_id: questionType === "worksheets" ? selectedWorksheet : "",
         image,
         selectedQuestions: selectedQuestions,
+      
       },
     });
   };
@@ -402,6 +405,7 @@ function StudentDash() {
     navigate("/solvequestion", {
       state: {
         question: firstQuestion.question,
+        question_id: firstQuestion.question_id,
         questionNumber: firstQuestion.index + 1,
         questionList,
         class_id: selectedClass,
@@ -703,7 +707,7 @@ function StudentDash() {
                         as="select"
                         value={selectedClass}
                         onChange={(e) => {
-                          console.log("🏫 Class selection changed to:", e.target.value);
+                          // console.log("🏫 Class selection changed to:", e.target.value);
                           setSelectedClass(e.target.value);
                         }}
                         className="form-control-enhanced"
@@ -728,7 +732,7 @@ function StudentDash() {
                         as="select"
                         value={selectedSubject}
                         onChange={(e) => {
-                          console.log("📚 Subject selection changed to:", e.target.value);
+                          // console.log("📚 Subject selection changed to:", e.target.value);
                           setSelectedSubject(e.target.value);
                         }}
                         className="form-control-enhanced"
@@ -765,7 +769,7 @@ function StudentDash() {
         onChange={(selectedOptions) => {
           const values = selectedOptions ? selectedOptions.map(option => option.value) : [];
           setSelectedChapters(values);
-          console.log("Selected chapters:", values);
+          // console.log("Selected chapters:", values);
         }}
         options={chapters.map(chapter => ({
           value: chapter.topic_code,

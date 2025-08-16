@@ -57,20 +57,25 @@ function SolveQuestion() {
     topic_ids,
     subtopic,
     selectedQuestions,
+    question_id
   } = location.state || {};
+  // console.log("Location state:", location.state);
   const { questionNumber } = location.state || {};
-  const questionId = location.state?.questionId || `question_${index}_${Date.now()}`;
+  const questionId = location.state?.questionId || `${index}${Date.now()}`;
   const question_image =
     location.state?.image || questionList?.[index]?.image || "";
-
+  // console.log("Question ID:", question_id);
+  const questioniid=location.state?.question_id || questionId;
+  // console.log("Question ID from state:", questioniid);
   const [currentQuestion, setCurrentQuestion] = useState({
     question: question,
     questionNumber: questionNumber || (index !== undefined ? index + 1 : 1),
     image: question_image,
-    id: questionId
+    // id: questionId,
+    question_id: question_id || questionId
   });
-
-  console.log("questionList", questionList);
+  // console.log("Current Question State:", currentQuestion);
+  // console.log("questionList", questionList);
 
   const { setCurrentQuestion: setContextQuestion } = useCurrentQuestion();
 
@@ -87,18 +92,9 @@ function SolveQuestion() {
     };
   }, [currentQuestion.id]);
 
-  // Log state for debugging
-  useEffect(() => {
-    console.log("Location state:", location.state);
-    console.log("Current question:", currentQuestion);
-    console.log("Selected Questions:", selectedQuestions);
-    console.log("Question List:", questionList);
-  }, [location.state, currentQuestion, selectedQuestions, questionList]);
-
-  // Update currentQuestion when location state changes
   useEffect(() => {
     if (location.state) {
-      const newQuestionId = location.state?.questionId || `question_${index}_${Date.now()}`;
+      const newQuestionId = location.state?.question_id || `${index}`
       
       const newQuestion = {
         question: location.state.question || "",
@@ -106,9 +102,10 @@ function SolveQuestion() {
           location.state.questionNumber ||
           (index !== undefined ? index + 1 : 1),
         image: location.state.image || "",
-        id: newQuestionId
+        id: newQuestionId,
+        question_id: location.state?.question_id || newQuestionId
       };
-
+      console.log("Setting current question:", newQuestion);
       setCurrentQuestion(newQuestion);
       setContextQuestion(newQuestion); // Update the context with the new question
 
@@ -122,7 +119,7 @@ function SolveQuestion() {
       setUploadProgress(0);
       setProcessingButton(null);
     }
-  }, [location.state, index, setContextQuestion]);
+  }, [location.state, index, setContextQuestion,]);
 
   // Helper function to convert base64 to Blob
   const base64ToBlob = (base64Data, mimeType) => {
@@ -238,7 +235,13 @@ function SolveQuestion() {
 
     // Stop the timer and get the time spent
     const timeSpentMs = stopTimer();
-    const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
+    console.log("timespent in ms",timeSpentMs)
+    // const timeSpentMinutes = Math.ceil(timeSpentMs / 60000);
+    // console.log('time spent in min',time)
+
+    const timeSpentMinutes = Math.floor(timeSpentMs / 60000); // 1
+    
+
 
     const formData = new FormData();
     formData.append("class_id", class_id);
@@ -247,10 +250,12 @@ function SolveQuestion() {
     formData.append("question", currentQuestion.question);
     formData.append("subtopic", subtopic);
     formData.append("correct", true);
-    formData.append("study_time_seconds", Math.floor(timeSpentMs / 1000));
+    formData.append("study_time_seconds", Math.floor((timeSpentMs % 60000) / 1000));
     formData.append("study_time_minutes", timeSpentMinutes);
+    formData.append("question_id", currentQuestion.question_id || currentQuestion.id);
+    console.log("time in minutes :",timeSpentMinutes);
+    console.log("time spent in seconds :",Math.floor((timeSpentMs % 60000) / 1000));
 
-    
     // Helper: finalize and send the form after appending everything
     const finalizeAndSendForm = async () => {
       // Add user's solution images
@@ -292,7 +297,8 @@ function SolveQuestion() {
             questionImage: currentQuestion.image,
             questionNumber: currentQuestion.questionNumber,
             // Add the student's uploaded/captured images
-            studentImages: images.map(img => URL.createObjectURL(img))
+            studentImages: images.map(img => URL.createObjectURL(img)),
+
           },
         });
 
@@ -389,18 +395,19 @@ function SolveQuestion() {
     formData.append("question", currentQuestion.question);
     formData.append("ques_img", currentQuestion.image || "");
     formData.append("subtopic", subtopic);
-
+    formData.append("question_id", currentQuestion.question_id || currentQuestion.id);
+    // console.log("Sending form data with flags:", formData);
     Object.entries(flags).forEach(([key, value]) => {
       formData.append(key, value);
     });
-
+    // console.log("Form data prepared:", formData);
     // Add images if required by the action
     if (flags.submit) {
       images.forEach((image) => {
         formData.append("ans_img", image);
       });
     }
-
+    console.log("Form data prepared:", formData);
     try {
       // Use the custom upload method for actions with file uploads
       let response;
@@ -439,6 +446,7 @@ function SolveQuestion() {
           subtopic,
           questionImage: currentQuestion.image,
           questionNumber: currentQuestion.questionNumber,
+          question_id: currentQuestion.question_id,
         },
       });
     } catch (error) {
@@ -474,7 +482,8 @@ function SolveQuestion() {
   const handleQuestionSelect = (
     selectedQuestion,
     selectedIndex,
-    selectedImage
+    selectedImage,
+
   ) => {
     console.log("Question selected in SolveQuestion");
     console.log("Selected question:", selectedQuestion);
@@ -483,13 +492,14 @@ function SolveQuestion() {
     // Stop the current timer
     stopTimer();
 
-    const newQuestionId = `question_${selectedIndex}_${Date.now()}`;
+    const newQuestionId = `${question_id}`;
     
     setCurrentQuestion({
       question: selectedQuestion,
       questionNumber: selectedIndex + 1,
       image: selectedImage,
-      id: newQuestionId
+      id: newQuestionId,
+      question_id: selectedQuestion.question_id || newQuestionId
     });
 
     // Start a new timer for the selected question
@@ -741,6 +751,29 @@ function SolveQuestion() {
 
           {/* Bottom Row with Action Buttons */}
           <Row>
+           <Col xs={6} md={3} className="mb-2">
+              <Button
+                variant="primary"
+                onClick={handleExplain}
+                className="w-100 explain-btn"
+                disabled={isAnyButtonProcessing()}
+              >
+                {isButtonProcessing("explain") ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />{" "}
+                    Processing...
+                  </>
+                ) : (
+                  "Concepts-Required"
+                )}
+              </Button>
+            </Col>
             <Col xs={6} md={3} className="mb-2">
               <Button
                 variant={isSolveEnabled ? "primary" : "secondary"}
@@ -760,10 +793,11 @@ function SolveQuestion() {
                     Processing...
                   </>
                 ) : (
-                  "Solve"
+                  "Solved-Solution"
                 )}
               </Button>
             </Col>
+
             <Col xs={6} md={3} className="mb-2">
               <Button
                 variant="primary"
@@ -787,30 +821,8 @@ function SolveQuestion() {
                 )}
               </Button>
             </Col>
-            <Col xs={6} md={3} className="mb-2">
-              <Button
-                variant="primary"
-                onClick={handleExplain}
-                className="w-100 explain-btn"
-                disabled={isAnyButtonProcessing()}
-              >
-                {isButtonProcessing("explain") ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                    />{" "}
-                    Processing...
-                  </>
-                ) : (
-                  "Explain"
-                )}
-              </Button>
-            </Col>
-            <Col xs={6} md={3} className="mb-2">
+            
+            {/* <Col xs={6} md={3} className="mb-2">
               <Button
                 variant="info"
                 onClick={handleGapAnalysis}
@@ -819,7 +831,7 @@ function SolveQuestion() {
               >
                 Gap Analysis
               </Button>
-            </Col>
+            </Col> */}
           </Row>
         </div>
       </div>

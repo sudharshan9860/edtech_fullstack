@@ -5,7 +5,7 @@ import { getErrorMessage } from "../utils/errorHandling";
 function getCSRFToken() {
   const name = 'csrftoken';
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  console.log("CSRF Token:", match ? match[2] : null); // Debugging line to check CSRF token
+  // console.log("CSRF Token:", match ? match[2] : null); // Debugging line to check CSRF token
   return match ? match[2] : null;
 }
 
@@ -32,10 +32,10 @@ axiosInstance.interceptors.request.use(
     // then you might need to keep it for that specific endpoint, but not for
     // subsequent API calls protected by TokenAuthentication.
     // For simplicity with DRF TokenAuth, often you can remove this from global interceptor.
-    // const csrfToken = getCSRFToken();
-    // if (csrfToken) {
-    //   config.headers["X-CSRFToken"] = csrfToken;
-    // }
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      config.headers["X-CSRFToken"] = csrfToken;
+    }
 
     // ✅ Don't set Content-Type for FormData
     if (config.data instanceof FormData) {

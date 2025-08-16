@@ -26,9 +26,10 @@ const ResultPage = () => {
     subtopic,
     questionImage,
     questionNumber,
-    studentImages = [] // Get student images from state
+    studentImages = [],
+    question_id// Get student images from state
   } = state || {};
- 
+  console.log('question_id from explain state:', question_id);
   const { 
     question, 
     ai_explaination, 
@@ -44,7 +45,7 @@ const ResultPage = () => {
     question_image_base64,
     student_answer_base64 // Add this to get the processed student image from API
   } = ai_data || {};
-
+  console.log('AI Data:', ai_data);
   const formated_concepts_used = Array.isArray(concepts_used)
     ? concepts_used.join(', ')
     : concepts_used || '';
@@ -203,7 +204,8 @@ const ResultPage = () => {
         subtopic: subtopic,
         image: questionImage,
         index: questionNumber ? questionNumber - 1 : 0,
-        selectedQuestions: questionList
+        selectedQuestions: questionList,
+        question_id: question_id
       }
     });
   };
@@ -215,7 +217,7 @@ const ResultPage = () => {
     setShowQuestionListModal(false);
   };
 
-  const handleQuestionSelect = (selectedQuestion, index, selectedImage) => {
+  const handleQuestionSelect = (selectedQuestion, index, selectedImage, question_id) => {
     navigate('/solvequestion', { 
       state: { 
         question: selectedQuestion, 
@@ -225,7 +227,8 @@ const ResultPage = () => {
         subject_id,
         topic_ids,
         subtopic,
-        image: selectedImage
+        image: selectedImage,
+        question_id: question_id || `question_${index}_${Date.now()}`
       } 
     });
   };

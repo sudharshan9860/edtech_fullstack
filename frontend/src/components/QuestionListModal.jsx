@@ -32,14 +32,16 @@ const QuestionListModal = ({
         }
       });
     } else {
+      // console.log("Selected question data:", questionData);
       const selectedQuestion = {
         question: questionData.question,
         image: questionData.question_image
           ? `data:image/png;base64,${questionData.question_image}`
           : null,
+        question_id: questionData.question_id || index, // Ensure each question has a unique ID
       };
-
-      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image);
+      console.log("Selected question data:", selectedQuestion);
+      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image,selectedQuestion.question_id);
     }
   };
 
@@ -51,6 +53,7 @@ const QuestionListModal = ({
           ? `data:image/png;base64,${questionList[index].question_image}`
           : null,
         index: index,
+        question_id: questionList[index].question_id || index, // Ensure each question has a unique ID
       }));
       onMultipleSelectSubmit(selectedQuestionsData);
     }

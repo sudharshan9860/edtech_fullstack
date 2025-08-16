@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Modal, Table, Badge, Card } from 'react-bootstrap';
 import Select from 'react-select';
 import axiosInstance from '../api/axiosInstance';
 import QuestionListModal from './QuestionListModal';
@@ -31,15 +31,21 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // State for classwork image upload (UPDATED: changed from PDF to images)
+  // State for classwork PDF upload
   const [classworkTitle, setClassworkTitle] = useState("");
   const [classworkCode, setClassworkCode] = useState("");
   const [classworkDescription, setClassworkDescription] = useState("");
   const [classworkDueDate, setClassworkDueDate] = useState("");
-  const [classworkImages, setClassworkImages] = useState([]); // UPDATED: changed from classworkPDF
+  const [classworkPDF, setClassworkPDF] = useState(null);
   const [isClassworkSubmitting, setIsClassworkSubmitting] = useState(false);
   const [classworkError, setClassworkError] = useState(null);
   const [showClassworkForm, setShowClassworkForm] = useState(false);
+
+  // State for previous classwork submissions modal
+  const [showPreviousClasswork, setShowPreviousClasswork] = useState(false);
+  const [previousClassworkData, setPreviousClassworkData] = useState([]);
+  const [isLoadingPreviousClasswork, setIsLoadingPreviousClasswork] = useState(false);
+  const [previousClassworkError, setPreviousClassworkError] = useState(null);
 
   // Fetch classes on component mount
   useEffect(() => {
@@ -133,6 +139,41 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     }
     fetchSubTopics();
   }, [selectedClass, selectedSubject, selectedChapters]);
+
+  // Fetch previous classwork submissions
+  const fetchPreviousClassworkSubmissions = async () => {
+    setIsLoadingPreviousClasswork(true);
+    setPreviousClassworkError(null);
+    
+    try {
+      const response = await axiosInstance.get("/classwork-submission/");
+      console.log("Previous classwork submissions:", response.data);
+      
+      // Handle different response formats
+      if (response.data) {
+        if (Array.isArray(response.data)) {
+          setPreviousClassworkData(response.data);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          setPreviousClassworkData(response.data.data);
+        } else if (response.data.submissions && Array.isArray(response.data.submissions)) {
+          setPreviousClassworkData(response.data.submissions);
+        } else {
+          // If data is an object with submissions, convert to array
+          setPreviousClassworkData([response.data]);
+        }
+      } else {
+        setPreviousClassworkData([]);
+      }
+      setShowPreviousClasswork(true);
+    } catch (error) {
+      console.error("Error fetching previous classwork:", error);
+      setPreviousClassworkError(error.response?.data?.message || "Failed to fetch previous classwork submissions");
+      setPreviousClassworkData([]);
+      setShowPreviousClasswork(true);
+    } finally {
+      setIsLoadingPreviousClasswork(false);
+    }
+  };
 
   // Determine if generate button should be enabled
   const isGenerateButtonEnabled = () => {
@@ -292,13 +333,34 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     }
   };
 
-  // UPDATED: Handle multiple image uploads for classwork
-  const handleClassworkImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setClassworkImages(files);
+  // Handle PDF file upload for classwork with 30MB limit
+  const handleClassworkPDFChange = (e) => {
+    const file = e.target.files[0];
+    
+    if (file) {
+      // Check if file is PDF
+      if (file.type !== 'application/pdf') {
+        setClassworkError("Please upload only PDF files.");
+        e.target.value = null; // Reset the input
+        setClassworkPDF(null);
+        return;
+      }
+      
+      // Check file size (30MB = 30 * 1024 * 1024 bytes)
+      const maxSize = 30 * 1024 * 1024; // 30MB in bytes
+      if (file.size > maxSize) {
+        setClassworkError("File size must be less than 30MB.");
+        e.target.value = null; // Reset the input
+        setClassworkPDF(null);
+        return;
+      }
+      
+      setClassworkError(null); // Clear any previous errors
+      setClassworkPDF(file);
+    }
   };
 
-  // UPDATED: Classwork submission handler (after questions are selected)
+  // Classwork submission handler (after questions are selected)
   const handleClassworkSubmit = async (e) => {
     e.preventDefault();
     setClassworkError(null);
@@ -310,8 +372,8 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       return;
     }
     
-    if (!classworkImages || classworkImages.length === 0) {
-      setClassworkError("Please upload at least one image of student work.");
+    if (!classworkPDF) {
+      setClassworkError("Please upload a PDF file of student work.");
       setIsClassworkSubmitting(false);
       return;
     }
@@ -325,10 +387,8 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     try {
       const formData = new FormData();
       
-      // Append all images
-      classworkImages.forEach((image) => {
-        formData.append('image_response', image);
-      });
+      // Append PDF file
+      formData.append('pdf_response', classworkPDF);
       
       // Append classwork information
       formData.append('class_work_code', classworkCode.trim());
@@ -349,11 +409,11 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       setClassworkCode("");
       setClassworkDescription("");
       setClassworkDueDate("");
-      setClassworkImages([]);
+      setClassworkPDF(null);
       setSelectedQuestions([]);
       setShowClassworkForm(false);
       
-      alert("Classwork images and questions uploaded successfully!");
+      alert("Classwork PDF and questions uploaded successfully!");
     } catch (error) {
       setClassworkError(error.response?.data?.error || "Failed to upload classwork");
       console.error("Error uploading classwork:", error);
@@ -458,10 +518,10 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     );
   };
 
-  // UPDATED: Render classwork image upload form (changed from PDF)
+  // Render classwork PDF upload form
   const renderClassworkForm = () => (
     <div className="homework-form-container">
-      <h3>Upload Classwork Images & Submit Questions</h3>
+      <h3>Upload Classwork PDF & Submit Questions</h3>
       {classworkError && <div className="error-message">{classworkError}</div>}
       <Form onSubmit={handleClassworkSubmit}>
         <Row className="mb-3">
@@ -510,21 +570,23 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
           />
         </Form.Group>
         
-        {/* UPDATED: Changed PDF upload to multiple image upload */}
-        <Form.Group controlId="classworkImages" className="mb-3">
-          <Form.Label>Upload Student Work Images</Form.Label>
+        {/* PDF upload with 30MB limit */}
+        <Form.Group controlId="classworkPDF" className="mb-3">
+          <Form.Label>Upload Student Work PDF (Max 30MB)</Form.Label>
           <Form.Control
             type="file"
-            accept="image/*"
-            multiple
-            onChange={handleClassworkImageChange}
+            accept="application/pdf,.pdf"
+            onChange={handleClassworkPDFChange}
             required
           />
-          {classworkImages && classworkImages.length > 0 && (
-            <div style={{ marginTop: 8 }}>
-              <span>Selected files: {classworkImages.length} images</span>
+          {classworkPDF && (
+            <div style={{ marginTop: 8, color: '#28a745' }}>
+              <span>✓ Selected file: {classworkPDF.name} ({(classworkPDF.size / (1024 * 1024)).toFixed(2)} MB)</span>
             </div>
           )}
+          <Form.Text className="text-muted">
+            Only PDF files up to 30MB are allowed
+          </Form.Text>
         </Form.Group>
         
         {/* Preview selected questions */}
@@ -559,7 +621,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
             type="submit"
             disabled={isClassworkSubmitting}
           >
-            {isClassworkSubmitting ? "Uploading..." : "Upload Classwork Images & Questions"}
+            {isClassworkSubmitting ? "Uploading..." : "Upload Classwork PDF & Questions"}
           </Button>
         </div>
       </Form>
@@ -571,8 +633,166 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     return `Exercise ${index + 1}`;
   };
 
+  // Render Previous Classwork Modal
+  const renderPreviousClassworkModal = () => (
+    <Modal 
+      show={showPreviousClasswork} 
+      onHide={() => setShowPreviousClasswork(false)}
+      size="xl"
+      scrollable
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Previous Classwork Submissions</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {previousClassworkError ? (
+          <div className="alert alert-danger">
+            {previousClassworkError}
+          </div>
+        ) : previousClassworkData.length === 0 ? (
+          <div className="alert alert-info">
+            No previous classwork submissions found.
+          </div>
+        ) : (
+          <div className="previous-classwork-container">
+            {previousClassworkData.map((submission, index) => (
+              <Card key={index} className="mb-3">
+                <Card.Header>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h5>
+                      {submission.worksheet_name || submission.title || `Submission ${index + 1}`}
+                    </h5>
+                    <Badge bg="primary">
+                      {submission.class_work_code || submission.code || 'N/A'}
+                    </Badge>
+                  </div>
+                </Card.Header>
+                <Card.Body>
+                  <Row>
+                    <Col md={6}>
+                      <p><strong>Class:</strong> {submission.class_name || submission.class_id || 'N/A'}</p>
+                      <p><strong>Subject:</strong> {submission.subject_name || submission.subject_id || 'N/A'}</p>
+                      <p><strong>Chapter:</strong> {submission.chapter_name || submission.chapter || 'N/A'}</p>
+                    </Col>
+                    <Col md={6}>
+                      <p><strong>Date Submitted:</strong> {
+                        submission.date_submitted 
+                          ? new Date(submission.date_submitted).toLocaleString()
+                          : submission.created_at 
+                          ? new Date(submission.created_at).toLocaleString()
+                          : 'N/A'
+                      }</p>
+                      <p><strong>Due Date:</strong> {
+                        submission.due_date 
+                          ? new Date(submission.due_date).toLocaleString()
+                          : 'N/A'
+                      }</p>
+                      <p><strong>Status:</strong> {
+                        submission.status 
+                          ? <Badge bg={submission.status === 'completed' ? 'success' : 'warning'}>
+                              {submission.status}
+                            </Badge>
+                          : <Badge bg="secondary">Pending</Badge>
+                      }</p>
+                    </Col>
+                  </Row>
+                  
+                  {submission.description && (
+                    <div className="mt-3">
+                      <strong>Description:</strong>
+                      <p className="text-muted">{submission.description}</p>
+                    </div>
+                  )}
+                  
+                  {submission.questions && submission.questions.length > 0 && (
+                    <div className="mt-3">
+                      <strong>Questions ({submission.questions.length}):</strong>
+                      <ol className="mt-2">
+                        {submission.questions.map((q, qIndex) => (
+                          <li key={qIndex} className="mb-2">
+                            {typeof q === 'string' ? q : q.question || q.text || 'Question ' + (qIndex + 1)}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                  
+                  {submission.pdf_url && (
+                    <div className="mt-3">
+                      <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        href={submission.pdf_url}
+                        target="_blank"
+                      >
+                        View PDF
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {submission.student_responses && submission.student_responses.length > 0 && (
+                    <div className="mt-3">
+                      <strong>Student Responses:</strong>
+                      <Table striped bordered hover size="sm" className="mt-2">
+                        <thead>
+                          <tr>
+                            <th>Student</th>
+                            <th>Status</th>
+                            <th>Score</th>
+                            <th>Submitted At</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {submission.student_responses.map((response, rIndex) => (
+                            <tr key={rIndex}>
+                              <td>{response.student_name || response.roll_number || 'Student ' + (rIndex + 1)}</td>
+                              <td>
+                                <Badge bg={response.status === 'submitted' ? 'success' : 'warning'}>
+                                  {response.status || 'Pending'}
+                                </Badge>
+                              </td>
+                              <td>{response.score || response.grade || '-'}</td>
+                              <td>
+                                {response.submitted_at 
+                                  ? new Date(response.submitted_at).toLocaleString()
+                                  : '-'
+                                }
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            ))}
+          </div>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowPreviousClasswork(false)}>
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+
   return (
     <div className="quick-exercise-container">
+      {/* Add Previous Classwork Button only for classwork mode */}
+      {mode === "classwork" && !showClassworkForm && (
+        <div className="d-flex justify-content-end mb-3">
+          <Button 
+            variant="info" 
+            onClick={fetchPreviousClassworkSubmissions}
+            disabled={isLoadingPreviousClasswork}
+          >
+            {isLoadingPreviousClasswork ? 'Loading...' : 'View Previous Classwork Submissions'}
+          </Button>
+        </div>
+      )}
+
       {mode === "classwork"
         ? (
             !showClassworkForm ? (
@@ -790,6 +1010,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
               </Form>
             </div>
           ) : renderHomeworkForm())}
+      
       {/* Question List Modal */}
       {showQuestionList && mode !== "classwork" && (
         <QuestionListModal
@@ -800,6 +1021,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
           onMultipleSelectSubmit={handleMultipleSelectSubmit}
         />
       )}
+      
       {/* For classwork mode, show question list modal and then classwork form */}
       {showQuestionList && mode === "classwork" && (
         <QuestionListModal
@@ -822,6 +1044,9 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
           }}
         />
       )}
+      
+      {/* Render Previous Classwork Modal */}
+      {renderPreviousClassworkModal()}
     </div>
   );
 };
