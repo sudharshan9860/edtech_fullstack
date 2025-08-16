@@ -35,7 +35,7 @@ const ResultPage = () => {
     ai_explaination, 
     student_answer, 
     concepts, 
-    comment, 
+    comment,gap_analysis,time_analysis,error_type,
     concepts_used,
     solution, 
     score, 
@@ -424,6 +424,22 @@ const ResultPage = () => {
             {comment && (
               <div className="result-question">
                 <p><strong>Comments:</strong> {comment}</p>
+              </div>
+            )}
+            {gap_analysis && (
+              <div className="result-question">
+                <p><strong>Gap Analysis:</strong> {gap_analysis}</p>
+              </div>
+            )}
+
+            {error_type && (
+              <div className="result-question">
+                <p><strong>Type of Error:</strong> {error_type}</p>
+              </div>
+            )}
+            {time_analysis && (
+              <div className="result-question">
+                <p><strong>Time-Management:</strong> {time_analysis}</p>
               </div>
             )}
             {formated_concepts_used && (

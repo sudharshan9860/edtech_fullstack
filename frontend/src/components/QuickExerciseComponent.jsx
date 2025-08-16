@@ -656,114 +656,240 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
         ) : (
           <div className="previous-classwork-container">
             {previousClassworkData.map((submission, index) => (
-              <Card key={index} className="mb-3">
-                <Card.Header>
+              <Card key={submission.id || index} className="mb-4">
+                <Card.Header className="bg-primary text-white">
                   <div className="d-flex justify-content-between align-items-center">
-                    <h5>
-                      {submission.worksheet_name || submission.title || `Submission ${index + 1}`}
+                    <h5 className="mb-0">
+                      Classwork Code: {submission.class_code || 'N/A'}
                     </h5>
-                    <Badge bg="primary">
-                      {submission.class_work_code || submission.code || 'N/A'}
-                    </Badge>
+                    <div>
+                      <Badge bg="light" text="dark">
+                        {submission.assignment_type || 'classwork'}
+                      </Badge>
+                      {submission.total_class_minutes && (
+                        <Badge bg="info" className="ms-2">
+                          {submission.total_class_minutes} mins
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </Card.Header>
                 <Card.Body>
-                  <Row>
-                    <Col md={6}>
-                      <p><strong>Class:</strong> {submission.class_name || submission.class_id || 'N/A'}</p>
-                      <p><strong>Subject:</strong> {submission.subject_name || submission.subject_id || 'N/A'}</p>
-                      <p><strong>Chapter:</strong> {submission.chapter_name || submission.chapter || 'N/A'}</p>
-                    </Col>
-                    <Col md={6}>
-                      <p><strong>Date Submitted:</strong> {
-                        submission.date_submitted 
-                          ? new Date(submission.date_submitted).toLocaleString()
-                          : submission.created_at 
-                          ? new Date(submission.created_at).toLocaleString()
-                          : 'N/A'
-                      }</p>
-                      <p><strong>Due Date:</strong> {
-                        submission.due_date 
-                          ? new Date(submission.due_date).toLocaleString()
-                          : 'N/A'
-                      }</p>
-                      <p><strong>Status:</strong> {
-                        submission.status 
-                          ? <Badge bg={submission.status === 'completed' ? 'success' : 'warning'}>
-                              {submission.status}
-                            </Badge>
-                          : <Badge bg="secondary">Pending</Badge>
-                      }</p>
-                    </Col>
-                  </Row>
-                  
-                  {submission.description && (
-                    <div className="mt-3">
-                      <strong>Description:</strong>
-                      <p className="text-muted">{submission.description}</p>
+                  {/* Processing Summary */}
+                  {submission.processing_summary && (
+                    <div className="mb-3 p-3 bg-light rounded">
+                      <h6 className="text-primary">Processing Summary</h6>
+                      <Row>
+                        <Col md={3}>
+                          <small className="text-muted">Processed At:</small>
+                          <p className="mb-1">
+                            {new Date(submission.processing_timestamp || submission.processing_summary.timestamp).toLocaleString()}
+                          </p>
+                        </Col>
+                        <Col md={3}>
+                          <small className="text-muted">Total Pages:</small>
+                          <p className="mb-1">{submission.processing_summary.total_pages || 0}</p>
+                        </Col>
+                        <Col md={3}>
+                          <small className="text-muted">Files Processed:</small>
+                          <p className="mb-1">{submission.processing_summary.files_processed || 0}</p>
+                        </Col>
+                        <Col md={3}>
+                          <small className="text-muted">Students Evaluated:</small>
+                          <p className="mb-1">{submission.processing_summary.students_evaluated || 0}</p>
+                        </Col>
+                      </Row>
                     </div>
                   )}
-                  
-                  {submission.questions && submission.questions.length > 0 && (
-                    <div className="mt-3">
-                      <strong>Questions ({submission.questions.length}):</strong>
-                      <ol className="mt-2">
-                        {submission.questions.map((q, qIndex) => (
-                          <li key={qIndex} className="mb-2">
-                            {typeof q === 'string' ? q : q.question || q.text || 'Question ' + (qIndex + 1)}
-                          </li>
+
+                  {/* Class Analytics */}
+                  {submission.class_analytics && (
+                    <div className="mb-3 p-3 bg-light rounded">
+                      <h6 className="text-primary">Class Analytics</h6>
+                      <Row>
+                        <Col md={3}>
+                          <small className="text-muted">Average Score:</small>
+                          <h5 className="mb-1">{submission.class_analytics.average_score || 0}%</h5>
+                        </Col>
+                        <Col md={3}>
+                          <small className="text-muted">Highest Score:</small>
+                          <h5 className="mb-1">{submission.class_analytics.highest_score || 0}%</h5>
+                        </Col>
+                        <Col md={3}>
+                          <small className="text-muted">Lowest Score:</small>
+                          <h5 className="mb-1">{submission.class_analytics.lowest_score || 0}%</h5>
+                        </Col>
+                        <Col md={3}>
+                          <small className="text-muted">Total Students:</small>
+                          <h5 className="mb-1">{submission.class_analytics.total_students || 0}</h5>
+                        </Col>
+                      </Row>
+                      
+                      {/* Grade Distribution */}
+                      {submission.class_analytics.grade_distribution && (
+                        <div className="mt-3">
+                          <small className="text-muted">Grade Distribution:</small>
+                          <div className="d-flex gap-2 mt-2">
+                            {Object.entries(submission.class_analytics.grade_distribution).map(([grade, count]) => (
+                              <Badge 
+                                key={grade} 
+                                bg={grade === 'A' ? 'success' : grade === 'B' ? 'info' : grade === 'C' ? 'warning' : grade === 'D' ? 'secondary' : 'danger'}
+                                className="p-2"
+                              >
+                                {grade}: {count}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Performance Distribution */}
+                  {submission.performance_distribution && (
+                    <div className="mb-3 p-3 bg-light rounded">
+                      <h6 className="text-primary">Performance Distribution</h6>
+                      <Row>
+                        {Object.entries(submission.performance_distribution).map(([range, count]) => (
+                          <Col md={4} key={range} className="mb-2">
+                            <small className="text-muted">{range}%:</small>
+                            <Badge bg="secondary" className="ms-2">{count} students</Badge>
+                          </Col>
                         ))}
-                      </ol>
+                      </Row>
                     </div>
                   )}
-                  
-                  {submission.pdf_url && (
-                    <div className="mt-3">
-                      <Button 
-                        variant="outline-primary" 
-                        size="sm"
-                        href={submission.pdf_url}
-                        target="_blank"
-                      >
-                        View PDF
-                      </Button>
-                    </div>
-                  )}
-                  
-                  {submission.student_responses && submission.student_responses.length > 0 && (
-                    <div className="mt-3">
-                      <strong>Student Responses:</strong>
-                      <Table striped bordered hover size="sm" className="mt-2">
+
+                  {/* Student Results */}
+                  {submission.student_results && submission.student_results.length > 0 && (
+                    <div className="mb-3">
+                      <h6 className="text-primary">Student Results</h6>
+                      <Table striped bordered hover responsive className="mt-2">
                         <thead>
                           <tr>
-                            <th>Student</th>
-                            <th>Status</th>
-                            <th>Score</th>
-                            <th>Submitted At</th>
+                            <th>Roll Number</th>
+                            <th>Grade</th>
+                            <th>Marks Obtained</th>
+                            <th>Total Marks</th>
+                            <th>Percentage</th>
+                            <th>Questions Attempted</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {submission.student_responses.map((response, rIndex) => (
-                            <tr key={rIndex}>
-                              <td>{response.student_name || response.roll_number || 'Student ' + (rIndex + 1)}</td>
+                          {submission.student_results.map((student, sIndex) => (
+                            <tr key={sIndex}>
+                              <td>{student.roll_number}</td>
                               <td>
-                                <Badge bg={response.status === 'submitted' ? 'success' : 'warning'}>
-                                  {response.status || 'Pending'}
+                                <Badge 
+                                  bg={student.grade === 'A' ? 'success' : 
+                                     student.grade === 'B' ? 'info' : 
+                                     student.grade === 'C' ? 'warning' : 
+                                     student.grade === 'D' ? 'secondary' : 'danger'}
+                                >
+                                  {student.grade}
                                 </Badge>
                               </td>
-                              <td>{response.score || response.grade || '-'}</td>
-                              <td>
-                                {response.submitted_at 
-                                  ? new Date(response.submitted_at).toLocaleString()
-                                  : '-'
-                                }
-                              </td>
+                              <td>{student.total_marks_obtained || 0}</td>
+                              <td>{student.total_max_marks || 0}</td>
+                              <td>{student.overall_percentage || 0}%</td>
+                              <td>{student.questions ? student.questions.length : 0}</td>
                             </tr>
                           ))}
                         </tbody>
                       </Table>
+                      
+                      {/* Detailed Question Analysis for Each Student */}
+                      {submission.student_results.some(s => s.questions && s.questions.length > 0) && (
+                        <details className="mt-3">
+                          <summary className="cursor-pointer text-primary">View Detailed Question Analysis</summary>
+                          <div className="mt-2">
+                            {submission.student_results.map((student, sIndex) => (
+                              student.questions && student.questions.length > 0 && (
+                                <Card key={sIndex} className="mb-2">
+                                  <Card.Header className="py-2">
+                                    <strong>Roll Number: {student.roll_number}</strong>
+                                  </Card.Header>
+                                  <Card.Body className="p-2">
+                                    <Table size="sm" bordered>
+                                      <thead>
+                                        <tr>
+                                          <th>Q.No</th>
+                                          <th>Score</th>
+                                          <th>Max</th>
+                                          <th>Error Type</th>
+                                          <th>Mistakes Made</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {student.questions.map((q, qIndex) => (
+                                          <tr key={qIndex}>
+                                            <td>{q.question_number}</td>
+                                            <td>{q.total_score || 0}</td>
+                                            <td>{q.max_marks || 0}</td>
+                                            <td>
+                                              <Badge bg="warning" text="dark">
+                                                {q.error_type || 'N/A'}
+                                              </Badge>
+                                            </td>
+                                            <td className="small">{q.mistakes_made || 'N/A'}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </Table>
+                                  </Card.Body>
+                                </Card>
+                              )
+                            ))}
+                          </div>
+                        </details>
+                      )}
                     </div>
                   )}
+
+                  {/* Question Analytics */}
+                  {submission.class_analytics && submission.class_analytics.question_analytics && (
+                    <details className="mb-3">
+                      <summary className="cursor-pointer text-primary">View Question Analytics</summary>
+                      <div className="mt-2 p-3 bg-light rounded">
+                        <Table size="sm" bordered>
+                          <thead>
+                            <tr>
+                              <th>Question</th>
+                              <th>Attempts</th>
+                              <th>Average Score</th>
+                              <th>Max Score</th>
+                              <th>Average %</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(submission.class_analytics.question_analytics).map(([qNum, data]) => (
+                              <tr key={qNum}>
+                                <td>{qNum}</td>
+                                <td>{data.attempts}</td>
+                                <td>{data.total_score}</td>
+                                <td>{data.max_score}</td>
+                                <td>{data.average_percentage}%</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
+                    </details>
+                  )}
+
+                  {/* Footer Info */}
+                  <div className="mt-3 pt-3 border-top">
+                    <Row>
+                      <Col md={6}>
+                        <small className="text-muted">Teacher ID: {submission.teacher_name || 'N/A'}</small>
+                      </Col>
+                      <Col md={6} className="text-end">
+                        <small className="text-muted">
+                          Submission Date: {submission.submission_date ? new Date(submission.submission_date).toLocaleString() : 'Not submitted'}
+                        </small>
+                      </Col>
+                    </Row>
+                  </div>
                 </Card.Body>
               </Card>
             ))}
