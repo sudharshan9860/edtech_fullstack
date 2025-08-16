@@ -39,7 +39,7 @@
 /* Hide toggle button when chat is open */
 .chat-toggle-btn.open {
   transform: translateY(1vh) scale(0.8) rotate(90deg);
-  background: #dc3545;
+  background: #04b9f0;
   z-index: 10001;
 }
 
@@ -356,7 +356,7 @@
   position: absolute;
   top: -6px;
   right: -6px;
-  background: #dc3545;
+  background: #088ef4;
   color: white;
   border: none;
   border-radius: 50%;

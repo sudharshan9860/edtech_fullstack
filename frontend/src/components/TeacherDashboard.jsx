@@ -17,6 +17,8 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState('');
+  const [worksheetAssignmentType, setWorksheetAssignmentType] = useState("homework"); // New state for homework/classwork selection
+
 
   // New fields for worksheet upload - matching backend API structure
   const [classes, setClasses] = useState([]);
@@ -160,6 +162,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
         // First time upload - include file and set preview=true
         formData.append('file', worksheetFile); // Backend expects 'file' key
         formData.append('preview', 'true');
+        formData.append('assignment_type', worksheetAssignmentType);
       } else {
         // Final submission - no file, set preview=false and include selected questions
         formData.append('preview', 'false');
@@ -208,13 +211,11 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       
       if (response.data.success) {
         if (preview) {
-          setSuccess(`Successfully processed worksheet! Extracted ${response.data.total_questions} questions. Please select questions to include.`);
-          
+            setSuccess(`Successfully processed ${worksheetAssignmentType} worksheet! Extracted ${response.data.total_questions} questions. Please select questions to include.`);          
           // Display questions for selection without resetting form
           displayWorksheetQuestions(response.data);
         } else {
-          setSuccess(`Successfully created worksheet assignment with ${selectedQuestions.length} selected questions!`);
-          
+            setSuccess(`Successfully created ${worksheetAssignmentType} assignment with ${selectedQuestions.length} selected questions!`);          
           // Reset worksheet form after final submission
           setSelectedClass('');
           setSelectedSubject('');
@@ -224,6 +225,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
           setDueDate('');
           setSelectedQuestions([]);
           setWorksheetUploadData(null);
+          setWorksheetAssignmentType('homework'); // Add this line
           
           // Reset file input
           const worksheetInput = document.getElementById('worksheet-file');
@@ -619,137 +621,173 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
             )}
 
             {submissionType === "worksheet" && (
-              <>
-                <div className="form-group">
-                  <label htmlFor="due-date-worksheet" className="form-label">Due Date (Optional)</label>
-                  <input
-                    id="due-date-worksheet"
-                    type="datetime-local"
-                    className="form-input"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                  />
-                  <div className="form-help">
-                    Due date is optional for worksheet processing
-                  </div>
-                </div>
+  <>
+    {/* NEW: Worksheet Assignment Type Selection */}
+    <div className="form-group">
+      <label className="form-label">Worksheet Assignment Type *</label>
+      <div className="type-buttons">
+        <button
+          type="button"
+          className={`type-btn ${worksheetAssignmentType === "homework" ? 'active' : ''}`}
+          onClick={() => setWorksheetAssignmentType("homework")}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+          </svg>
+          📝 Homework
+        </button>
+        <button
+          type="button"
+          className={`type-btn ${worksheetAssignmentType === "classwork" ? 'active' : ''}`}
+          onClick={() => setWorksheetAssignmentType("classwork")}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+          </svg>
+          ✏️ Classwork
+        </button>
+      </div>
+    </div>
 
-                <div className="form-group">
-                  <label htmlFor="class-select" className="form-label">Class *</label>
-                  <select
-                    id="class-select"
-                    className="form-input"
-                    value={selectedClass}
-                    onChange={(e) => setSelectedClass(e.target.value)}
-                    required
-                  >
-                    <option value="">Select Class</option>
-                    {classes.map((cls) => (
-                      <option key={cls.class_code} value={cls.class_code}>
-                        {cls.class_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+    {/* EXISTING: Due Date field - keep as is */}
+    <div className="form-group">
+      <label htmlFor="due-date-worksheet" className="form-label">Due Date (Optional)</label>
+      <input
+        id="due-date-worksheet"
+        type="datetime-local"
+        className="form-input"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+      />
+      <div className="form-help">
+        Due date is optional for worksheet processing
+      </div>
+    </div>
 
-                <div className="form-group">
-                  <label htmlFor="subject-select" className="form-label">Subject *</label>
-                  <select
-                    id="subject-select"
-                    className="form-input"
-                    value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    disabled={!selectedClass}
-                    required
-                  >
-                    <option value="">Select Subject</option>
-                    {subjects.map((subject) => (
-                      <option key={subject.subject_code} value={subject.subject_code}>
-                        {subject.subject_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+    {/* EXISTING: Class Selection - keep as is */}
+    <div className="form-group">
+      <label htmlFor="class-select" className="form-label">Class *</label>
+      <select
+        id="class-select"
+        className="form-input"
+        value={selectedClass}
+        onChange={(e) => setSelectedClass(e.target.value)}
+        required
+      >
+        <option value="">Select Class</option>
+        {classes.map((cls) => (
+          <option key={cls.class_code} value={cls.class_code}>
+            {cls.class_name}
+          </option>
+        ))}
+      </select>
+    </div>
 
-                <div className="form-group">
-                  <label htmlFor="chapter-select" className="form-label">Topic/Chapter *</label>
-                  <select
-                    id="chapter-select"
-                    className="form-input"
-                    value={selectedChapter}
-                    onChange={(e) => setSelectedChapter(e.target.value)}
-                    disabled={!selectedSubject}
-                    required
-                  >
-                    <option value="">Select Chapter</option>
-                    {chapters.map((chapter) => (
-                      <option key={chapter.topic_code} value={chapter.topic_code}>
-                        {chapter.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+    {/* EXISTING: Subject Selection - keep as is */}
+    <div className="form-group">
+      <label htmlFor="subject-select" className="form-label">Subject *</label>
+      <select
+        id="subject-select"
+        className="form-input"
+        value={selectedSubject}
+        onChange={(e) => setSelectedSubject(e.target.value)}
+        disabled={!selectedClass}
+        required
+      >
+        <option value="">Select Subject</option>
+        {subjects.map((subject) => (
+          <option key={subject.subject_code} value={subject.subject_code}>
+            {subject.subject_name}
+          </option>
+        ))}
+      </select>
+    </div>
 
-                <div className="form-group">
-                  <label htmlFor="worksheet-name" className="form-label">Worksheet Name *</label>
-                  <input
-                    id="worksheet-name"
-                    type="text"
-                    className="form-input"
-                    value={worksheetName}
-                    onChange={(e) => setWorksheetName(e.target.value)}
-                    placeholder="Worksheet name will be auto-generated"
-                    required
-                  />
-                  <div className="form-help">
-                    Auto-generated format: ClassName_SubjectName_ChapterName_Worksheet
-                  </div>
-                </div>
+    {/* EXISTING: Chapter Selection - keep as is */}
+    <div className="form-group">
+      <label htmlFor="chapter-select" className="form-label">Topic/Chapter *</label>
+      <select
+        id="chapter-select"
+        className="form-input"
+        value={selectedChapter}
+        onChange={(e) => setSelectedChapter(e.target.value)}
+        disabled={!selectedSubject}
+        required
+      >
+        <option value="">Select Chapter</option>
+        {chapters.map((chapter) => (
+          <option key={chapter.topic_code} value={chapter.topic_code}>
+            {chapter.name}
+          </option>
+        ))}
+      </select>
+    </div>
 
-                <div className="form-group">
-                  <label htmlFor="worksheet-file" className="form-label">Upload Worksheet File *</label>
-                  <input
-                    id="worksheet-file"
-                    type="file"
-                    className="form-input"
-                    accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
-                    onChange={handleWorksheetFileChange}
-                    required
-                  />
-                  {worksheetFile && (
-                    <div className="file-preview">
-                      <div className="file-info">
-                        <span className="file-name">📄 {worksheetFile.name}</span>
-                        <span className="file-size">({(worksheetFile.size / 1024 / 1024).toFixed(2)} MB)</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setWorksheetFile(null);
-                          const worksheetInput = document.getElementById('worksheet-file');
-                          if (worksheetInput) worksheetInput.value = '';
-                        }}
-                        style={{
-                          marginTop: '5px',
-                          padding: '5px 10px',
-                          backgroundColor: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Remove File
-                      </button>
-                    </div>
-                  )}
-                  <div className="form-help">
-                    Supported formats: Word documents (.doc, .docx) and PDF files (Max: 10MB)
-                  </div>
-                </div>
-              </>
-            )}
+    {/* EXISTING: Worksheet Name - keep as is */}
+    <div className="form-group">
+      <label htmlFor="worksheet-name" className="form-label">Worksheet Name *</label>
+      <input
+        id="worksheet-name"
+        type="text"
+        className="form-input"
+        value={worksheetName}
+        onChange={(e) => setWorksheetName(e.target.value)}
+        placeholder="Worksheet name will be auto-generated"
+        required
+      />
+      <div className="form-help">
+        Auto-generated format: ClassName_SubjectName_ChapterName_Worksheet
+      </div>
+    </div>
+
+    {/* EXISTING: File Upload - keep as is */}
+    <div className="form-group">
+      <label htmlFor="worksheet-file" className="form-label">Upload Worksheet File *</label>
+      <input
+        id="worksheet-file"
+        type="file"
+        className="form-input"
+        accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
+        onChange={handleWorksheetFileChange}
+        required
+      />
+      {worksheetFile && (
+        <div className="file-preview">
+          <div className="file-info">
+            <span className="file-name">📄 {worksheetFile.name}</span>
+            <span className="file-size">({(worksheetFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setWorksheetFile(null);
+              const worksheetInput = document.getElementById('worksheet-file');
+              if (worksheetInput) worksheetInput.value = '';
+            }}
+            style={{
+              marginTop: '5px',
+              padding: '5px 10px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            Remove File
+          </button>
+        </div>
+      )}
+      <div className="form-help">
+        Supported formats: Word documents (.doc, .docx) and PDF files (Max: 10MB)
+      </div>
+    </div>
+  </>
+)}
 
             <button 
               type="submit" 

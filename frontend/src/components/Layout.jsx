@@ -134,7 +134,6 @@ const Layout = ({ children }) => {
                 icon={isSoundEnabled ? faVolumeUp : faVolumeMute} 
                 className="control-icon" 
               />
-              <span className="control-label">Sound</span>
             </button>
 
             {/* Enhanced Notifications */}

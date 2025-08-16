@@ -788,7 +788,7 @@ const ClassAnalysis = ({ selectedClass, classesData, onClassChange }) => {
           onClick={() => setClassAnalysisTab('topics')}
           className={`class-sub-tab ${classAnalysisTab === 'topics' ? 'active' : ''}`}
         >
-          🎯 Topic Analysis
+          🎯 Chapter-Topic Analysis
         </button>
         <button
           onClick={() => setClassAnalysisTab('submitted')}

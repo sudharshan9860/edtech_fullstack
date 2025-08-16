@@ -157,7 +157,7 @@ const classesData = {
 
 const EnhancedTeacherDash = () => {
   const [selectedClass, setSelectedClass] = useState(classesData[1]);
-  const [activeTab, setActiveTab] = useState('class');
+  const [activeTab, setActiveTab] = useState('homework'); // Now defaults to Worksheets tab
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [studentData, setStudentData] = useState(null);
   const [assignments, setAssignments] = useState([]);
@@ -249,45 +249,55 @@ const EnhancedTeacherDash = () => {
     setSelectedStudent(null);
   };
 
-  // Render main sidebar navigation
-  const renderMainSidebar = () => {
-    return (
-      <div className="main-sidebar-container">
-        <div className="main-sidebar-nav">
-          <button 
-            onClick={() => setActiveTab('class')}
-            className={`main-sidebar-button tab-class ${activeTab === 'class' ? 'active' : ''}`}
-          >
-            📊 Class Analysis
-          </button>
-          <button 
-            onClick={() => setActiveTab('student')}
-            className={`main-sidebar-button tab-student ${activeTab === 'student' ? 'active' : ''}`}
-          >
-            👤 Student Analysis
-          </button>
-          <button 
-            onClick={() => setActiveTab('homework')}
-            className={`main-sidebar-button tab-homework ${activeTab === 'homework' ? 'active' : ''}`}
-          >
-            📄 Worksheets
-          </button>
-          <button 
-            onClick={() => setActiveTab('exercise')}
-            className={`main-sidebar-button tab-exercise ${activeTab === 'exercise' ? 'active' : ''}`}
-          >
-            📝 Homework
-          </button>
-          <button 
-            onClick={() => setActiveTab('classwork')}
-            className={`main-sidebar-button tab-classwork ${activeTab === 'classwork' ? 'active' : ''}`}
-          >
-            ✏️ Classwork
-          </button>
-        </div>
+  // Render main sidebar navigation - UPDATED ORDER
+const renderMainSidebar = () => {
+  return (
+    <div className="main-sidebar-container">
+      <div className="main-sidebar-nav">
+        
+        {/* 1. Homework -  First*/}
+        <button 
+          onClick={() => setActiveTab('exercise')}
+          className={`main-sidebar-button tab-exercise ${activeTab === 'exercise' ? 'active' : ''}`}
+        >
+          📝 Homework
+        </button>
+        
+        {/* 2. Classwork - Second */}
+        <button 
+          onClick={() => setActiveTab('classwork')}
+          className={`main-sidebar-button tab-classwork ${activeTab === 'classwork' ? 'active' : ''}`}
+        >
+          ✏️ Classwork
+        </button>
+
+        {/* 3. Worksheets -  Third*/}
+        <button 
+          onClick={() => setActiveTab('homework')}
+          className={`main-sidebar-button tab-homework ${activeTab === 'homework' ? 'active' : ''}`}
+        >
+          📄 Worksheets
+        </button>
+        
+        {/* 4. Class Analysis - Fourth */}
+        <button 
+          onClick={() => setActiveTab('class')}
+          className={`main-sidebar-button tab-class ${activeTab === 'class' ? 'active' : ''}`}
+        >
+          📊 Class Analysis
+        </button>
+        
+        {/* 5. Student Analysis - Fifth */}
+        <button 
+          onClick={() => setActiveTab('student')}
+          className={`main-sidebar-button tab-student ${activeTab === 'student' ? 'active' : ''}`}
+        >
+          👤 Student Analysis
+        </button>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   // Loading state
   if (loading) {
