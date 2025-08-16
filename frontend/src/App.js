@@ -1,8 +1,8 @@
-// src/App.js
+// Updated App.js - Configuration for New API
 import React from "react";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import { AuthProvider } from "./components/AuthContext";
-import { ThemeProvider } from "./contexts/ThemeContext"; // Import ThemeProvider
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { ProgressProvider } from "./contexts/ProgressContext";
 import { LeaderboardProvider } from "./contexts/LeaderboardContext";
@@ -11,33 +11,36 @@ import { CurrentQuestionProvider } from "./contexts/CurrentQuestionContext";
 import AppRoutes from "./routing/Routing";
 import MultilingualChatBox from "./components/MultilingualChatBox";
 import "./styles/multilingualChat.css";
-// import EnhancedChatBoxWithIntegration from "./components/EnhancedChatBoxWithIntegration";
 import "./styles/theme.css";
 import { TimerProvider } from "./contexts/TimerContext";
 
 // Import Bootstrap and other existing CSS
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-// Import your existing component styles
 import './components/StudentDash.css';
 import './components/Layout.css';
-
-// ✅ ADD THIS LINE - Import the new enhanced dark mode CSS
 import './styles/dark-mode-enhanced.css';
 
+// ✅ UPDATED: Add global API configuration
+window.STUDENT_ASSISTANT_CONFIG = {
+  API_URL: process.env.REACT_APP_STUDENT_ASSISTANT_API_URL || "https://chatbot.smartlearners.ai",
+  API_VERSION: "1.0",
+  FEATURES: {
+    VOICE_ENABLED: true,
+    IMAGE_UPLOAD: true,
+    MULTILINGUAL: true,
+    CURRICULUM_AWARE: true
+  }
+};
 
-// Wrapper component to use location hook
 function AppContent() {
   const location = useLocation();
-
-  // Check if current path is login or signup
   const isAuthPage = ["/login", "/", "/signup"].includes(location.pathname);
 
   return (
     <>
       <AppRoutes />
-        {!isAuthPage && <MultilingualChatBox />}    
-      </>
+      {!isAuthPage && <MultilingualChatBox />}    
+    </>
   );
 }
 
@@ -45,23 +48,24 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-      <NotificationProvider>
-        <ProgressProvider>
-          <TimerProvider>
-            <LeaderboardProvider>
-              <QuestProvider>
+        <NotificationProvider>
+          <ProgressProvider>
+            <TimerProvider>
+              <LeaderboardProvider>
+                <QuestProvider>
                   <CurrentQuestionProvider>
                     <Router>
                       <AppContent />
                     </Router>
                   </CurrentQuestionProvider>
-              </QuestProvider>
-            </LeaderboardProvider>
-          </TimerProvider>
-        </ProgressProvider>
-      </NotificationProvider>
-    </AuthProvider>
+                </QuestProvider>
+              </LeaderboardProvider>
+            </TimerProvider>
+          </ProgressProvider>
+        </NotificationProvider>
+      </AuthProvider>
     </ThemeProvider>   
   );
 }
+
 export default App;
