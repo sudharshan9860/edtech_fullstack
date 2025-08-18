@@ -1001,7 +1001,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
                         <Form.Control
                           as="select"
                           value={questionLevel}
-                          onChange={(e) => setQuestionLevel(e.target.value)}
+                          // onChange={(e) => setQuestionLevel(e.target.value)}
                           className="form-control"
                           disabled={selectedChapters.length === 0}
                         >

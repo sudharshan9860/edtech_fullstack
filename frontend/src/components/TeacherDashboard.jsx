@@ -120,7 +120,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       // Process questions to match QuestionListModal format
       const questionsWithImages = savedWorksheets.map((worksheet, index) => ({
         question: worksheet.question_text,
-        question_image: null, // No base64 images in worksheet upload response
+        question_image: worksheet.question_image,// No base64 images in worksheet upload response
         level: "Medium", // Default level since not provided
         id: worksheet.id,
         question_id: worksheet.question_id,
@@ -163,7 +163,10 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       } else {
         // Final submission - no file, set preview=false and include selected questions
         formData.append('preview', 'false');
-        
+        formData.append('class_code', selectedClass);
+        formData.append('subject_code', selectedSubject);
+        formData.append('topic_code', selectedChapter);
+        formData.append('worksheet_name', worksheetName.trim());
         // Add selected questions data
         const selectedQuestionsData = selectedQuestions.map(questionData => ({
           id: questionData.id,

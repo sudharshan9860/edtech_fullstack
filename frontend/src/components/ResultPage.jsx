@@ -462,19 +462,36 @@ const ResultPage = () => {
                     </Accordion.Header>
                     <Accordion.Body>
                       <p className="concept-title"><strong>{conceptItem.concept}</strong></p>
-                      <p className="chapter-name"><strong>Chapter Name:</strong> {conceptItem.chapter}</p>
+                      {/* <p className="chapter-name"><strong>Chapter Name:</strong> {conceptItem.chapter}</p> */}
                       <div className="example-section">
-                      {console.log('Concept Item:', conceptItem)}
                         <p className="example-header"><strong>Example:</strong></p>
                         {/* {formatExampleContent(conceptItem['example'])} */}
+                        {/* {console.log('Concept example:', conceptItem.example)}
+                        {console.log('Concept ex-solution:', conceptItem.application)} */}
                         {conceptItem.example && (
                           <div className="example-content">
-                            <MarkdownWithMath content={conceptItem.example.problem} />
-                            <strong className='example-header'>Solution:</strong>
-                            <MarkdownWithMath content={conceptItem.example.solution} />
+                            {typeof conceptItem.example === "string" ? (
+                              <>
+                                <MarkdownWithMath content={conceptItem.example} />
+                                <strong className="example-header">Solution:</strong>
+                                <MarkdownWithMath content={conceptItem.application} />
+                              </>
+                            ) : (
+                              <>
+                                {conceptItem.example.problem && (
+                                  <MarkdownWithMath content={conceptItem.example.problem} />
+                                )}
+                                {conceptItem.example.solution && (
+                                  <>
+                                    <strong className="example-header">Solution:</strong>
+                                    <MarkdownWithMath content={conceptItem.example.solution} />
+                                  </>
+                                )}
+                              </>
+                            )}
                           </div>
-                          
                         )}
+
                       </div>
                       <p className="explanation"><strong>Explanation:</strong> <MarkdownWithMath content={conceptItem.explanation} /></p>
                       
