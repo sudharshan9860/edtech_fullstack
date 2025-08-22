@@ -55,6 +55,7 @@ const QuestionListModal = ({
         index: index,
         question_id: questionList[index].question_id || index, // Ensure each question has a unique ID
       }));
+      console.log("Selected questions data:", selectedQuestionsData);
       onMultipleSelectSubmit(selectedQuestionsData);
     }
   };

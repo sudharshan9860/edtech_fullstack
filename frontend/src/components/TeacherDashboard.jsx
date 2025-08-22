@@ -163,10 +163,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
       } else {
         // Final submission - no file, set preview=false and include selected questions
         formData.append('preview', 'false');
-        formData.append('class_code', selectedClass);
-        formData.append('subject_code', selectedSubject);
-        formData.append('topic_code', selectedChapter);
-        formData.append('worksheet_name', worksheetName.trim());
+        
         // Add selected questions data
         const selectedQuestionsData = selectedQuestions.map(questionData => ({
           id: questionData.id,

@@ -9,39 +9,41 @@ export const NotificationProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
 
   // Fetch notifications from the server
-  const fetchNotifications = async () => {
-    try {
-      // Get notifications from the endpoint
-      const res = await axiosInstance.get('/studentnotifications/');
-      const item = res.data.homework;
+const fetchNotifications = async () => {
+  try {
+    // Get notifications list from endpoint
+    const res = await axiosInstance.get('/studentnotifications/');
+    const items = res.data; // since it's a list
 
-      if (!item) {
-        console.warn('No homework data received.');
-        return;
-      }
-
-      // Create notification object
-      const notification = {
-        id: item.homework_code,
-        title: item.title || 'New Homework',
-        image: item.attachment || '/default-homework-image.jpeg',
-        message: res.data.message || 'You have a new homework update.',
-        timestamp: item.date_assigned || new Date().toISOString(),
-        read: false,
-        type: 'homework', // Changed to 'homework' to match the expected type in NotificationDropdown
-        homework: item,
-      };
-
-      // Add to notifications if not already present
-      setNotifications((prev) => {
-        const exists = prev.some((n) => n.id === notification.id);
-        return exists ? prev : [notification, ...prev];
-      });
-
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+    if (!Array.isArray(items) || items.length === 0) {
+      console.warn('No homework data received.');
+      return;
     }
-  };
+
+    // Convert each homework item into a notification object
+    const newNotifications = items.map((item) => ({
+      id: item.homework_code,
+      title: item.title || 'New Homework',
+      image: item.attachment || '/default-homework-image.jpeg',
+      message: item.message || 'You have a new homework update.',
+      timestamp: item.date_assigned || new Date().toISOString(),
+      read: false,
+      type: 'homework',
+      homework: item,
+    }));
+
+    // Update notifications state (avoid duplicates by ID)
+    setNotifications((prev) => {
+      const existingIds = new Set(prev.map((n) => n.id));
+      const uniqueNew = newNotifications.filter(
+        (n) => !existingIds.has(n.id)
+      );
+      return [...uniqueNew, ...prev]; // prepend new ones
+    });
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+  }
+};
 
   // Initial fetch and polling setup
   useEffect(() => {

@@ -400,6 +400,7 @@ function SolveQuestion() {
     Object.entries(flags).forEach(([key, value]) => {
       formData.append(key, value);
     });
+    // console.log("curret question",currentQuestion.question_id);
     // console.log("Form data prepared:", formData);
     // Add images if required by the action
     if (flags.submit) {
@@ -483,17 +484,19 @@ function SolveQuestion() {
     selectedQuestion,
     selectedIndex,
     selectedImage,
+    question_id
 
   ) => {
-    console.log("Question selected in SolveQuestion");
-    console.log("Selected question:", selectedQuestion);
-    console.log("Selected image:", selectedImage);
-
+    // console.log("Question selected in SolveQuestion");
+    // console.log("Selected question:", selectedQuestion);
+    // console.log("Selected image:", selectedImage);
+    // console.log("Selected index:", selectedIndex);
+    // console.log("Selected question ID:", question_id || selectedIndex);
     // Stop the current timer
     stopTimer();
 
     const newQuestionId = `${question_id}`;
-    
+    // console.log("New question ID after selected question:", newQuestionId);
     setCurrentQuestion({
       question: selectedQuestion,
       questionNumber: selectedIndex + 1,

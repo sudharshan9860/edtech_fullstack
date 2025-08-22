@@ -1,5 +1,5 @@
 // src/components/ChatBox.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useContext, useRef, useState } from "react";
 import { Button, Form, InputGroup, Modal } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,7 +18,9 @@ import { InlineMath } from "react-katex";
 import axios from "axios";
 import MarkdownWithMath from "./MarkdownWithMath";
 import "./ChatBox.css";
-
+import { AuthContext } from './AuthContext';
+import axiosInstance from "../api/axiosInstance";
+import MarkdownViewer from "./MarkdownViewer";
 // ====== API BASE ======
 const API_URL = "https://chatbot.smartlearners.ai";
 
@@ -29,6 +31,7 @@ const api = axios.create({
 });
 
 // ====== Helpers for formatting ======
+// ====== Helpers ======
 const formatMessage = (text) => {
   if (!text) return null;
   if (Array.isArray(text)) {
@@ -36,62 +39,51 @@ const formatMessage = (text) => {
       <div className="paragraph-solution">
         {text.map((p, i) => (
           <p key={i} className="solution-paragraph">
-            {formatMessageText(p)}
+            <MarkdownViewer>{p}</MarkdownViewer>
           </p>
         ))}
       </div>
     );
   }
-  return formatMessageText(text);
+  return <MarkdownViewer>{text}</MarkdownViewer>;
 };
 
-const formatMessageText = (text) => {
-  if (!text) return null;
-  if (typeof text === "string") text = text.trim();
-  const segments = text.split(/(\$\$.*?\$\$|\$.*?\$|```[\s\S]*?```)/g);
+// ====== Dummy student fetch ======
 
-  return segments.map((segment, index) => {
-    if (segment.startsWith("$$") && segment.endsWith("$$")) {
-      return <MarkdownWithMath key={index} content={segment.slice(2, -2)} />;
-    } else if (segment.startsWith("$") && segment.endsWith("$")) {
-      return <InlineMath key={index}>{segment.slice(1, -1)}</InlineMath>;
-    } else if (segment.startsWith("```") && segment.endsWith("```")) {
-      return (
-        <pre key={index} className="code-block">
-          <code>{segment.slice(3, -3)}</code>
-        </pre>
-      );
-    } else {
-      return (
-        <span key={index}>
-          {segment.split("\n").map((line, i) => (
-            <React.Fragment key={i}>
-              {line}
-              {i !== segment.split("\n").length - 1 && <br />}
-            </React.Fragment>
-          ))}
-        </span>
-      );
-    }
+// ====== Fetch Student Data Function ======
+function student_Data() {
+  return axiosInstance.post("dummy/", {
+    homework: "true",
+    agentic_data: "true",
+  })
+  .then((response) => {
+    // console.log("✅ Dummy Data:", response.data);
+    return response.data;
+  })
+  .catch((error) => {
+    console.error("❌ Error fetching dummy data:", error);
+    throw error;
   });
-};
+}
 
-// ====== Component ======
-const ChatBox = ({ username }) => {
-  // UI
+// ====== Main Component ======
+const ChatBox = () => {
+  const { username } = useContext(AuthContext);
+  // console.log("username:", username);
+  
   const [isOpen, setIsOpen] = useState(false);
   const toggleChat = () => setIsOpen((o) => !o);
 
   // Session + connection
   const [sessionId, setSessionId] = useState(null);
   const [studentInfo, setStudentInfo] = useState(null);
-  const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | disconnected
+  const [connectionStatus, setConnectionStatus] = useState("checking");
 
   // Chat
   const [messages, setMessages] = useState([
     {
       id: "hello",
-      text: "👋 Hi! I’m your Math Assistant. Ask a doubt, upload a problem image, or use voice.",
+      text: "👋 Hi! I'm your Math Assistant. Ask a doubt, upload a problem image, or use voice.",
       sender: "ai",
       timestamp: new Date(),
       canSpeak: true,
@@ -128,14 +120,35 @@ const ChatBox = ({ username }) => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
     createSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // useEffect(() => {
+  //   return () => {
+  //     if (previewUrl) URL.revokeObjectURL(previewUrl);
+  //   };
+  // }, [previewUrl]);
+
+  // Fetch student data when username changes
   useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
+    if (username) {
+      student_Data()
+        .then((data) => {
+          if (data && data[username]) {
+            // console.log("📦 Student data for", username, ":", data[username]);
+            setStudentInfo(data[username]);
+          } else {
+            console.warn("⚠️ No student data found for", username);
+          }
+        })
+        .catch((err) => {
+          console.error("❌ Failed to fetch dummy data:", err);
+        });
+    }
+  }, [username]);
+
+  // ====== Helper function to prepare student context ======
+const prepareStudentContext = () => studentInfo;
+
 
   // ====== Session handling ======
   const createSession = async () => {
@@ -147,11 +160,18 @@ const ChatBox = ({ username }) => {
 
       const res = await api.post("/create_session", fd);
       if (!res.data?.session_id) throw new Error("No session_id");
+      
       setSessionId(res.data.session_id);
-      setStudentInfo(res.data.student_info || null);
+      // console.log("Session created with ID:", res.data.session_id);
+      
+      // Check if student data exists in response
+      if (res.data[username]) {
+        // console.log("Session response contains student data:", res.data[username]);
+        setStudentInfo(res.data[username]);
+        console.log("after student info",studentInfo);
+      }
+      
       setConnectionStatus("connected");
-
-      // fetch existing messages
       await fetchSession(res.data.session_id);
     } catch (e) {
       console.error("create_session error:", e);
@@ -160,8 +180,7 @@ const ChatBox = ({ username }) => {
         ...prev,
         {
           id: "conn_fail",
-          text:
-            "⚠️ Unable to connect to AI service right now. Please refresh the page or try again later.",
+          text: "⚠️ Unable to connect to AI service right now. Please refresh the page or try again later.",
           sender: "ai",
           timestamp: new Date(),
         },
@@ -183,7 +202,7 @@ const ChatBox = ({ username }) => {
         setMessages(items);
       }
     } catch (e) {
-      // Silently ignore
+      console.error("Failed to fetch session:", e);
     }
   };
 
@@ -192,20 +211,17 @@ const ChatBox = ({ username }) => {
     try {
       await api.delete(`/clear-session/${sessionId}`);
     } catch (e) {
-      // ignore
+      console.error("Failed to clear session:", e);
     } finally {
-      // reset UI + create a fresh session
       setMessages([
         {
           id: "cleared",
-          text:
-            "🧹 Chat cleared. Starting a fresh session… Ask your next question!",
+          text: "🧹 Chat cleared. Starting a fresh session… Ask your next question!",
           sender: "ai",
           timestamp: new Date(),
         },
       ]);
       setSessionId(null);
-      setStudentInfo(null);
       setConnectionStatus("checking");
       await createSession();
     }
@@ -285,6 +301,13 @@ const ChatBox = ({ username }) => {
       form.append("session_id", sessionId);
       form.append("language", language);
       form.append("audio", audioBlob, "recording.webm");
+      
+      // Add student context to audio request
+      const studentContext = prepareStudentContext();
+      if (studentContext) {
+        // console.log("student context :",studentContext);
+        form.append("student_context", JSON.stringify(studentContext));
+      }
 
       const res = await api.post("/process-audio", form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -298,16 +321,16 @@ const ChatBox = ({ username }) => {
           sender: "ai",
           timestamp: new Date(),
           canSpeak: true,
-          audio: res?.data?.audio, // base64 mp3 (if provided)
+          audio: res?.data?.audio,
         },
       ]);
     } catch (e) {
+      console.error("Audio processing error:", e);
       setMessages((prev) => [
         ...prev,
         {
           id: id + 1,
-          text:
-            "❌ Error processing your audio. Please try again.",
+          text: "❌ Error processing your audio. Please try again.",
           sender: "ai",
           timestamp: new Date(),
         },
@@ -319,7 +342,6 @@ const ChatBox = ({ username }) => {
   };
 
   const sendImageWithCommand = async (command) => {
-    // Triggered from modal: "solve it" | "correct it"
     setShowImageModal(false);
     await sendMessageBase(command, selectedFile);
   };
@@ -359,18 +381,28 @@ const ChatBox = ({ username }) => {
     setIsTyping(true);
 
     try {
-      // If image present -> /chat (multipart)
+      // Prepare student context
+      const studentContext = prepareStudentContext();
+      // console.log("from message ",studentContext)
+      const combinedQuery = `${text || ""} ${JSON.stringify(studentContext)}`;
+      // console.log("after combined",combinedQuery)
       if (imageFile) {
+        // Image upload with message
         const fd = new FormData();
         fd.append("session_id", sessionId);
-        fd.append("query", text || "");
+        fd.append("query", combinedQuery | "");
         fd.append("language", language);
         fd.append("image", imageFile, imageFile.name || `image_${Date.now()}.jpg`);
+        
+        // Add student context
+        // if (studentContext) {
+        //   fd.append("student_context", JSON.stringify(studentContext));
+        // }
 
         const res = await api.post("/chat", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-
+        // console.log("after request:",res)
         setMessages((prev) => [
           ...prev,
           {
@@ -383,12 +415,19 @@ const ChatBox = ({ username }) => {
           },
         ]);
       } else {
-        // Pure text -> /chat-simple
-        const res = await api.post("/chat-simple", {
+        // Text-only message
+        const requestBody = {
           session_id: sessionId,
-          query: text || "",
-          language,
-        });
+          query: text+combinedQuery || "",
+          language: language,
+        };
+        
+        // Add student context
+        if (studentContext) {
+          requestBody.student_context = studentContext;
+        }
+
+        const res = await api.post("/chat-simple", requestBody);
 
         setMessages((prev) => [
           ...prev,
@@ -408,20 +447,18 @@ const ChatBox = ({ username }) => {
         ...prev,
         {
           id: id + 1,
-          text:
-            "❌ Sorry, I couldn't process that right now. Please try again.",
+          text: "❌ Sorry, I couldn't process that right now. Please try again.",
           sender: "ai",
           timestamp: new Date(),
         },
       ]);
     } finally {
       setIsTyping(false);
-      // Clear image (if any)
       clearSelectedFile();
     }
   };
 
-  // ====== Audio playback (server-provided base64 mp3) ======
+  // ====== Audio playback ======
   const playResponseAudio = async (base64Audio) => {
     if (!base64Audio) return;
     try {
@@ -429,7 +466,7 @@ const ChatBox = ({ username }) => {
       const audio = new Audio(url);
       await audio.play();
     } catch (e) {
-      // ignore
+      console.error("Failed to play audio:", e);
     }
   };
 
@@ -455,7 +492,7 @@ const ChatBox = ({ username }) => {
           </h5>
           <div className="flex-grow" />
 
-          {/* Language */}
+          {/* Language Selector */}
           <Form.Select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
@@ -479,7 +516,7 @@ const ChatBox = ({ username }) => {
             <FontAwesomeIcon icon={faTrash} /> Clear
           </Button>
 
-          {/* Connection dot */}
+          {/* Connection status */}
           <Button variant="outline-light" size="sm" disabled>
             <FontAwesomeIcon icon={faLanguage} />{" "}
             {connectionStatus === "connected"
@@ -516,7 +553,7 @@ const ChatBox = ({ username }) => {
                 )}
               </div>
 
-              {/* Bubble footer */}
+              {/* Message footer */}
               <div
                 className="message-time"
                 style={{ display: "flex", gap: 8, alignItems: "center" }}
@@ -554,7 +591,7 @@ const ChatBox = ({ username }) => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        {/* Input Area */}
         <Form onSubmit={sendMessage} className="chat-input">
           <InputGroup>
             <Form.Control
@@ -569,7 +606,7 @@ const ChatBox = ({ username }) => {
               disabled={connectionStatus !== "connected" || isTyping}
             />
 
-            {/* File chooser (hidden) */}
+            {/* Hidden file input */}
             <input
               type="file"
               ref={fileInputRef}
@@ -613,7 +650,7 @@ const ChatBox = ({ username }) => {
               </Button>
             )}
 
-            {/* Audio record / stop */}
+            {/* Audio record/stop button */}
             {!isRecording ? (
               <Button
                 className="ms-1 d-flex align-items-center justify-content-center"
@@ -635,7 +672,7 @@ const ChatBox = ({ username }) => {
               </Button>
             )}
 
-            {/* Send (text or audio) */}
+            {/* Send button */}
             {audioBlob ? (
               <Button
                 className="ms-1 d-flex align-items-center justify-content-center btn-success"
@@ -663,7 +700,7 @@ const ChatBox = ({ username }) => {
         </Form>
       </div>
 
-      {/* Image action modal */}
+      {/* Image Action Modal */}
       <Modal show={showImageModal} onHide={clearSelectedFile} centered>
         <Modal.Header closeButton>
           <Modal.Title>📸 Choose Analysis</Modal.Title>
@@ -710,8 +747,7 @@ const ChatBox = ({ username }) => {
               borderRadius: 6,
             }}
           >
-            💡 Tip: Use “Solve It” for new questions, “Correct It” to check your
-            answers.
+            💡 Tip: Use "Solve It" for new questions, "Correct It" to check your answers.
           </div>
         </Modal.Body>
         <Modal.Footer>

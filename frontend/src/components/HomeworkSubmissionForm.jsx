@@ -25,18 +25,20 @@ const HomeworkSubmissionForm = () => {
       try {
         // Get homework details from location state (passed from notification)
         const homeworkDetails = location.state?.homeworkDetails;
+        console.log("from location.state :",homeworkDetails)
         // Get homework code from either state or URL query parameters
-        const homeworkCode = location.state?.homeworkCode || new URLSearchParams(location.search).get('code');
-        console.log("Homework_Code", homeworkCode)
-        if (!homeworkCode) {
-          setError("No homework code provided");
-          return;
-        }
+        // const homeworkCode = location.state?.homeworkCode || new URLSearchParams(location.search).get('code');
+        const homeworkCode=homeworkDetails.homework.homework_code;
+        // console.log("Homework_Code", homeworkCode)
+        // if (!homeworkCode) {
+        //   setError("No homework code provided");
+        //   return;
+        // }
         
         // If homework details are passed directly, use them
         if (homeworkDetails) {
           console.log("Using homework details from navigation state:", homeworkDetails);
-          setAssignment(homeworkDetails);
+          setAssignment(homeworkDetails.homework);
         } else {
           // Otherwise fetch the details using the homework code
           console.log("Fetching homework details for code:", homeworkCode);
