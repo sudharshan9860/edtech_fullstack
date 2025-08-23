@@ -7,10 +7,7 @@ import {
   faPaperPlane,
   faTimes,
   faUpload,
-  faMicrophone,
-  faStop,
   faTrash,
-  faVolumeUp,
   faLanguage,
 } from "@fortawesome/free-solid-svg-icons";
 import "katex/dist/katex.min.css";
@@ -21,6 +18,7 @@ import "./ChatBox.css";
 import { AuthContext } from './AuthContext';
 import axiosInstance from "../api/axiosInstance";
 import MarkdownViewer from "./MarkdownViewer";
+
 // ====== API BASE ======
 const API_URL = "https://chatbot.smartlearners.ai";
 
@@ -31,7 +29,6 @@ const api = axios.create({
 });
 
 // ====== Helpers for formatting ======
-// ====== Helpers ======
 const formatMessage = (text) => {
   if (!text) return null;
   if (Array.isArray(text)) {
@@ -48,8 +45,6 @@ const formatMessage = (text) => {
   return <MarkdownViewer>{text}</MarkdownViewer>;
 };
 
-// ====== Dummy student fetch ======
-
 // ====== Fetch Student Data Function ======
 function student_Data() {
   return axiosInstance.post("dummy/", {
@@ -57,7 +52,6 @@ function student_Data() {
     agentic_data: "true",
   })
   .then((response) => {
-    // console.log("✅ Dummy Data:", response.data);
     return response.data;
   })
   .catch((error) => {
@@ -69,7 +63,7 @@ function student_Data() {
 // ====== Main Component ======
 const ChatBox = () => {
   const { username } = useContext(AuthContext);
-  // console.log("username:", username);
+  const className=localStorage.getItem("class_name"); 
   
   const [isOpen, setIsOpen] = useState(false);
   const toggleChat = () => setIsOpen((o) => !o);
@@ -83,10 +77,9 @@ const ChatBox = () => {
   const [messages, setMessages] = useState([
     {
       id: "hello",
-      text: "👋 Hi! I'm your Math Assistant. Ask a doubt, upload a problem image, or use voice.",
+      text: "👋 Hi! I'm your Math Assistant. Ask a doubt or upload a problem image.",
       sender: "ai",
       timestamp: new Date(),
-      canSpeak: true,
     },
   ]);
   const [newMessage, setNewMessage] = useState("");
@@ -97,11 +90,6 @@ const ChatBox = () => {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-
-  // Audio
-  const [isRecording, setIsRecording] = useState(false);
-  const [recorder, setRecorder] = useState(null);
-  const [audioBlob, setAudioBlob] = useState(null);
 
   // Image action modal (Solve / Correct)
   const [showImageModal, setShowImageModal] = useState(false);
@@ -115,64 +103,74 @@ const ChatBox = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
+  // Initial session creation - wait for username
   useEffect(() => {
-    // Create a session on mount (no login)
     if (hasInitialized.current) return;
+    if (!username) return; // Wait for username to be available
+    
     hasInitialized.current = true;
-    createSession();
-  }, []);
-
-  // useEffect(() => {
-  //   return () => {
-  //     if (previewUrl) URL.revokeObjectURL(previewUrl);
-  //   };
-  // }, [previewUrl]);
-
-  // Fetch student data when username changes
-  useEffect(() => {
-    if (username) {
-      student_Data()
-        .then((data) => {
-          if (data && data[username]) {
-            // console.log("📦 Student data for", username, ":", data[username]);
-            setStudentInfo(data[username]);
-          } else {
-            console.warn("⚠️ No student data found for", username);
-          }
-        })
-        .catch((err) => {
-          console.error("❌ Failed to fetch dummy data:", err);
-        });
-    }
+    fetchStudentDataAndCreateSession();
   }, [username]);
 
-  // ====== Helper function to prepare student context ======
-const prepareStudentContext = () => studentInfo;
-
-
   // ====== Session handling ======
-  const createSession = async () => {
+  const fetchStudentDataAndCreateSession = async () => {
     setConnectionStatus("checking");
+    console.log("Fetching student data and creating session for:", username);
+    
     try {
-      const studentId = username || `web_${Date.now()}`;
-      const fd = new FormData();
-      fd.append("student_id", studentId);
+      // First, fetch the student data
+      const data = await student_Data();
+      
+      let filteredData = null;
+      if (data && data[username]) {
+        filteredData = data[username];
+        setStudentInfo(filteredData);
+        console.log("✅ Student data fetched:", filteredData);
+      } else {
+        console.warn("⚠️ No student data found for", username);
+      }
+      
+      // Now create session with the fetched data
+      await createSessionWithData(filteredData);
+      
+    } catch (err) {
+      console.error("❌ Failed to fetch student data or create session:", err);
+      setConnectionStatus("disconnected");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: "conn_fail",
+          text: "⚠️ Unable to connect to AI service right now. Please refresh the page or try again later.",
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  };
 
-      const res = await api.post("/create_session", fd);
+  const createSessionWithData = async (studentData) => {
+    try {
+      // Use the passed studentData directly, not the state
+      const filteredStudentInfo = {
+        data: studentData || {},
+      };
+
+      console.log("Creating session with student info:", filteredStudentInfo);
+      
+      const payload = {
+        student_id: username,
+        json_data: filteredStudentInfo,
+      };
+      
+      const res = await api.post("/create_session", payload);
+      console.log("create_session response:", res.data);
+      
       if (!res.data?.session_id) throw new Error("No session_id");
       
       setSessionId(res.data.session_id);
-      // console.log("Session created with ID:", res.data.session_id);
-      
-      // Check if student data exists in response
-      if (res.data[username]) {
-        // console.log("Session response contains student data:", res.data[username]);
-        setStudentInfo(res.data[username]);
-        console.log("after student info",studentInfo);
-      }
-      
       setConnectionStatus("connected");
-      await fetchSession(res.data.session_id);
+      console.log("Session created successfully:", res.data.session_id);
+      
     } catch (e) {
       console.error("create_session error:", e);
       setConnectionStatus("disconnected");
@@ -188,28 +186,10 @@ const prepareStudentContext = () => studentInfo;
     }
   };
 
-  const fetchSession = async (sid) => {
-    try {
-      const res = await api.get(`/session/${sid}`);
-      const items = (res.data?.messages || []).map((m, i) => ({
-        id: `hist_${i}_${Date.now()}`,
-        text: m.content,
-        sender: m.role === "assistant" ? "ai" : "user",
-        timestamp: new Date(),
-        canSpeak: m.role === "assistant",
-      }));
-      if (items.length) {
-        setMessages(items);
-      }
-    } catch (e) {
-      console.error("Failed to fetch session:", e);
-    }
-  };
-
   const clearChat = async () => {
     if (!sessionId) return;
     try {
-      await api.delete(`/clear-session/${sessionId}`);
+      await api.post(`/clear-session/`, { session_id: sessionId });
     } catch (e) {
       console.error("Failed to clear session:", e);
     } finally {
@@ -223,7 +203,8 @@ const prepareStudentContext = () => studentInfo;
       ]);
       setSessionId(null);
       setConnectionStatus("checking");
-      await createSession();
+      // Re-fetch data and create new session
+      await fetchStudentDataAndCreateSession();
     }
   };
 
@@ -255,92 +236,7 @@ const prepareStudentContext = () => studentInfo;
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ====== Audio recording ======
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream);
-      const chunks = [];
-      mr.ondataavailable = (e) => e.data.size > 0 && chunks.push(e.data);
-      mr.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        setAudioBlob(blob);
-        stream.getTracks().forEach((t) => t.stop());
-      };
-      mr.start();
-      setRecorder(mr);
-      setIsRecording(true);
-    } catch (err) {
-      alert("Microphone access denied or unavailable.");
-    }
-  };
-
-  const stopRecording = () => {
-    if (recorder && recorder.state === "recording") recorder.stop();
-    setIsRecording(false);
-  };
-
   // ====== Message senders ======
-  const sendAudio = async () => {
-    if (!audioBlob || !sessionId) return;
-
-    const id = Date.now();
-    setMessages((prev) => [
-      ...prev,
-      {
-        id,
-        text: "[🎤 Voice message]",
-        sender: "user",
-        timestamp: new Date(),
-      },
-    ]);
-    setIsTyping(true);
-
-    try {
-      const form = new FormData();
-      form.append("session_id", sessionId);
-      form.append("language", language);
-      form.append("audio", audioBlob, "recording.webm");
-      
-      // Add student context to audio request
-      const studentContext = prepareStudentContext();
-      if (studentContext) {
-        // console.log("student context :",studentContext);
-        form.append("student_context", JSON.stringify(studentContext));
-      }
-
-      const res = await api.post("/process-audio", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: id + 1,
-          text: res?.data?.response || "Sorry, I couldn't process the audio.",
-          sender: "ai",
-          timestamp: new Date(),
-          canSpeak: true,
-          audio: res?.data?.audio,
-        },
-      ]);
-    } catch (e) {
-      console.error("Audio processing error:", e);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: id + 1,
-          text: "❌ Error processing your audio. Please try again.",
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ]);
-    } finally {
-      setIsTyping(false);
-      setAudioBlob(null);
-    }
-  };
-
   const sendImageWithCommand = async (command) => {
     setShowImageModal(false);
     await sendMessageBase(command, selectedFile);
@@ -381,28 +277,25 @@ const prepareStudentContext = () => studentInfo;
     setIsTyping(true);
 
     try {
-      // Prepare student context
-      const studentContext = prepareStudentContext();
-      // console.log("from message ",studentContext)
-      const combinedQuery = `${text || ""} ${JSON.stringify(studentContext)}`;
-      // console.log("after combined",combinedQuery)
+      const combinedQuery = `${text || ""} `;
+      
       if (imageFile) {
         // Image upload with message
         const fd = new FormData();
         fd.append("session_id", sessionId);
-        fd.append("query", combinedQuery | "");
+        fd.append("query", combinedQuery || "");
         fd.append("language", language);
         fd.append("image", imageFile, imageFile.name || `image_${Date.now()}.jpg`);
         
-        // Add student context
-        // if (studentContext) {
-        //   fd.append("student_context", JSON.stringify(studentContext));
-        // }
+        // Add student context if available
+        if (studentInfo) {
+          fd.append("student_context", JSON.stringify(studentInfo));
+        }
 
         const res = await api.post("/chat", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        // console.log("after request:",res)
+        
         setMessages((prev) => [
           ...prev,
           {
@@ -410,24 +303,24 @@ const prepareStudentContext = () => studentInfo;
             text: res?.data?.reply || "I've analyzed your image!",
             sender: "ai",
             timestamp: new Date(),
-            canSpeak: true,
-            audio: res?.data?.audio,
           },
         ]);
       } else {
         // Text-only message
         const requestBody = {
           session_id: sessionId,
-          query: text+combinedQuery || "",
+          query: text || "",
           language: language,
         };
         
-        // Add student context
-        if (studentContext) {
-          requestBody.student_context = studentContext;
+        // Add student context if available
+        if (studentInfo) {
+          requestBody.student_context = studentInfo;
         }
 
-        const res = await api.post("/chat-simple", requestBody);
+        const res = await api.post("/chat-simple", requestBody, {
+          headers: { session_token: sessionId },
+        });
 
         setMessages((prev) => [
           ...prev,
@@ -436,8 +329,6 @@ const prepareStudentContext = () => studentInfo;
             text: res?.data?.reply || "I received your message!",
             sender: "ai",
             timestamp: new Date(),
-            canSpeak: true,
-            audio: res?.data?.audio,
           },
         ]);
       }
@@ -455,18 +346,6 @@ const prepareStudentContext = () => studentInfo;
     } finally {
       setIsTyping(false);
       clearSelectedFile();
-    }
-  };
-
-  // ====== Audio playback ======
-  const playResponseAudio = async (base64Audio) => {
-    if (!base64Audio) return;
-    try {
-      const url = `data:audio/mp3;base64,${base64Audio}`;
-      const audio = new Audio(url);
-      await audio.play();
-    } catch (e) {
-      console.error("Failed to play audio:", e);
     }
   };
 
@@ -488,7 +367,7 @@ const prepareStudentContext = () => studentInfo;
         {/* Header */}
         <div className="chat-header">
           <h5>
-            🤖 {studentInfo?.student_class || "Class"} Math Assistant
+            🤖 {`${className} Class`} Math Assistant
           </h5>
           <div className="flex-grow" />
 
@@ -558,16 +437,6 @@ const prepareStudentContext = () => studentInfo;
                 className="message-time"
                 style={{ display: "flex", gap: 8, alignItems: "center" }}
               >
-                {m.canSpeak && m.audio && (
-                  <Button
-                    size="sm"
-                    variant="light"
-                    onClick={() => playResponseAudio(m.audio)}
-                    title="Play AI audio"
-                  >
-                    <FontAwesomeIcon icon={faVolumeUp} /> Play
-                  </Button>
-                )}
                 {m.timestamp
                   ? new Date(m.timestamp).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -650,52 +519,19 @@ const prepareStudentContext = () => studentInfo;
               </Button>
             )}
 
-            {/* Audio record/stop button */}
-            {!isRecording ? (
-              <Button
-                className="ms-1 d-flex align-items-center justify-content-center"
-                type="button"
-                onClick={startRecording}
-                title="Start recording"
-                disabled={connectionStatus !== "connected" || isTyping}
-              >
-                <FontAwesomeIcon icon={faMicrophone} />
-              </Button>
-            ) : (
-              <Button
-                className="ms-1 d-flex align-items-center justify-content-center btn-danger"
-                type="button"
-                onClick={stopRecording}
-                title="Stop recording"
-              >
-                <FontAwesomeIcon icon={faStop} />
-              </Button>
-            )}
-
             {/* Send button */}
-            {audioBlob ? (
-              <Button
-                className="ms-1 d-flex align-items-center justify-content-center btn-success"
-                type="button"
-                onClick={sendAudio}
-                title="Send voice message"
-              >
-                <FontAwesomeIcon icon={faPaperPlane} />
-              </Button>
-            ) : (
-              <Button
-                className="ms-1 d-flex align-items-center justify-content-center"
-                type="submit"
-                disabled={
-                  connectionStatus !== "connected" ||
-                  isTyping ||
-                  (!newMessage.trim() && !selectedFile)
-                }
-                title="Send message"
-              >
-                <FontAwesomeIcon icon={faPaperPlane} />
-              </Button>
-            )}
+            <Button
+              className="ms-1 d-flex align-items-center justify-content-center"
+              type="submit"
+              disabled={
+                connectionStatus !== "connected" ||
+                isTyping ||
+                (!newMessage.trim() && !selectedFile)
+              }
+              title="Send message"
+            >
+              <FontAwesomeIcon icon={faPaperPlane} />
+            </Button>
           </InputGroup>
         </Form>
       </div>

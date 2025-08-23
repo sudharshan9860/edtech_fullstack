@@ -10,7 +10,7 @@ function getCSRFToken() {
 }
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8000/", // must match backend run host
+  baseURL: "https://autogen.aieducator.com/", // must match backend run host
   withCredentials: true, // Keep this if you still rely on cookies for some reason (e.g., initial login before token is stored, or for session-based CSRF if still using it for login forms)
   headers: {
     "Content-Type": "application/json",
