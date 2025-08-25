@@ -5,6 +5,7 @@ import axiosInstance from '../api/axiosInstance';
 import { AuthContext } from './AuthContext';
 import CameraCapture from './CameraCapture';
 import './HomeworkSubmissionForm.css';
+import MarkdownWithMath from './MarkdownWithMath';
 
 const HomeworkSubmissionForm = () => {
   const [submissionType, setSubmissionType] = useState("text");
@@ -233,7 +234,8 @@ const HomeworkSubmissionForm = () => {
     return (  
       <div key={index} className="assignment-question">
         <h4 className="question-title">Question {index + 1}</h4>
-        <p className="question-text">{question.question}</p>
+        <div className="question-text"><MarkdownWithMath content={question.question} /></div>
+  
         {question.image && (
           <img 
             src={question.image} 

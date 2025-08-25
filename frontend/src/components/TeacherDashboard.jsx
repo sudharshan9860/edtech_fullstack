@@ -442,7 +442,7 @@ const TeacherDashboard = ({ user, assignments, submissions, onAssignmentSubmit }
               
                 <button
                   type="button"
-                  className={`type-btn ${submissionType === "worksheet" ? 'active' : ''}`}
+                  className={`btn-primary `}
                   onClick={() => setSubmissionType("worksheet")}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

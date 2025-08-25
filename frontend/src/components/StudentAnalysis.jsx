@@ -5,8 +5,214 @@ import {
 } from 'recharts';
 import './StudentAnalysis.css';
 
-const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, classesData, onClassChange }) => {
-  // Main tab state
+// Define all students data by class
+const STUDENTS_BY_CLASS = {
+  '6th': [
+    { id: '6HPS17', name: 'Ram', rollNo: '6HPS17', class: '6th', baseEfficiency: 78 },
+    { id: '6HPS18', name: 'Bhem', rollNo: '6HPS18', class: '6th', baseEfficiency: 82 },
+    { id: '6HPS19', name: 'Shubam', rollNo: '6HPS19', class: '6th', baseEfficiency: 75 }
+  ],
+  '7th': [
+    { id: '7HPS17', name: 'Vasu', rollNo: '7HPS17', class: '7th', baseEfficiency: 85 },
+    { id: '7HPS18', name: 'Bhanu', rollNo: '7HPS18', class: '7th', baseEfficiency: 72 },
+    { id: '7HPS19', name: 'Sreenu', rollNo: '7HPS19', class: '7th', baseEfficiency: 89 }
+  ],
+  '8th': [
+    { id: '8HPS17', name: 'Gupta', rollNo: '8HPS17', class: '8th', baseEfficiency: 91 },
+    { id: '8HPS18', name: 'Pranja', rollNo: '8HPS18', class: '8th', baseEfficiency: 68 },
+    { id: '8HPS19', name: 'Srenija', rollNo: '8HPS19', class: '8th', baseEfficiency: 84 }
+  ],
+  '9th': [
+    { id: '9HPS17', name: 'Viswa', rollNo: '9HPS17', class: '9th', baseEfficiency: 76 },
+    { id: '9HPS18', name: 'Sana', rollNo: '9HPS18', class: '9th', baseEfficiency: 88 },
+    { id: '9HPS19', name: 'Yaseen', rollNo: '9HPS19', class: '9th', baseEfficiency: 79 }
+  ],
+  '10th': [
+    { id: '10HPS17', name: 'Pushpa', rollNo: '10HPS17', class: '10th', baseEfficiency: 93 },
+    { id: '10HPS18', name: 'Arya', rollNo: '10HPS18', class: '10th', baseEfficiency: 87 },
+    { id: '10HPS19', name: 'Bunny', rollNo: '10HPS19', class: '10th', baseEfficiency: 71 }
+  ],
+  '11th': [
+    { id: '11HPS17', name: 'Virat', rollNo: '11HPS17', class: '11th', baseEfficiency: 95 },
+    { id: '11HPS18', name: 'Rohit', rollNo: '11HPS18', class: '11th', baseEfficiency: 92 },
+    { id: '11HPS19', name: 'Dhoni', rollNo: '11HPS19', class: '11th', baseEfficiency: 98 }
+  ],
+  '12th': [
+    { id: '12HPS17', name: 'Udham', rollNo: '12HPS17', class: '12th', baseEfficiency: 86 },
+    { id: '12HPS18', name: 'Mamatha', rollNo: '12HPS18', class: '12th', baseEfficiency: 90 },
+    { id: '12HPS19', name: 'Vikram', rollNo: '12HPS19', class: '12th', baseEfficiency: 83 }
+  ]
+};
+
+// Generate unique data based on student ID
+const generateStudentData = (studentId, timeFilter = '1M') => {
+  if (!studentId) return null;
+  
+  // Use student ID to generate consistent but unique data
+  const seed = studentId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const randomFactor = (seed % 20) / 100; // 0-0.2 variation
+  
+  // Generate date ranges based on filter
+  const getDates = () => {
+    const today = new Date();
+    const dates = [];
+    let days = 30; // default 1M
+    
+    switch(timeFilter) {
+      case '1D': days = 1; break;
+      case '5D': days = 5; break;
+      case '10D': days = 10; break;
+      case '15D': days = 15; break;
+      case '1M': days = 30; break;
+      case 'Max': days = 90; break;
+    }
+    
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    }
+    return dates;
+  };
+  
+  const dates = getDates();
+  
+  // Generate homework/classwork data with student-specific patterns
+  const generateScores = (base, isHomework) => {
+    return dates.map((date, index) => {
+      const trend = index / dates.length; // 0 to 1 progress
+      const improvement = isHomework ? trend * 20 : trend * 15;
+      const variance = Math.sin(index * randomFactor) * 10;
+      const score = Math.max(10, Math.min(100, base + improvement + variance));
+      return Math.round(score);
+    });
+  };
+  
+  const baseHomework = 50 + (seed % 30);
+  const baseClasswork = 40 + (seed % 25);
+  
+  const homeworkScores = generateScores(baseHomework, true);
+  const classworkScores = generateScores(baseClasswork, false);
+  
+  return {
+    dateWiseComparison: dates.map((date, i) => ({
+      date,
+      homework: homeworkScores[i],
+      classwork: classworkScores[i]
+    })),
+    
+    topicPerformance: [
+      { topic: 'Calculus - Integration', homework: 75 + (seed % 25), classwork: 60 + (seed % 30) },
+      { topic: 'Algebra - Linear Equations', homework: 80 + (seed % 20), classwork: 70 + (seed % 25) },
+      { topic: 'Statistics', homework: 78 + (seed % 22), classwork: 65 + (seed % 30) },
+      { topic: 'Algebra - Rational Functions', homework: 72 + (seed % 28), classwork: 62 + (seed % 28) },
+      { topic: 'Probability', homework: 68 + (seed % 32), classwork: 55 + (seed % 35) },
+      { topic: 'Trigonometry', homework: 85 + (seed % 15), classwork: 75 + (seed % 20) },
+      { topic: 'Quadratic Applications', homework: 70 + (seed % 30), classwork: 60 + (seed % 30) },
+      { topic: 'Calculus - Derivatives', homework: 65 + (seed % 35), classwork: 58 + (seed % 32) },
+      { topic: 'Functions and Graphs', homework: 60 + (seed % 40), classwork: 50 + (seed % 40) },
+      { topic: 'Coordinate Geometry', homework: 82 + (seed % 18), classwork: 72 + (seed % 25) }
+    ].map(item => ({
+      ...item,
+      homework: Math.min(100, Math.round(item.homework)),
+      classwork: Math.min(100, Math.round(item.classwork))
+    })),
+    
+    answerCategories: [
+      { name: 'Correct', value: 35 + (seed % 20), color: '#22c55e' },
+      { name: 'Partially-Correct', value: 10 + (seed % 10), color: '#f59e0b' },
+      { name: 'Numerical Error', value: 15 + (seed % 10), color: '#ef4444' },
+      { name: 'Irrelevant', value: 20 + (seed % 15), color: '#8b5cf6' },
+      { name: 'Unattempted', value: 20 - (seed % 15), color: '#6b7280' }
+    ].map(item => ({
+      ...item,
+      value: Math.max(5, item.value),
+      count: Math.round(item.value * 0.3)
+    })),
+    
+    mistakeAnalysis: generateMistakeAnalysisData(studentId, dates.length),
+    
+    priorityChapters: [
+      { 
+        chapter: 'Calculus - Integration', 
+        performance: `${Math.round(20 + (seed % 30))}%`, 
+        weightage: '15%', 
+        priority: 'High',
+        priorityColor: '#fee2e2'
+      },
+      { 
+        chapter: 'Quadratic Applications', 
+        performance: `${Math.round(35 + (seed % 25))}%`, 
+        weightage: '12%', 
+        priority: 'Medium',
+        priorityColor: '#fef3c7'
+      },
+      { 
+        chapter: 'Trigonometry', 
+        performance: `${Math.round(70 + (seed % 20))}%`, 
+        weightage: '10%', 
+        priority: 'Maintain',
+        priorityColor: '#d1fae5'
+      }
+    ],
+    
+    summaryStats: {
+      overallPerformance: Math.round(((baseHomework + baseClasswork) / 2) + (dates.length / 10)),
+      homeworkAverage: Math.round(homeworkScores.reduce((a, b) => a + b) / homeworkScores.length),
+      classworkAverage: Math.round(classworkScores.reduce((a, b) => a + b) / classworkScores.length),
+      improvementRate: Math.round(10 + (seed % 15)),
+      totalAssessments: dates.length,
+      chaptersAnalyzed: 10,
+      questionsAttempted: dates.length * 5,
+      overallAccuracy: Math.round(40 + (seed % 30))
+    }
+  };
+};
+
+// Generate mistake analysis data specific to each student
+const generateMistakeAnalysisData = (studentId, dateCount) => {
+  const seed = studentId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const chapters = [
+    'Quadratic Applications', 'Algebra - Linear Equations', 'Trigonometry', 
+    'Calculus - Integration', 'Coordinate Geometry', 'Statistics', 'Probability'
+  ];
+  
+  const statuses = ['IRRELEVANT', 'NO ATTEMPT', 'NUMERICAL ERROR', 'CONCEPTUAL ERROR', 'VALUE ERROR', 'CORRECT', 'PARTIAL'];
+  const mistakes = ['Irrelevant formula application', 'Fig = 5', '5y = 6', 'Area = ½ × base × height', 'cos(60°) = 0.5', 'Calculation error', 'Minor oversight'];
+  
+  const questions = [];
+  for (let i = 0; i < Math.min(dateCount * 2, 20); i++) {
+    const chapterIndex = (seed + i) % chapters.length;
+    const performance = Math.max(0, Math.min(100, 30 + (seed % 50) + i * 2));
+    const statusIndex = Math.floor((performance / 100) * statuses.length);
+    
+    questions.push({
+      id: `Q${i + 1}`,
+      chapter: chapters[chapterIndex],
+      date: new Date(Date.now() - (dateCount - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
+      question: `Find the ${['shortest distance', 'vertex of parabola', 'system solution', 'equation of line', 'trigonometric value'][i % 5]}...`,
+      myScore: `${Math.round(performance / 5)}/20`,
+      performance: `${performance.toFixed(1)}%`,
+      mistakeTracker: 'First submission, no prior mistakes',
+      currentStatus: statuses[Math.min(statusIndex, statuses.length - 1)],
+      studentMistake: mistakes[i % mistakes.length],
+      correctApproach: 'Minimize the distance function using calculus'
+    });
+  }
+  
+  return questions;
+};
+
+const StudentAnalysis = ({ 
+  selectedClass, 
+  selectedStudent, 
+  onStudentSelect, 
+  classesData, 
+  onClassChange,
+  isStudentView = false,
+  readOnly = false  // Add readOnly prop
+}) => {
+    // Main tab state
   const [studentAnalysisMainTab, setStudentAnalysisMainTab] = useState('score-progression');
   
   // View states for interactive charts
@@ -22,196 +228,79 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
   // Animation states
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // Time filter state
+  const [timeFilter, setTimeFilter] = useState('1M');
+  
+  // Current student data
+  const [currentStudentData, setCurrentStudentData] = useState(null);
 
   // Function to get students for selected class
   const getStudentsForClass = () => {
-    if (!selectedClass || !classesData[selectedClass.id]) {
-      // Return sample students if no class data
-      return [
-        { id: 1, name: "Arjun Patel", rollNo: "10HPS21", class: "6th", efficiency: 78 },
-        { id: 2, name: "Sneha Gupta", rollNo: "10HPS17", class: "6th", efficiency: 82 },
-        { id: 3, name: "Rohit Sharma", rollNo: "10HPS18", class: "6th", efficiency: 75 },
-        { id: 4, name: "Priya Sharma", rollNo: "10HPS02", class: "6th", efficiency: 85 },
-        { id: 5, name: "Ravi Kumar", rollNo: "10HPS19", class: "6th", efficiency: 72 },
-        { id: 6, name: "Anita Singh", rollNo: "10HPS20", class: "6th", efficiency: 89 }
-      ];
+    const className = selectedClass?.name || 'Class 6th';
+    const classGrade = className.replace('Class ', '').trim();
+    return STUDENTS_BY_CLASS[classGrade] || STUDENTS_BY_CLASS['6th'];
+  };
+  
+  // Disable class/student changes if in student view or readOnly
+  const handleClassChange = (classId) => {
+    if (!isStudentView && !readOnly && onClassChange) {
+      onClassChange(classId);
     }
-    
-    // Add rollNo to existing students if not present
-    const students = classesData[selectedClass.id].students || [];
-    return students.map((student, index) => ({
-      ...student,
-      rollNo: student.rollNo || `10HPS${String(index + 21).padStart(2, '0')}`
-    }));
   };
 
-  // Auto-select first student if none selected (for testing)
+  const handleStudentSelect = (student) => {
+    if (!isStudentView && !readOnly && onStudentSelect) {
+      onStudentSelect(student);
+    }
+  };
+
+  // Update data when student or time filter changes
+  useEffect(() => {
+    if (selectedStudent) {
+      const studentId = selectedStudent.rollNo || selectedStudent.id || '6HPS17';
+      const data = generateStudentData(studentId, timeFilter);
+      setCurrentStudentData(data);
+    }
+  }, [selectedStudent, timeFilter]);
+
+  // Auto-select first student if none selected
   useEffect(() => {
     const students = getStudentsForClass();
     if (!selectedStudent && students.length > 0 && onStudentSelect) {
       onStudentSelect(students[0]);
     }
-  }, [selectedClass, classesData, selectedStudent, onStudentSelect]);
+  }, [selectedClass, selectedStudent, onStudentSelect]);
 
-  // Enhanced data for Score Date-wise Progression
-  const studentDateWiseComparisonData = [
-    { date: 'Jun 23', homework: 18, classwork: 38 },
-    { date: 'Jun 25', homework: 35, classwork: 20 },
-    { date: 'Jun 27', homework: 78, classwork: 47 },
-    { date: 'Jun 29', homework: 80, classwork: 28 },
-    { date: 'Jul 01', homework: 85, classwork: 25 },
-    { date: 'Jul 03', homework: 92, classwork: 44 }
-  ];
-
-  // Enhanced Topic-wise Performance Data for Chapter Analysis
-  const topicWisePerformanceData = [
-    { topic: 'Calculus - Integration', homework: 100, classwork: 12 },
-    { topic: 'Algebra - Linear Equations', homework: 75, classwork: 15 },
-    { topic: 'Statistics', homework: 78, classwork: 20 },
-    { topic: 'Algebra - Rational Functions', homework: 80, classwork: 32 },
-    { topic: 'Probability', homework: 72, classwork: 35 },
-    { topic: 'Trigonometry', homework: 79, classwork: 49 },
-    { topic: 'Quadratic Applications', homework: 68, classwork: 40 },
-    { topic: 'Calculus - Derivatives', homework: 59, classwork: 32 },
-    { topic: 'Functions and Graphs', homework: 51, classwork: 58 },
-    { topic: 'Coordinate Geometry', homework: 66, classwork: 93 }
-  ];
-
-  // Answer Categories Data for Pie Chart
-  const answerCategoriesData = [
-    { name: 'Correct', value: 43.3, count: 13, color: '#22c55e' },
-    { name: 'Partially-Correct', value: 10, count: 3, color: '#f59e0b' },
-    { name: 'Numerical Error', value: 13.3, count: 4, color: '#ef4444' },
-    { name: 'Irrelevant', value: 23.3, count: 7, color: '#8b5cf6' },
-    { name: 'Unattempted', value: 10, count: 3, color: '#6b7280' }
-  ];
-
-  // Mistake Analysis Questions Data
-  const mistakeAnalysisData = [
-    {
-      id: 'Q1',
-      chapter: 'Quadratic Applications',
-      date: '2023-06-23',
-      question: 'Find the shortest distance...',
-      myScore: '0/20',
-      performance: '0.0%',
-      mistakeTracker: 'First submission, no prior mistakes',
-      currentStatus: 'IRRELEVANT',
-      studentMistake: 'Irrelevant formula application',
-      correctApproach: 'Minimize the distance function using calculus'
-    },
-    {
-      id: 'Q2',
-      chapter: 'Quadratic Applications',
-      date: '2023-06-25',
-      question: 'Find the vertex of the parabola...',
-      myScore: '0/8',
-      performance: '0.0%',
-      mistakeTracker: 'First submission, no prior mistakes',
-      currentStatus: 'NO ATTEMPT',
-      studentMistake: 'Fig = 5',
-      correctApproach: 'Minimize the distance function using calculus'
-    },
-    {
-      id: 'Q3',
-      chapter: 'Algebra - Linear Equations',
-      date: '2023-06-23',
-      question: 'Solve the system: 2x + 3y = ...',
-      myScore: '3/6',
-      performance: '50.0%',
-      mistakeTracker: 'First submission, no prior mistakes',
-      currentStatus: 'NUMERICAL ERROR',
-      studentMistake: '5y = 6',
-      correctApproach: 'Minimize the distance function using calculus'
-    },
-    {
-      id: 'Q4',
-      chapter: 'Coordinate Geometry',
-      date: '2023-06-23',
-      question: 'Find the equation of line passing...',
-      myScore: '1/5',
-      performance: '20.0%',
-      mistakeTracker: 'First submission, no prior mistakes',
-      currentStatus: 'CONCEPTUAL ERROR',
-      studentMistake: 'Area = ½ × base × height',
-      correctApproach: 'Minimize the distance function using calculus'
-    },
-    {
-      id: 'Q5',
-      chapter: 'Coordinate Geometry',
-      date: '2023-06-25',
-      question: 'Evaluate sin(30°) + cos(60°)',
-      myScore: '2/4',
-      performance: '50.0%',
-      mistakeTracker: 'First submission, no prior mistakes',
-      currentStatus: 'VALUE ERROR',
-      studentMistake: 'cos(60°) = 0.5',
-      correctApproach: 'Minimize the distance function using calculus'
-    }
-  ];
-
-  // Priority chapters data based on NCERT weightage
-  const priorityChaptersData = [
-    {
-      chapter: 'Calculus - Integration',
-      performance: '0%',
-      weightage: '15%',
-      priority: 'High',
-      priorityColor: '#fee2e2',
-      recommendation: '🔥 High Priority'
-    },
-    {
-      chapter: 'Quadratic Applications',
-      performance: '38%',
-      weightage: '12%',
-      priority: 'Medium',
-      priorityColor: '#fef3c7',
-      recommendation: '⚠ Medium Priority'
-    },
-    {
-      chapter: 'Trigonometry',
-      performance: '81%',
-      weightage: '10%',
-      priority: 'Maintain',
-      priorityColor: '#d1fae5',
-      recommendation: '✅ Maintain'
-    }
-  ];
-
-  // Function to get filtered chart data based on view
+  // Get filtered chart data based on view
   const getFilteredDateData = () => {
+    if (!currentStudentData) return [];
+    const data = currentStudentData.dateWiseComparison;
+    
     if (scoreDateView === 'homework') {
-      return studentDateWiseComparisonData.map(item => ({
-        date: item.date,
-        homework: item.homework
-      }));
+      return data.map(item => ({ date: item.date, homework: item.homework }));
     } else if (scoreDateView === 'classwork') {
-      return studentDateWiseComparisonData.map(item => ({
-        date: item.date,
-        classwork: item.classwork
-      }));
+      return data.map(item => ({ date: item.date, classwork: item.classwork }));
     }
-    return studentDateWiseComparisonData;
+    return data;
   };
-
+  
   const getFilteredChapterData = () => {
+    if (!currentStudentData) return [];
+    const data = currentStudentData.topicPerformance;
+    
     if (chapterView === 'homework') {
-      return topicWisePerformanceData.map(item => ({
-        topic: item.topic,
-        homework: item.homework
-      }));
+      return data.map(item => ({ topic: item.topic, homework: item.homework }));
     } else if (chapterView === 'classwork') {
-      return topicWisePerformanceData.map(item => ({
-        topic: item.topic,
-        classwork: item.classwork
-      }));
+      return data.map(item => ({ topic: item.topic, classwork: item.classwork }));
     }
-    return topicWisePerformanceData;
+    return data;
   };
 
   // Enhanced Score Date-wise Progression with chart controls
   const renderScoreDatewiseProgression = () => {
     const chartData = getFilteredDateData();
+    const stats = currentStudentData?.summaryStats || {};
     
     return (
       <div className="score-progression-container">
@@ -231,6 +320,8 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   dataKey="date" 
                   stroke="#6b7280"
                   fontSize={12}
+                  angle={timeFilter === 'Max' ? -45 : 0}
+                  textAnchor={timeFilter === 'Max' ? "end" : "middle"}
                 />
                 <YAxis 
                   stroke="#6b7280"
@@ -275,12 +366,15 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
           <div className="chart-controls">
             <div className="time-range-controls">
-              <button className="time-btn active">1D</button>
-              <button className="time-btn">5D</button>
-              <button className="time-btn">10D</button>
-              <button className="time-btn">15D</button>
-              <button className="time-btn">1M</button>
-              <button className="time-btn">Max</button>
+              {['1D', '5D', '10D', '15D', '1M', 'Max'].map((range) => (
+                <button 
+                  key={range}
+                  className={`time-btn ${timeFilter === range ? 'active' : ''}`}
+                  onClick={() => setTimeFilter(range)}
+                >
+                  {range}
+                </button>
+              ))}
             </div>
             
             <div className="view-toggle-controls">
@@ -301,14 +395,14 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                 className={`view-btn ${scoreDateView === 'classwork' ? 'active' : ''}`}
                 onClick={() => setScoreDateView('classwork')}
               >
-                ✏️ Classwork Only
+                ✏ Classwork Only
               </button>
             </div>
 
             <div className="performance-indicator">
               <div className="indicator-item">
                 <span className="indicator-label">Improvement Trend:</span>
-                <span className="indicator-value positive">15.07% per assignment</span>
+                <span className="indicator-value positive">{stats.improvementRate || 15}% per assignment</span>
               </div>
               <div className="ranking-badge">
                 <div className="badge-content">
@@ -316,7 +410,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                   <div className="badge-text">
                     <div className="badge-title">YOU ARE AMONG TOP 20% STUDENTS</div>
                     <div className="badge-stats">
-                      <span>Your Score: 66.8%</span>
+                      <span>Your Score: {stats.homeworkAverage || 66}%</span>
                       <span>Class Avg: 62.2%</span>
                     </div>
                   </div>
@@ -387,12 +481,15 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
           <div className="chart-controls">
             <div className="time-range-controls">
-              <button className="time-btn active">1D</button>
-              <button className="time-btn">5D</button>
-              <button className="time-btn">10D</button>
-              <button className="time-btn">15D</button>
-              <button className="time-btn">1M</button>
-              <button className="time-btn">Max</button>
+              {['1D', '5D', '10D', '15D', '1M', 'Max'].map((range) => (
+                <button 
+                  key={range}
+                  className={`time-btn ${timeFilter === range ? 'active' : ''}`}
+                  onClick={() => setTimeFilter(range)}
+                >
+                  {range}
+                </button>
+              ))}
             </div>
             
             <div className="view-toggle-controls">
@@ -413,7 +510,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                 className={`view-btn ${chapterView === 'classwork' ? 'active' : ''}`}
                 onClick={() => setChapterView('classwork')}
               >
-                ✏️ Classwork Only
+                ✏ Classwork Only
               </button>
             </div>
 
@@ -435,7 +532,9 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
   // Enhanced Mistake Progress Analysis
   const renderMistakeProgressAnalysisTab = () => {
-    const filteredQuestions = mistakeAnalysisData.filter(question => {
+    if (!currentStudentData) return null;
+    
+    const filteredQuestions = currentStudentData.mistakeAnalysis.filter(question => {
       const chapterMatch = selectedChapterFilter === 'All Chapters' || question.chapter === selectedChapterFilter;
       const performanceMatch = selectedPerformanceFilter === 'All Percentages' || 
         (selectedPerformanceFilter === '0-25%' && parseFloat(question.performance) <= 25) ||
@@ -460,7 +559,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
               <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
                   <Pie
-                    data={answerCategoriesData}
+                    data={currentStudentData.answerCategories}
                     cx="50%"
                     cy="50%"
                     innerRadius={80}
@@ -468,7 +567,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                     paddingAngle={2}
                     dataKey="value"
                   >
-                    {answerCategoriesData.map((entry, index) => (
+                    {currentStudentData.answerCategories.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -485,13 +584,13 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
               </ResponsiveContainer>
               <div className="chart-center-info">
                 <div className="total-label">Total</div>
-                <div className="total-number">30</div>
+                <div className="total-number">{currentStudentData.summaryStats.questionsAttempted}</div>
                 <div className="total-description">Questions</div>
               </div>
             </div>
             
             <div className="categories-legend">
-              {answerCategoriesData.map((category, index) => (
+              {currentStudentData.answerCategories.map((category, index) => (
                 <div key={index} className="legend-item">
                   <div className="legend-indicator" style={{ backgroundColor: category.color }}></div>
                   <div className="legend-content">
@@ -513,7 +612,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         <div className="priority-chapters-section">
           <h3 className="subsection-title">🎯 Priority Chapters (Based on NCERT Weightage)</h3>
           <div className="priority-cards-grid">
-            {priorityChaptersData.map((chapter, index) => (
+            {currentStudentData.priorityChapters.map((chapter, index) => (
               <div 
                 key={index} 
                 className="priority-card" 
@@ -566,10 +665,9 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                 className="filter-dropdown"
               >
                 <option value="All Chapters">All Chapters</option>
-                <option value="Quadratic Applications">Quadratic Applications</option>
-                <option value="Algebra - Linear Equations">Algebra - Linear Equations</option>
-                <option value="Coordinate Geometry">Coordinate Geometry</option>
-                <option value="Calculus - Integration">Calculus - Integration</option>
+                {[...new Set(currentStudentData.mistakeAnalysis.map(q => q.chapter))].map(chapter => (
+                  <option key={chapter} value={chapter}>{chapter}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -586,15 +684,15 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
           <div className="results-metrics">
             <div className="metric-card">
               <div className="metric-label">Average Performance</div>
-              <div className="metric-value">66.8%</div>
+              <div className="metric-value">{currentStudentData.summaryStats.homeworkAverage}%</div>
             </div>
             <div className="metric-card">
               <div className="metric-label">Room for Improvement</div>
-              <div className="metric-value">33.2%</div>
+              <div className="metric-value">{100 - currentStudentData.summaryStats.homeworkAverage}%</div>
             </div>
             <div className="metric-card">
               <div className="metric-label">Chapters Covered</div>
-              <div className="metric-value">10 Chapters</div>
+              <div className="metric-value">{currentStudentData.summaryStats.chaptersAnalyzed} Chapters</div>
             </div>
             <div className="metric-card">
               <div className="metric-label">Questions Found</div>
@@ -645,222 +743,209 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
   };
 
   // Enhanced Summary Tab
-  // Enhanced Summary Tab - Fixed and Compact Version
-const renderSummaryTab = () => {
-  const getSummaryData = () => {
-    const baseData = {
-      overallPerformance: 50.3,
-      homeworkAverage: 66.8,
-      classworkAverage: 33.8,
-      performanceGap: -33.0,
-      improvementRate: 15.07,
-      totalAssessments: 6,
-      chaptersAnalyzed: 10,
-      questionsAttempted: 30,
-      overallAccuracy: 43.3
+  const renderSummaryTab = () => {
+    if (!currentStudentData) return null;
+    
+    const getSummaryData = () => {
+      const stats = currentStudentData.summaryStats;
+      const performanceGap = stats.homeworkAverage - stats.classworkAverage;
+      
+      const baseData = {
+        overallPerformance: stats.overallPerformance,
+        homeworkAverage: stats.homeworkAverage,
+        classworkAverage: stats.classworkAverage,
+        performanceGap: performanceGap,
+        improvementRate: stats.improvementRate,
+        totalAssessments: stats.totalAssessments,
+        chaptersAnalyzed: stats.chaptersAnalyzed,
+        questionsAttempted: stats.questionsAttempted,
+        overallAccuracy: stats.overallAccuracy
+      };
+
+      switch (summaryFilter) {
+        case 'homework':
+          return {
+            ...baseData,
+            focus: 'Homework Performance',
+            mainMetric: baseData.homeworkAverage,
+            insight: 'Strong homework performance with consistent improvement trend'
+          };
+        case 'classwork':
+          return {
+            ...baseData,
+            focus: 'Classwork Performance', 
+            mainMetric: baseData.classworkAverage,
+            insight: 'Classwork needs significant improvement - focus on time management'
+          };
+        default:
+          return {
+            ...baseData,
+            focus: 'Overall Performance',
+            mainMetric: baseData.overallPerformance,
+            insight: performanceGap > 0 ? 
+              'Strong homework performance indicates good understanding' : 
+              'Focus on homework completion to improve understanding'
+          };
+      }
     };
 
-    switch (summaryFilter) {
-      case 'homework':
-        return {
-          ...baseData,
-          focus: 'Homework Performance',
-          mainMetric: baseData.homeworkAverage,
-          insight: 'Strong homework performance with consistent improvement trend'
-        };
-      case 'classwork':
-        return {
-          ...baseData,
-          focus: 'Classwork Performance', 
-          mainMetric: baseData.classworkAverage,
-          insight: 'Classwork needs significant improvement - focus on time management'
-        };
-      default:
-        return {
-          ...baseData,
-          focus: 'Overall Performance',
-          mainMetric: baseData.overallPerformance,
-          insight: 'Large gap between homework and classwork performance indicates time management issues'
-        };
-    }
-  };
+    const summaryData = getSummaryData();
 
-  const summaryData = getSummaryData();
-
-  const priorityChaptersData = [
-    { 
-      chapter: 'Calculus - Integration', 
-      performance: '0%', 
-      weightage: '15%', 
-      recommendation: 'High Priority',
-      priorityColor: '#fee2e2',
-      priority: 'High'
-    },
-    { 
-      chapter: 'Quadratic Applications', 
-      performance: '38%', 
-      weightage: '12%', 
-      recommendation: 'Medium Priority',
-      priorityColor: '#fef3c7',
-      priority: 'Medium'
-    },
-    { 
-      chapter: 'Trigonometry', 
-      performance: '81%', 
-      weightage: '10%', 
-      recommendation: 'Maintain',
-      priorityColor: '#d1fae5',
-      priority: 'Maintain'
-    }
-  ];
-
-  return (
-    <div className="enhanced-summary-container">
-      {/* Compact Header */}
-      <div className="compact-header">
-        <h2 className="summary-title">📋 Student Performance Summary</h2>
-      </div>
-
-      {/* Compact Filters */}
-      <div className="compact-filters">
-        <span className="filter-label">📊 View:</span>
-        <div className="filter-buttons-compact">
-          <button 
-            className={`filter-btn-compact ${summaryFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setSummaryFilter('all')}
-          >
-            📈 All Data
-          </button>
-          <button 
-            className={`filter-btn-compact ${summaryFilter === 'homework' ? 'active' : ''}`}
-            onClick={() => setSummaryFilter('homework')}
-          >
-            📚 Homework
-          </button>
-          <button 
-            className={`filter-btn-compact ${summaryFilter === 'classwork' ? 'active' : ''}`}
-            onClick={() => setSummaryFilter('classwork')}
-          >
-            ✏️ Classwork
-          </button>
+    return (
+      <div className="enhanced-summary-container">
+        {/* Compact Header */}
+        <div className="compact-header">
+          <h2 className="summary-title">📋 Student Performance Summary</h2>
         </div>
-      </div>
 
-      {/* Statistics Summary - Moved to top, compact layout */}
-      <div className="statistics-summary-compact">
-        <h3 className="stats-title-compact">📈 Performance Statistics</h3>
-        <div className="stats-grid-compact">
-          <div className="stat-card-compact">
-            <div className="stat-number-compact">{summaryData.totalAssessments}</div>
-            <div className="stat-label-compact">Assessments</div>
-          </div>
-          <div className="stat-card-compact">
-            <div className="stat-number-compact">{summaryData.chaptersAnalyzed}</div>
-            <div className="stat-label-compact">Chapters</div>
-          </div>
-          <div className="stat-card-compact">
-            <div className="stat-number-compact">{summaryData.questionsAttempted}</div>
-            <div className="stat-label-compact">Questions</div>
-          </div>
-          <div className="stat-card-compact">
-            <div className="stat-number-compact">{summaryData.overallAccuracy}%</div>
-            <div className="stat-label-compact">Accuracy</div>
+        {/* Compact Filters */}
+        <div className="compact-filters">
+          <span className="filter-label">📊 View:</span>
+          <div className="filter-buttons-compact">
+            <button 
+              className={`filter-btn-compact ${summaryFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setSummaryFilter('all')}
+            >
+              📈 All Data
+            </button>
+            <button 
+              className={`filter-btn-compact ${summaryFilter === 'homework' ? 'active' : ''}`}
+              onClick={() => setSummaryFilter('homework')}
+            >
+              📚 Homework
+            </button>
+            <button 
+              className={`filter-btn-compact ${summaryFilter === 'classwork' ? 'active' : ''}`}
+              onClick={() => setSummaryFilter('classwork')}
+            >
+              ✏ Classwork
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="summary-grid-compact">
-        {/* Overall Performance Overview - Compact */}
-        <div className="performance-overview-compact">
-          <div className="card-header-compact">
-            <span className="card-icon-compact">🎯</span>
-            <span className="card-title-compact">{summaryData.focus}</span>
-          </div>
-          
-          <div className="main-metric-compact">{summaryData.mainMetric}%</div>
-          <div className="metric-insight-compact">{summaryData.insight}</div>
-          
-          <div className="metrics-grid-compact">
-            <div className="metric-item-compact">
-              <span className="metric-label-compact">Homework Avg:</span>
-              <span className="metric-value-compact">{summaryData.homeworkAverage}%</span>
+        {/* Statistics Summary */}
+        <div className="statistics-summary-compact">
+          <h3 className="stats-title-compact">📈 Performance Statistics</h3>
+          <div className="stats-grid-compact">
+            <div className="stat-card-compact">
+              <div className="stat-number-compact">{summaryData.totalAssessments}</div>
+              <div className="stat-label-compact">Assessments</div>
             </div>
-            <div className="metric-item-compact">
-              <span className="metric-label-compact">Classwork Avg:</span>
-              <span className="metric-value-compact">{summaryData.classworkAverage}%</span>
+            <div className="stat-card-compact">
+              <div className="stat-number-compact">{summaryData.chaptersAnalyzed}</div>
+              <div className="stat-label-compact">Chapters</div>
             </div>
-            <div className="metric-item-compact">
-              <span className="metric-label-compact">Performance Gap:</span>
-              <span className="metric-value-compact negative">{summaryData.performanceGap}%</span>
+            <div className="stat-card-compact">
+              <div className="stat-number-compact">{summaryData.questionsAttempted}</div>
+              <div className="stat-label-compact">Questions</div>
             </div>
-            <div className="metric-item-compact">
-              <span className="metric-label-compact">Improvement Rate:</span>
-              <span className="metric-value-compact positive">+{summaryData.improvementRate}%</span>
+            <div className="stat-card-compact">
+              <div className="stat-number-compact">{summaryData.overallAccuracy}%</div>
+              <div className="stat-label-compact">Accuracy</div>
             </div>
           </div>
         </div>
 
-        {/* Priority Chapters - Compact */}
-        <div className="priority-chapters-compact">
-          <div className="card-header-compact">
-            <span className="card-icon-compact">🎯</span>
-            <span className="card-title-compact">Priority Chapters (NCERT Weightage)</span>
+        <div className="summary-grid-compact">
+          {/* Overall Performance Overview */}
+          <div className="performance-overview-compact">
+            <div className="card-header-compact">
+              <span className="card-icon-compact">🎯</span>
+              <span className="card-title-compact">{summaryData.focus}</span>
+            </div>
+            
+            <div className="main-metric-compact">{summaryData.mainMetric}%</div>
+            <div className="metric-insight-compact">{summaryData.insight}</div>
+            
+            <div className="metrics-grid-compact">
+              <div className="metric-item-compact">
+                <span className="metric-label-compact">Homework Avg:</span>
+                <span className="metric-value-compact">{summaryData.homeworkAverage}%</span>
+              </div>
+              <div className="metric-item-compact">
+                <span className="metric-label-compact">Classwork Avg:</span>
+                <span className="metric-value-compact">{summaryData.classworkAverage}%</span>
+              </div>
+              <div className="metric-item-compact">
+                <span className="metric-label-compact">Performance Gap:</span>
+                <span className={`metric-value-compact ${summaryData.performanceGap > 0 ? 'positive' : 'negative'}`}>
+                  {summaryData.performanceGap > 0 ? '+' : ''}{summaryData.performanceGap.toFixed(1)}%
+                </span>
+              </div>
+              <div className="metric-item-compact">
+                <span className="metric-label-compact">Improvement Rate:</span>
+                <span className="metric-value-compact positive">+{summaryData.improvementRate}%</span>
+              </div>
+            </div>
           </div>
-          
-          <div className="priority-list-compact">
-            {priorityChaptersData.map((chapter, index) => (
-              <div 
-                key={index} 
-                className="priority-item-compact"
-                style={{ backgroundColor: chapter.priorityColor }}
-              >
-                <div className="priority-badge-compact">
-                  {chapter.priority === 'High' && '🔥'}
-                  {chapter.priority === 'Medium' && '⚠️'}
-                  {chapter.priority === 'Maintain' && '✅'}
-                  <span className="priority-text-compact">{chapter.recommendation}</span>
-                </div>
-                <div className="priority-info-compact">
-                  <div className="chapter-name-compact">{chapter.chapter}</div>
-                  <div className="chapter-stats-compact">
-                    {chapter.performance} performance • {chapter.weightage} weightage
+
+          {/* Priority Chapters */}
+          <div className="priority-chapters-compact">
+            <div className="card-header-compact">
+              <span className="card-icon-compact">🎯</span>
+              <span className="card-title-compact">Priority Chapters (NCERT Weightage)</span>
+            </div>
+            
+            <div className="priority-list-compact">
+              {currentStudentData.priorityChapters.map((chapter, index) => (
+                <div 
+                  key={index} 
+                  className="priority-item-compact"
+                  style={{ backgroundColor: chapter.priorityColor }}
+                >
+                  <div className="priority-badge-compact">
+                    {chapter.priority === 'High' && '🔥'}
+                    {chapter.priority === 'Medium' && '⚠'}
+                    {chapter.priority === 'Maintain' && '✅'}
+                    <span className="priority-text-compact">{chapter.priority} Priority</span>
+                  </div>
+                  <div className="priority-info-compact">
+                    <div className="chapter-name-compact">{chapter.chapter}</div>
+                    <div className="chapter-stats-compact">
+                      {chapter.performance} performance • {chapter.weightage} weightage
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Recommendations - Compact */}
-      <div className="recommendations-compact">
-        <div className="card-header-compact">
-          <span className="card-icon-compact">💡</span>
-          <span className="card-title-compact">Recommendations</span>
-        </div>
-        
-        <div className="recommendations-grid-compact">
-          <div className="recommendation-item-compact">
-            <span className="rec-icon-compact">🎯</span>
-            <span className="rec-text-compact">Focus on time management skills for classwork</span>
+        {/* Recommendations */}
+        <div className="recommendations-compact">
+          <div className="card-header-compact">
+            <span className="card-icon-compact">💡</span>
+            <span className="card-title-compact">Recommendations</span>
           </div>
-          <div className="recommendation-item-compact">
-            <span className="rec-icon-compact">⏱️</span>
-            <span className="rec-text-compact">Practice more timed exercises</span>
-          </div>
-          <div className="recommendation-item-compact">
-            <span className="rec-icon-compact">🎯</span>
-            <span className="rec-text-compact">Reinforce conceptual understanding through targeted practice</span>
-          </div>
-          <div className="recommendation-item-compact">
-            <span className="rec-icon-compact">✅</span>
-            <span className="rec-text-compact">Reduce careless errors through careful review processes</span>
+          
+          <div className="recommendations-grid-compact">
+            {summaryData.performanceGap < -10 && (
+              <div className="recommendation-item-compact">
+                <span className="rec-icon-compact">🎯</span>
+                <span className="rec-text-compact">Focus on time management skills for classwork</span>
+              </div>
+            )}
+            {summaryData.overallAccuracy < 50 && (
+              <div className="recommendation-item-compact">
+                <span className="rec-icon-compact">📖</span>
+                <span className="rec-text-compact">Review fundamental concepts thoroughly</span>
+              </div>
+            )}
+            {summaryData.improvementRate < 10 && (
+              <div className="recommendation-item-compact">
+                <span className="rec-icon-compact">⏱</span>
+                <span className="rec-text-compact">Practice more timed exercises</span>
+              </div>
+            )}
+            <div className="recommendation-item-compact">
+              <span className="rec-icon-compact">✅</span>
+              <span className="rec-text-compact">Continue regular practice to maintain momentum</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   // Main render function for student analysis content
   const renderStudentAnalysisContent = () => {
@@ -869,10 +954,10 @@ const renderSummaryTab = () => {
         {/* Updated Main Tabs */}
         <div className="main-tabs-container">
           {[
-            { key: 'score-progression', icon: '📈', label: 'Score- Date-wise progression', color: '#3b82f6' },
-            { key: 'chapter-analysis', icon: '📚', label: 'Chapter Analysis', color: '#8b5cf6' },
-            { key: 'mistakes', icon: '🔍', label: 'Mistake-Progress-Analysis', color: '#ef4444' },
-            { key: 'summary', icon: '📋', label: 'Summary', color: '#22c55e' }
+            { key: 'score-progression', icon: '📈', label: 'Score- Date-wise progression' },
+            { key: 'chapter-analysis', icon: '📚', label: 'Chapter Analysis' },
+            { key: 'mistakes', icon: '🔍', label: 'Mistake-Progress-Analysis' },
+            { key: 'summary', icon: '📋', label: 'Summary' }
           ].map((tab) => (
             <button
               key={tab.key}
@@ -896,78 +981,102 @@ const renderSummaryTab = () => {
     );
   };
 
-  return (
+    return (
     <div className="student-analysis-main-content">
       <div className="student-analysis-header">
         <div className="header-top">
           <div className="header-info">
             <div className="header-icon">👤</div>
             <div>
-              <h2 className="header-title">Student Analysis Dashboard</h2>
+              <h2 className="header-title">
+                {isStudentView ? 'My Analysis Dashboard' : 'Student Analysis Dashboard'}
+              </h2>
               <p className="header-subtitle">
                 {selectedStudent ? 
-                  `Detailed performance analysis for ${selectedStudent.rollNo} - ${selectedStudent.name}` : 
-                  'Select a student from the dropdown above to view detailed analysis'
+                  (isStudentView 
+                    ? `Analyzing performance for ${selectedStudent.name} (${selectedStudent.rollNo})`
+                    : `Analyzing performance for ${selectedStudent.name} (${selectedStudent.rollNo})`) 
+                  : 'Select a student to view detailed analysis'
                 }
               </p>
             </div>
           </div>
-          <div className="selectors-container">
-            {/* Select Class */}
-            <div className="selector-group">
-              <span className="selector-label">Select Class</span>
-              <select
-                value={selectedClass.name}
-                onChange={(e) => {
-                  const classData = Object.values(classesData).find(cls => cls.name === e.target.value);
-                  if (classData) {
-                    onClassChange(classData);
-                  }
-                }}
-                className="selector-dropdown"
-              >
-                <option value="Class 6th">Class 6th</option>
-                <option value="Class 7th">Class 7th</option>
-                <option value="Class 8th">Class 8th</option>
-                <option value="Class 9th">Class 9th</option>
-                <option value="Class 10th">Class 10th</option>
-                <option value="Class 11th">Class 11th</option>
-                <option value="Class 12th">Class 12th</option>
-              </select>
-            </div>
+          
+          {/* Completely hide dropdowns for students */}
+          {!isStudentView && !readOnly && (
+            <>
+              <div className="header-controls">
+                <label className="control-label">Select Class</label>
+                <select 
+                  className="class-dropdown"
+                  value={selectedClass?.id || ''}
+                  onChange={(e) => handleClassChange(parseInt(e.target.value))}
+                >
+                  <option value="">-- Select Class --</option>
+                  {Object.values(classesData).map(cls => (
+                    <option key={cls.id} value={cls.id}>
+                      {cls.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="header-controls">
+                <label className="control-label">Select Student</label>
+                <select 
+                  className="student-dropdown"
+                  value={selectedStudent?.id || ''}
+                  onChange={(e) => {
+                    const student = getStudentsForClass().find(s => s.id === e.target.value);
+                    if (student) handleStudentSelect(student);
+                  }}
+                  disabled={!selectedClass}
+                >
+                  <option value="">-- Select Student --</option>
+                  {getStudentsForClass().map(student => (
+                    <option key={student.id} value={student.id}>
+                      {student.rollNo} - {student.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
 
-            {/* Select Student */}
-            <div className="selector-group">
-              <span className="selector-label">Select Student</span>
-              <select
-                value={selectedStudent ? selectedStudent.rollNo : ''}
-                onChange={(e) => {
-                  const studentRollNo = e.target.value;
-                  if (studentRollNo) {
-                    const student = getStudentsForClass().find(s => s.rollNo === studentRollNo);
-                    if (student && onStudentSelect) {
-                      onStudentSelect(student);
-                    }
-                  } else {
-                    if (onStudentSelect) {
-                      onStudentSelect(null);
-                    }
-                  }
-                }}
-                className="selector-dropdown"
-              >
-                <option value="">Select Student</option>
-                {getStudentsForClass().map(student => (
-                  <option key={student.id || student.rollNo} value={student.rollNo}>
-                    {student.rollNo} - {student.name}
+          {/* For student view, show disabled dropdowns with their info */}
+          {isStudentView && (
+            <div className="student-view-info">
+              <div className="header-controls disabled">
+                <label className="control-label">Select Class</label>
+                <select 
+                  className="class-dropdown"
+                  value={selectedClass?.id || ''}
+                  disabled={true}
+                >
+                  <option value={selectedClass?.id}>
+                    {selectedClass?.name}
                   </option>
-                ))}
-              </select>
+                </select>
+              </div>
+              
+              <div className="header-controls disabled">
+                <label className="control-label">Select Student</label>
+                <select 
+                  className="student-dropdown"
+                  value={selectedStudent?.id || ''}
+                  disabled={true}
+                >
+                  <option value={selectedStudent?.id}>
+                    {selectedStudent?.rollNo} - {selectedStudent?.name}
+                  </option>
+                </select>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
+      {/* Rest of the component remains the same */}
       {selectedStudent ? renderStudentAnalysisContent() : (
         <div className="no-student-selected">
           <div className="empty-state-content">

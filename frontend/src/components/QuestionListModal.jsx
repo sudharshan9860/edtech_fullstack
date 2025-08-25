@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "./QuestionListModal.css";
 import MarkdownWithMath from "./MarkdownWithMath";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboardCheck } from "@fortawesome/free-solid-svg-icons";
+import { faClipboardCheck, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 const QuestionListModal = ({
   show,
@@ -14,84 +14,168 @@ const QuestionListModal = ({
   isMultipleSelect = false,
   onMultipleSelectSubmit,
   worksheetName = "",
+  setName = "", // Add this prop
+  mode = "" // Add mode prop (homework/classwork)
 }) => {
   const navigate = useNavigate();
   const [selectedQuestions, setSelectedQuestions] = useState([]);
 
-  const handleQuestionClick = (questionData, index) => {
-    if (isMultipleSelect) {
-      setSelectedQuestions((prev) => {
-        const isSelected = prev.includes(index);
-        if (isSelected) {
-          return prev.filter((i) => i !== index);
+  // In QuestionListModal.jsx, update the handleQuestionClick function:
+
+const handleQuestionClick = (questionData, index) => {
+  // Check if we're in teacher mode
+  const isTeacherMode = window.location.pathname.includes('teacher-dash');
+  
+  if (isTeacherMode || isMultipleSelect) {
+    // Multiple selection for teachers
+    setSelectedQuestions((prev) => {
+      const isSelected = prev.includes(index);
+      if (isSelected) {
+        return prev.filter((i) => i !== index);
+      } else {
+        if (prev.length < 5) {
+          return [...prev, index];
         } else {
-          if (prev.length < 5) {
-            return [...prev, index];
-          }
-          return prev;
+          alert("You can select up to 5 questions only");
         }
-      });
-    } else {
-      // console.log("Selected question data:", questionData);
-      const selectedQuestion = {
-        question: questionData.question,
-        image: questionData.question_image
-          ? `data:image/png;base64,${questionData.question_image}`
-          : null,
-        question_id: questionData.question_id || index, // Ensure each question has a unique ID
-      };
-      console.log("Selected question data:", selectedQuestion);
-      onQuestionClick(selectedQuestion.question, index, selectedQuestion.image,selectedQuestion.question_id);
-    }
-  };
-
-  const handleMultipleSelectSubmit = () => {
-    if (selectedQuestions.length >= 1 && selectedQuestions.length <= 5) {
-      const selectedQuestionsData = selectedQuestions.map((index) => ({
-        question: questionList[index].question,
-        image: questionList[index].question_image
-          ? `data:image/png;base64,${questionList[index].question_image}`
-          : null,
-        index: index,
-        question_id: questionList[index].question_id || index, // Ensure each question has a unique ID
-      }));
-      console.log("Selected questions data:", selectedQuestionsData);
-      onMultipleSelectSubmit(selectedQuestionsData);
-    }
-  };
-
-  const handleSolveWorksheet = () => {
-    // Navigate to worksheet submission page with worksheet name and questions
-    navigate("/worksheet-submission", {
-      state: {
-        worksheetName: worksheetName,
-        worksheetQuestions: questionList,
+        return prev;
       }
     });
+  } else {
+    // Single selection for students
+    const selectedQuestion = {
+      question: questionData.question,
+      image: questionData.question_image
+        ? `data:image/png;base64,${questionData.question_image}`
+        : null,
+      question_id: questionData.question_id || questionData.id || index,
+    };
+    onQuestionClick(selectedQuestion.question, index, selectedQuestion.image, selectedQuestion.question_id);
+  }
+};
+
+  // Update the modal title
+  const getModalTitle = () => {
+    if (setName) {
+      return `🎯 ${setName} - Select up to 5 Questions`;
+    }
+    if (worksheetName) {
+      return `📄 ${worksheetName} - Select up to 5 Questions`;
+    }
+    return isMultipleSelect ? "Select up to 5 Questions" : "Question List";
+  };
+
+  // Handle single question submission (for students)
+  const handleSingleQuestionSubmit = (questionData, index) => {
+    console.log("Single question selected:", questionData);
+    
+    let imageUrl = null;
+    if (questionData.question_image) {
+      if (questionData.question_image.startsWith('data:image')) {
+        imageUrl = questionData.question_image;
+      } else {
+        imageUrl = `data:image/png;base64,${questionData.question_image}`;
+      }
+    }
+
+    const selectedQuestion = {
+      question: typeof questionData.question === 'string'
+        ? questionData.question
+        : JSON.stringify(questionData.question),
+      questionImage: imageUrl,
+      questionNumber: index + 1,
+      level: questionData.level || 'Medium',
+      worksheet_name: worksheetName || ''
+    };
+
+    console.log("Navigating to solve page with:", selectedQuestion);
+    navigate("/solve", { state: selectedQuestion });
     onHide();
   };
 
+  // Handle multiple question submission (for teachers)
+  const handleMultipleSubmit = () => {
+    if (selectedQuestions.length === 0) {
+      alert("Please select at least one question");
+      return;
+    }
+
+    const selectedQuestionData = selectedQuestions.map(index => {
+      const questionData = questionList[index];
+      let imageUrl = null;
+      
+      if (questionData.question_image) {
+        if (questionData.question_image.startsWith('data:image')) {
+          imageUrl = questionData.question_image;
+        } else {
+          imageUrl = `data:image/png;base64,${questionData.question_image}`;
+        }
+      }
+
+      return {
+        ...questionData,
+        questionImage: imageUrl,
+        questionNumber: index + 1,
+        originalIndex: index,
+        source: setName || worksheetName || "Selected Questions",
+        mode: mode // Pass the mode (homework/classwork)
+      };
+    });
+
+    console.log("Submitting selected questions:", selectedQuestionData);
+    
+    if (onMultipleSelectSubmit) {
+      onMultipleSelectSubmit(selectedQuestionData, mode);
+    }
+    
+    onHide();
+  };
+
+  // Handle worksheet solve action (for students)
+  const handleSolveWorksheet = () => {
+    if (worksheetName && questionList.length > 0) {
+      navigate("/solve-worksheet", {
+        state: {
+          worksheetName,
+          questions: questionList,
+        },
+      });
+      onHide();
+    }
+  };
+
+  // Handle modal close
   const handleModalClose = () => {
     setSelectedQuestions([]);
     onHide();
   };
 
+  // Render question content
+  const renderQuestionContent = (questionData) => {
+    if (typeof questionData.question === 'string') {
+      return <MarkdownWithMath content={questionData.question} />;
+    } else if (typeof questionData.question === 'object' && questionData.question.text) {
+      return <MarkdownWithMath content={questionData.question.text} />;
+    } else {
+      return <span>{JSON.stringify(questionData.question)}</span>;
+    }
+  };
+
+  // Determine if we're in teacher mode with worksheet
+  const isTeacherMode = window.location.pathname.includes('teacher-dash');
+  const isWorksheetMode = !!worksheetName;
+  const showSubmitButton = (isTeacherMode && isWorksheetMode) || isMultipleSelect;
+
   return (
-    <Modal
-      show={show}
-      onHide={handleModalClose}
-      centered
-      size="lg"
+    <Modal 
+      show={show} 
+      onHide={handleModalClose} 
+      size="lg" 
       className="question-modal"
+      backdrop="static"
     >
       <Modal.Header closeButton>
-        <Modal.Title>
-          {worksheetName 
-            ? `Worksheet: ${worksheetName}` 
-            : isMultipleSelect 
-              ? "Select up to 5 Questions" 
-              : "Question List"}
-        </Modal.Title>
+        <Modal.Title>{getModalTitle()}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="question-list-container">
@@ -102,29 +186,30 @@ const QuestionListModal = ({
                   key={index}
                   className={`question-item ${
                     selectedQuestions.includes(index) ? "selected" : ""
-                  } ${worksheetName ? "worksheet-question" : ""}`}
-                  onClick={() => !worksheetName && handleQuestionClick(questionData, index)}
-                  style={{ cursor: worksheetName ? "default" : "pointer" }}
+                  } ${isWorksheetMode && !isTeacherMode ? "worksheet-question" : ""}`}
+                  onClick={() => handleQuestionClick(questionData, index)}
+                  style={{ cursor: "pointer" }}
                 >
-                  {isMultipleSelect && !worksheetName && (
+                  {(isMultipleSelect || (isTeacherMode && isWorksheetMode)) && (
                     <input
                       type="checkbox"
                       checked={selectedQuestions.includes(index)}
                       onChange={() => handleQuestionClick(questionData, index)}
+                      onClick={(e) => e.stopPropagation()}
                     />
                   )}
                   <div className="question-number">{index + 1}</div>
                   <div className="question-content">
                     <div className="question-text">
-                      <MarkdownWithMath content={questionData.question} />
+                      {renderQuestionContent(questionData)}
                     </div>
 
                     <div
                       className={`question-level ${
-                        questionData.level?.toLowerCase() || ""
+                        questionData.level?.toLowerCase() || "medium"
                       }`}
                     >
-                      {questionData.level}
+                      {questionData.level || 'MEDIUM'}
                     </div>
 
                     {questionData.question_image && (
@@ -137,6 +222,13 @@ const QuestionListModal = ({
                       </div>
                     )}
                   </div>
+                  {selectedQuestions.includes(index) && (
+                    <FontAwesomeIcon 
+                      icon={faCheckCircle} 
+                      className="selected-icon"
+                      color="#28a745"
+                    />
+                  )}
                 </li>
               ))}
             </ul>
@@ -146,30 +238,40 @@ const QuestionListModal = ({
         </div>
       </Modal.Body>
       <Modal.Footer>
-        {worksheetName && (
-          <Button
-            variant="success"
-            onClick={handleSolveWorksheet}
-            className="me-2"
-          >
-            <FontAwesomeIcon icon={faClipboardCheck} className="me-2" />
-            Solve Worksheet
-          </Button>
-        )}
-        {isMultipleSelect && !worksheetName && (
-          <Button
-            variant="primary"
-            onClick={handleMultipleSelectSubmit}
-            disabled={
-              selectedQuestions.length < 1 || selectedQuestions.length > 5
-            }
-          >
-            Submit Selected Questions ({selectedQuestions.length}/5)
-          </Button>
-        )}
-        <Button variant="secondary" onClick={handleModalClose}>
-          Close
-        </Button>
+        <div className="d-flex justify-content-between w-100">
+          <div>
+            {selectedQuestions.length > 0 && (
+              <span className="text-muted">
+                {selectedQuestions.length}/5 questions selected
+              </span>
+            )}
+          </div>
+          <div>
+            {worksheetName && !isTeacherMode && (
+              <Button
+                variant="success"
+                onClick={handleSolveWorksheet}
+                className="me-2"
+              >
+                <FontAwesomeIcon icon={faClipboardCheck} className="me-2" />
+                Solve Worksheet
+              </Button>
+            )}
+            {showSubmitButton && (
+              <Button
+                variant="primary"
+                onClick={handleMultipleSubmit}
+                disabled={selectedQuestions.length === 0}
+                className="me-2"
+              >
+                Submit Selected Questions ({selectedQuestions.length}/5)
+              </Button>
+            )}
+            <Button variant="secondary" onClick={handleModalClose}>
+              Close
+            </Button>
+          </div>
+        </div>
       </Modal.Footer>
     </Modal>
   );

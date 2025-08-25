@@ -12,12 +12,15 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [subTopics, setSubTopics] = useState([]);
+  const [worksheets, setWorksheets] = useState([]);
 
   // State for selections
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedChapters, setSelectedChapters] = useState([]);
+  const [questionType, setQuestionType] = useState("");
   const [questionLevel, setQuestionLevel] = useState("");
+  const [selectedWorksheet, setSelectedWorksheet] = useState("");
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [questionList, setQuestionList] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
@@ -74,7 +77,9 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
           // Reset dependent fields
           setSelectedSubject("");
           setSelectedChapters([]);
+          setQuestionType("");
           setQuestionLevel("");
+          setSelectedWorksheet("");
         } catch (error) {
           console.error("Error fetching subjects:", error);
           setSubjects([]);
@@ -96,7 +101,9 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
           setChapters(chapterResponse.data.data);
           // Reset dependent fields
           setSelectedChapters([]);
+          setQuestionType("");
           setQuestionLevel("");
+          setSelectedWorksheet("");
         } catch (error) {
           console.error("Error fetching chapters:", error);
           setChapters([]);
@@ -106,40 +113,51 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     fetchChapters();
   }, [selectedSubject, selectedClass]);
 
-  // Fetch subtopics when chapters are selected
+  // Fetch subtopics or worksheets when selection changes based on question type
   useEffect(() => {
-    async function fetchSubTopics() {
-      if (selectedClass && selectedSubject && selectedChapters.length > 0) {
+    async function fetchDataForType() {
+      if (!selectedClass || !selectedSubject || selectedChapters.length === 0) return;
+
+      if (questionType === "external") {
         try {
-          console.log("Fetching subtopics with:", {
-            classid: selectedClass,
-            subjectid: selectedSubject,
-            topicid: selectedChapters[0]
-          });
-          
           const response = await axiosInstance.post("/question-images/", {
             classid: selectedClass,
             subjectid: selectedSubject,
-            topicid: selectedChapters[0], // Assuming single chapter selection
-            external: true
+            topicid: selectedChapters[0],
+            external: true,
           });
-          
-          console.log("Subtopics response:", response.data);
-          
           if (response.data && response.data.subtopics) {
             setSubTopics(response.data.subtopics);
           } else {
-            console.warn("No subtopics found in response:", response.data);
             setSubTopics([]);
           }
         } catch (error) {
           console.error("Error fetching subtopics:", error);
           setSubTopics([]);
         }
+      } else if (questionType === "worksheets") {
+        try {
+          const response = await axiosInstance.post("/question-images/", {
+            classid: selectedClass,
+            subjectid: selectedSubject,
+            topicid: selectedChapters[0],
+            worksheets: true,
+          });
+          setWorksheets(response.data?.worksheets || []);
+        } catch (error) {
+          console.error("Error fetching worksheets:", error);
+          setWorksheets([]);
+        }
       }
     }
-    fetchSubTopics();
-  }, [selectedClass, selectedSubject, selectedChapters]);
+    fetchDataForType();
+  }, [questionType, selectedClass, selectedSubject, selectedChapters]);
+
+  // Reset dependent fields when question type changes
+  useEffect(() => {
+    if (questionType !== "external") setQuestionLevel("");
+    if (questionType !== "worksheets") setSelectedWorksheet("");
+  }, [questionType]);
 
   // Fetch previous classwork submissions
   const fetchPreviousClassworkSubmissions = async () => {
@@ -178,13 +196,18 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
 
   // Determine if generate button should be enabled
   const isGenerateButtonEnabled = () => {
-    return (
-      selectedClass !== "" &&
-      selectedSubject !== "" &&
-      selectedChapters.length > 0 &&
-      questionLevel !== "" &&
-      !isLoading
-    );
+    if (
+      selectedClass === "" ||
+      selectedSubject === "" ||
+      selectedChapters.length === 0 ||
+      questionType === "" ||
+      isLoading
+    ) {
+      return false;
+    }
+    if (questionType === "external") return questionLevel !== "";
+    if (questionType === "worksheets") return selectedWorksheet !== "";
+    return false;
   };
 
   // Handle form submission to generate questions
@@ -199,13 +222,13 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     setIsLoading(true);
 
     try {
-      // Now make a second request to get the actual questions for the selected subtopic
+      // Prepare request data based on question type
       const requestData = {
         classid: Number(selectedClass),
         subjectid: Number(selectedSubject),
         topicid: selectedChapters,
-        external: false,
-        subtopic: questionLevel
+        subtopic: questionType === "external" ? questionLevel : null,
+        worksheet_name: questionType === "worksheets" ? selectedWorksheet : null,
       };
 
       console.log("Requesting questions with:", requestData);
@@ -485,7 +508,8 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
               {selectedQuestions.map((q, idx) => (
                 <li key={idx} className="question-preview-item">
                   <span className="question-number">{idx + 1}.</span>
-                  <span className="question-text">{q.question}</span>
+                  {/* <span className="question-text">{q.question}</span> */}
+                  <MarkdownWithMath content={q.question} />
                   {q.image && (
                     <div className="question-image-small">
                       <img src={q.image} alt={`Question ${idx + 1}`} />
@@ -597,7 +621,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
             {selectedQuestions.map((q, idx) => (
               <li key={idx} className="question-preview-item">
                 <span className="question-number">{idx + 1}.</span>
-                <span className="question-text">{q.question}</span>
+                <MarkdownWithMath content={q.question} />
                 {q.image && (
                   <div className="question-image-small">
                     <img src={q.image} alt={`Question ${idx + 1}`} />
@@ -997,25 +1021,69 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
                       </Form.Group>
                     </Col>
                     <Col xs={12} md={6}>
-                      <Form.Group controlId="formQuestionLevel">
-                        <Form.Label>Select The Set</Form.Label>
+                      <Form.Group controlId="formQuestionType">
+                        <Form.Label>Question Type</Form.Label>
                         <Form.Control
                           as="select"
-                          value={questionLevel}
-                          onChange={(e) => setQuestionLevel(e.target.value)}
+                          value={questionType}
+                          onChange={(e) => setQuestionType(e.target.value)}
                           className="form-control"
                           disabled={selectedChapters.length === 0}
                         >
-                          <option value="">Select The Set</option>
-                          {subTopics.map((subTopic, index) => (
-                            <option key={subTopic} value={subTopic}>
-                              {getSubtopicDisplayName(subTopic, index)}
-                            </option>
-                          ))}
+                          <option value="">Select Question Type</option>
+                          <option value="external">Set of Questions</option>
+                          <option value="worksheets">Worksheets</option>
                         </Form.Control>
                       </Form.Group>
                     </Col>
                   </Row>
+                  {/* Conditional selectors for Set or Worksheet */}
+                  {questionType === "external" && (
+                    <Row className="mb-3">
+                      <Col xs={12} md={6}>
+                        <Form.Group controlId="formQuestionLevel">
+                          <Form.Label>Select The Set</Form.Label>
+                          <Form.Control
+                            as="select"
+                            value={questionLevel}
+                            onChange={(e) => setQuestionLevel(e.target.value)}
+                            className="form-control"
+                            disabled={selectedChapters.length === 0}
+                          >
+                            <option value="">Select The Set</option>
+                            {subTopics.map((subTopic, index) => (
+                              <option key={subTopic} value={subTopic}>
+                                {getSubtopicDisplayName(subTopic, index)}
+                              </option>
+                            ))}
+                          </Form.Control>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  )}
+                  {questionType === "worksheets" && (
+                    <Row className="mb-3">
+                      <Col xs={12} md={6}>
+                        <Form.Group controlId="formWorksheet">
+                          <Form.Label>Select Worksheet</Form.Label>
+                          <Form.Control
+                            as="select"
+                            value={selectedWorksheet}
+                            onChange={(e) => setSelectedWorksheet(e.target.value)}
+                            className="form-control"
+                            disabled={selectedChapters.length === 0}
+                          >
+                            <option value="">Select Worksheet</option>
+                            {worksheets.map((worksheet) => (
+                              <option key={worksheet.id || worksheet.worksheet_name} value={worksheet.worksheet_name}>
+                                {worksheet.worksheet_name}
+                              </option>
+                            ))}
+                          </Form.Control>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  )}
                   <div className="d-flex justify-content-end">
                     <Button
                       variant="primary"
@@ -1105,25 +1173,69 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
                     </Form.Group>
                   </Col>
                   <Col xs={12} md={6}>
-                    <Form.Group controlId="formQuestionLevel">
-                      <Form.Label>Select The Set</Form.Label>
+                    <Form.Group controlId="formQuestionType">
+                      <Form.Label>Question Type</Form.Label>
                       <Form.Control
                         as="select"
-                        value={questionLevel}
-                        onChange={(e) => setQuestionLevel(e.target.value)}
+                        value={questionType}
+                        onChange={(e) => setQuestionType(e.target.value)}
                         className="form-control"
                         disabled={selectedChapters.length === 0}
                       >
-                        <option value="">Select The Set</option>
-                        {subTopics.map((subTopic, index) => (
-                          <option key={subTopic} value={subTopic}>
-                            {getSubtopicDisplayName(subTopic, index)}
-                          </option>
-                        ))}
+                        <option value="">Select Question Type</option>
+                        <option value="external">Set of Questions</option>
+                        <option value="worksheets">Worksheets</option>
                       </Form.Control>
                     </Form.Group>
                   </Col>
                 </Row>
+                {/* Conditional selectors for Set or Worksheet */}
+                {questionType === "external" && (
+                  <Row className="mb-3">
+                    <Col xs={12} md={6}>
+                      <Form.Group controlId="formQuestionLevel">
+                        <Form.Label>Select The Set</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={questionLevel}
+                          onChange={(e) => setQuestionLevel(e.target.value)}
+                          className="form-control"
+                          disabled={selectedChapters.length === 0}
+                        >
+                          <option value="">Select The Set</option>
+                          {subTopics.map((subTopic, index) => (
+                            <option key={subTopic} value={subTopic}>
+                              {getSubtopicDisplayName(subTopic, index)}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                )}
+                {questionType === "worksheets" && (
+                  <Row className="mb-3">
+                    <Col xs={12} md={6}>
+                      <Form.Group controlId="formWorksheet">
+                        <Form.Label>Select Worksheet</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={selectedWorksheet}
+                          onChange={(e) => setSelectedWorksheet(e.target.value)}
+                          className="form-control"
+                          disabled={selectedChapters.length === 0}
+                        >
+                          <option value="">Select Worksheet</option>
+                          {worksheets.map((worksheet) => (
+                            <option key={worksheet.id || worksheet.worksheet_name} value={worksheet.worksheet_name}>
+                              {worksheet.worksheet_name}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                )}
                 <div className="d-flex justify-content-end">
                   <Button
                     variant="primary"

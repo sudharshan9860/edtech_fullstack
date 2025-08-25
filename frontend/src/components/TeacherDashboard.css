@@ -293,3 +293,58 @@
     gap: 0.5rem;
   }
 }
+
+/* Assignment Type Selection Buttons */
+.type-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.type-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.type-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.type-btn.active {
+  border-color: #3b82f6;
+  background: #3b82f6;
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.type-btn svg {
+  flex-shrink: 0;
+}
+
+/* Homework specific styling */
+.type-btn.active:has(+ .type-btn):nth-child(1) {
+  background: #f59e0b; /* Orange for homework */
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* Classwork specific styling */
+.type-btn.active:nth-child(2) {
+  background: #ef4444; /* Red for classwork */
+  border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
