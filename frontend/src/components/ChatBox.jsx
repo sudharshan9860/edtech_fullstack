@@ -189,7 +189,7 @@ const ChatBox = () => {
   const clearChat = async () => {
     if (!sessionId) return;
     try {
-      await api.post(`/clear-session/`, { session_id: sessionId });
+      await api.delete(`/clear-session/${sessionId}`)
     } catch (e) {
       console.error("Failed to clear session:", e);
     } finally {
