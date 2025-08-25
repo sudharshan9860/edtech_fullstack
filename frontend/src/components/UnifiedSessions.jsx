@@ -110,8 +110,8 @@ const UnifiedSessions = () => {
     try {
       setLoadingSubmissions(true);
       setError(null);
-      const response = await axiosInstance.get('/homework-submission');
-      
+      const response = await axiosInstance.get('/homework-submission/');
+      console.log("Homework submissions response:", response.data);
       if (response.data) {
         // Handle array response
         const submissionsArray = Array.isArray(response.data) ? response.data : [];

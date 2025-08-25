@@ -1,9 +1,9 @@
 import React, { useState, useContext, useMemo } from "react";
 import { Form } from "react-bootstrap";
-import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import "./Login.css";
 import { AuthContext } from "../components/AuthContext";
+import axiosInstance from "../api/axiosInstance";
+import "./Login.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { motion } from "framer-motion";
 import {
@@ -24,7 +24,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
-  // Generate background circles using useMemo
+  // Background animation circles
   const backgroundCircles = useMemo(() => {
     return [...Array(10)].map((_, i) => ({
       id: i,
@@ -34,55 +34,48 @@ function LoginPage() {
       top: Math.random() * 150,
       delay: Math.random() * 2,
     }));
-  }, []); // Empty dependency array means this only runs once on mount
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    const trimmedPassword = password.trim();
-
     try {
-      const response = await axiosInstance.post(
-        "/login/",
-        {
-          username,
-          password: trimmedPassword,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      // console.log("Login response:", response.data);
-      const { token } = response.data;
-    
-      const role  =response.data.role;
-      const class_name = response.data.class_name || ""; // Get class name if available
-      
-      
-      if (token) {
-        // Store token and username in localStorage
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("username", username);
-        
-        // Update auth context
-        login(username, token, role, class_name);
-        if (role === "teacher") {
-          navigate("/teacher-dash");
-        } else {
-          navigate("/student-dash");
-        }
+      const response = await axiosInstance.login(username, password);
 
-        // Navigate to dashboard
-        // navigate("/student-dash");
-      } else {
-        setError("Invalid username or password.");
+      const {
+        access,
+        refresh,
+        username: user,
+        role,
+        email,
+        full_name,
+        class_name,
+      } = response;
+
+      // Extra user info (tokens already set by axiosInstance.login)
+      localStorage.setItem("username", user);
+      localStorage.setItem("fullName", full_name || "");
+      if (class_name) {
+        localStorage.setItem("className", class_name);
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      setError(error.response?.data?.message || "An error occurred. Please try again.");
+
+      // Update auth context
+      login(user, access, role, class_name);
+
+      // Navigate based on role
+      if (role === "teacher") {
+        navigate("/teacher-dash");
+      } else {
+        navigate("/student-dash");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.detail ||
+          err.message ||
+          "Invalid username or password."
+      );
     }
   };
 
@@ -125,6 +118,7 @@ function LoginPage() {
           />
         ))}
       </div>
+
       <div className="login-form-container">
         <div className="logo-section">
           <h1 className="platform-name">AI EDUCATOR</h1>

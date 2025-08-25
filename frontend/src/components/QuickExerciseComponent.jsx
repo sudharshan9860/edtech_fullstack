@@ -4,6 +4,7 @@ import Select from 'react-select';
 import axiosInstance from '../api/axiosInstance';
 import QuestionListModal from './QuestionListModal';
 import './QuickExerciseComponent.css';
+import MarkdownWithMath from "./MarkdownWithMath";
 
 const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
   // State for dropdown data
