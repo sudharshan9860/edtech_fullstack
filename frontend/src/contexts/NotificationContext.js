@@ -1,84 +1,77 @@
 import React, { createContext, useEffect, useState, useContext, useRef } from 'react';
 import axiosInstance from "../api/axiosInstance";
-import { AuthContext } from "../components/AuthContext";
+import { AuthContext } from "../components/AuthContext"
 
 export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const { username } = useContext(AuthContext);
-  console.log("User in NotificationProvider:", username);
-  const intervalRef = useRef(null);
+  const wsRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
 
-  // Fetch notifications
-  const fetchNotifications = async () => {
-    try {
-      const res = await axiosInstance.get('/studentnotifications/');
-      const items = res.data;
-
-      if (!Array.isArray(items) || items.length === 0) return;
-
-      const newNotifications = items.map((item) => ({
-        id: item.homework_code,
-        title: item.title || 'New Homework',
-        image: item.attachment || '/default-homework-image.jpeg',
-        message: item.message || 'You have a new homework update.',
-        timestamp: item.date_assigned || new Date().toISOString(),
-        read: false,
-        type: 'homework',
-        homework: item,
-      }));
-
-      setNotifications((prev) => {
-        const existingIds = new Set(prev.map((n) => n.id));
-        const uniqueNew = newNotifications.filter(
-          (n) => !existingIds.has(n.id)
-        );
-        return [...uniqueNew, ...prev];
-      });
-    } catch (error) {
-      if (error.response?.status === 401) {
-        console.warn("JWT expired or unauthorized, stopping notification polling.");
-        clearInterval(intervalRef.current);
-      } else {
-        console.error("Error fetching notifications:", error);
-      }
-    }
-  };
-
-  // Setup polling only if logged in
   useEffect(() => {
-    if (!username) return; // don’t poll if not logged in
+    if (!username) return;
 
-    fetchNotifications();
-    intervalRef.current = setInterval(fetchNotifications, 10000);
+    const connectWebSocket = () => {
+      // Fix 1: Properly use template literal with backticks
+      wsRef.current = new WebSocket(`ws://localhost:8000/ws/notifications/${username}/`);
 
-    return () => clearInterval(intervalRef.current);
+      wsRef.current.onopen = () => {
+        console.log("✅ Connected to WebSocket for notifications");
+      };
+
+      wsRef.current.onmessage = (e) => {
+        try {
+          // console.log("WebSocket message event:", e);
+          const data = JSON.parse(e.data);
+      
+          console.log("📩 New notification received:", data);
+          const newNotification = {
+            id: data.homework?.homework_code || data.id || Date.now().toString(),
+            title: data.homework?.title || 'New Homework',
+            image: data.homework?.attachment || '/default-homework-image.jpeg',
+            message: data.message || 'You have a new homework update.',
+            timestamp: data.homework?.date_assigned || new Date().toISOString(),
+            read: false,
+            type: 'homework',
+            homework: data.homework,
+          };
+
+          setNotifications(prev => {
+            const exists = prev.some(n => n.id === newNotification.id);
+            return exists ? prev : [newNotification, ...prev];
+          });
+        } catch (err) {
+          console.error("❌ Error parsing WebSocket message", err);
+        }
+      };
+
+      wsRef.current.onerror = (err) => {
+        console.error("❌ WebSocket error", err);
+      };
+
+      wsRef.current.onclose = () => {
+        console.log("⚠ WebSocket disconnected, trying to reconnect...");
+        // Fix 2: Store timeout reference for cleanup
+        reconnectTimeoutRef.current = setTimeout(connectWebSocket, 5000);
+      };
+    };
+
+    connectWebSocket();
+
+    // Fix 3: Proper cleanup
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
   }, [username]);
 
-  // Create notification (optimistic)
-  const createNotification = async (notificationData) => {
-    try {
-      if (!notificationData.id) {
-        notificationData.id =
-          notificationData.homework?.homework_code || Date.now().toString();
-      }
-      if (notificationData.read === undefined) {
-        notificationData.read = false;
-      }
-
-      setNotifications((prev) => {
-        const exists = prev.some((n) => n.id === notificationData.id);
-        return exists ? prev : [notificationData, ...prev];
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Error creating notification:', error);
-      return false;
-    }
-  };
-
+  // Mark a notification as read
   const markNotificationAsRead = (id) => {
     setNotifications((prev) =>
       prev.map((notif) =>
@@ -87,11 +80,15 @@ export const NotificationProvider = ({ children }) => {
     );
   };
 
-  const clearAllNotifications = () => {
+  // Clear all notifications
+  const clearAllNotifications = async () => {
+    console.log('Clearing all notifications');
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+
     try {
-      if (user && user.id) {
-        axiosInstance.delete(`/notifications/${user.id}/all`);
+      // Fix 4: Use username directly (not username.id)
+      if (username) {
+        await axiosInstance.delete(`/notifications/${username}/all`);
       }
     } catch (error) {
       console.warn('Could not clear notifications on server:', error);
@@ -101,10 +98,6 @@ export const NotificationProvider = ({ children }) => {
   const getUnreadCount = () =>
     notifications.filter((notif) => !notif.read).length;
 
-  const refreshNotifications = () => {
-    fetchNotifications();
-  };
-
   return (
     <NotificationContext.Provider
       value={{
@@ -112,8 +105,6 @@ export const NotificationProvider = ({ children }) => {
         markNotificationAsRead,
         clearAllNotifications,
         getUnreadCount,
-        createNotification,
-        refreshNotifications,
       }}
     >
       {children}
