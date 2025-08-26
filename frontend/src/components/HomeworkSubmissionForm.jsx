@@ -29,25 +29,26 @@ const HomeworkSubmissionForm = () => {
         console.log("from location.state :",homeworkDetails)
         // Get homework code from either state or URL query parameters
         // const homeworkCode = location.state?.homeworkCode || new URLSearchParams(location.search).get('code');
-        const homeworkCode=homeworkDetails.homework.homework_code;
-        // console.log("Homework_Code", homeworkCode)
-        // if (!homeworkCode) {
-        //   setError("No homework code provided");
-        //   return;
-        // }
+        const homeworkCode=homeworkDetails.homework_code;
+        console.log("Homework_Code", homeworkCode)
+        if (!homeworkCode) {
+          setError("No homework code provided");
+          return;
+        }
         
         // If homework details are passed directly, use them
         if (homeworkDetails) {
           console.log("Using homework details from navigation state:", homeworkDetails);
-          setAssignment(homeworkDetails.homework);
-        } else {
-          // Otherwise fetch the details using the homework code
-          console.log("Fetching homework details for code:", homeworkCode);
-          const response = await axiosInstance.get(`/homework/${homeworkCode}/`);
-          setAssignment(response.data);
-        }
+          setAssignment(homeworkDetails);
+         }
+        //  else {
+        //   // Otherwise fetch the details using the homework code
+        //   console.log("Fetching homework details for code:", homeworkCode);
+        //   const response = await axiosInstance.get(`/homework/${homeworkCode}/`);
+        //   setAssignment(response.data);
+        // }
       } catch (error) {
-        setError(error.response?.data?.message || "Failed to fetch assignment details");
+        // setError(error.response?.data?.message || "Failed to fetch assignment details");
         console.error("Error fetching assignment:", error);
       }
     };

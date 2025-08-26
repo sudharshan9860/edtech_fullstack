@@ -1,52 +1,69 @@
-import React, { useContext, useState } from 'react';
-import { Container, Navbar, Nav, Offcanvas } from 'react-bootstrap';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faSignOutAlt, 
-  faChartLine, 
+import React, { useContext, useState } from "react";
+import { Container, Navbar, Nav, Offcanvas } from "react-bootstrap";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSignOutAlt,
+  faChartLine,
   faVolumeUp,
   faVolumeMute,
   faTrophy,
-  faUser  // Added user icon
-} from '@fortawesome/free-solid-svg-icons';
-import './Layout.css';
-import { AuthContext } from './AuthContext';
-import NotificationDropdown from './NotificationDropdown';
-import SoundConfigModal from './SoundConfigModal';
-import { soundManager } from '../utils/SoundManager';
-
+  faUser,
+  faTachometerAlt,
+  faUsers,
+  faChartBar,
+} from "@fortawesome/free-solid-svg-icons";
+import "./Layout.css";
+import { AuthContext } from "./AuthContext";
+import NotificationDropdown from "./NotificationDropdown";
+import SoundConfigModal from "./SoundConfigModal";
+import { soundManager } from "../utils/SoundManager";
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const currentLocation = useLocation();
-  const { username, logout,role } = useContext(AuthContext);
-  
-  // Sound configuration state
+  const { username, logout, role } = useContext(AuthContext);
+
   const [showSoundConfig, setShowSoundConfig] = useState(false);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(soundManager.isSoundEnabled);
+  const [isSoundEnabled] = useState(soundManager.isSoundEnabled);
 
   const handleLogout = () => {
-    console.log('Logging out...');
     logout();
-    navigate('/');
+    navigate("/");
   };
 
-  const navigationLinks =  [
-    { path: '/student-dash', label: 'Student Dash' },
-    { path: '/teacher-dash', label: 'Teacher Dash' },
-    { path: '/analytics', label: 'Analytics' },
-    { path: '/progress-dashboard', label: 'Progress' },
-    { path: '/leaderboard', label: 'Leaderboard' },
-    { path: '/quests', label: 'Quests', icon: faTrophy }
-  ];
-
-  // ✅ Filter based on role
-  const filteredLinks = navigationLinks.filter(link => {
-    if (role === "student") {
-      return link.path !== "/teacher-dash"; // 👈 Exclude teacher-dash for students
+  // Build links based on role
+  const getNavigationLinks = () => {
+    if (role === "admin") {
+      return [
+        { path: "/admin-dash", label: "Admin Dashboard", icon: faTachometerAlt },
+        { path: "/student-dash", label: "Student Dash", icon: faUser },
+        { path: "/teacher-dash", label: "Teacher Dash", icon: faUsers },
+        { path: "/analytics", label: "Analytics", icon: faChartBar },
+        { path: "/progress-dashboard", label: "Progress", icon: faChartLine },
+      ];
+    } else if (role === "teacher") {
+      return [
+        { path: "/teacher-dash", label: "Teacher Dash", icon: faUsers },
+        { path: "/analytics", label: "Analytics", icon: faChartBar },
+        { path: "/progress-dashboard", label: "Progress", icon: faChartLine },
+      ];
     }
-    return true; // Allow all links for teachers or others
+    // student (default)
+    return [
+      { path: "/student-dash", label: "Student Dash", icon: faUser },
+      { path: "/student-analysis", label: "Student Analysis", icon: faChartBar },
+      { path: "/progress-dashboard", label: "Progress", icon: faChartLine },
+    ];
+  };
+
+  // ✅ call the function to produce the array
+  const navigationLinks = getNavigationLinks();
+
+  // ✅ optional filter
+  const filteredLinks = navigationLinks.filter((link) => {
+    if (role === "student") return link.path !== "/teacher-dash";
+    return true;
   });
 
   return (
@@ -55,56 +72,58 @@ const Layout = ({ children }) => {
         <Container fluid>
           <Navbar.Brand className="h3 text-white">Dashboard</Navbar.Brand>
           <Navbar.Toggle aria-controls="offcanvasNavbar" />
-          <Navbar.Offcanvas
-            id="offcanvasNavbar"
-            aria-labelledby="offcanvasNavbarLabel"
-            placement="end"
-          >
+          <Navbar.Offcanvas id="offcanvasNavbar" placement="end">
             <Offcanvas.Header closeButton>
-              <Offcanvas.Title id="offcanvasNavbarLabel" className="text-white">
-                Menu
-              </Offcanvas.Title>
+              <Offcanvas.Title className="text-white">Menu</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
               <Nav className="ms-auto justify-content-end flex-grow-1 pe-3">
                 {filteredLinks.map((link) => (
                   <Nav.Link
                     key={link.path}
-                    className={`custom-nav-link mx-2 ${currentLocation.pathname === link.path ? 'active' : ''}`}
+                    className={`custom-nav-link mx-2 ${
+                      currentLocation.pathname === link.path ? "active" : ""
+                    }`}
                     onClick={() => navigate(link.path)}
                   >
-                    {link.icon && <FontAwesomeIcon icon={link.icon} className="mr-2" />}
+                    {link.icon && (
+                      <FontAwesomeIcon icon={link.icon} className="mr-2" />
+                    )}
                     {link.label}
                   </Nav.Link>
                 ))}
-                
+
                 {/* Sound Toggle */}
-                <Nav.Link 
+                <Nav.Link
                   className="custom-nav-link mx-2"
                   onClick={() => setShowSoundConfig(true)}
                 >
-                  <FontAwesomeIcon 
-                    icon={isSoundEnabled ? faVolumeUp : faVolumeMute} 
+                  <FontAwesomeIcon
+                    icon={isSoundEnabled ? faVolumeUp : faVolumeMute}
                     className="text-white"
                   />
                 </Nav.Link>
 
-                {/* Added margin to create spacing */}
-            { role=='student'  ? <div className=" ms-0">
-                  <NotificationDropdown />
-                </div>: ""}
-                
-                {/* Admin section with spacing */}
+                {/* Notifications (students only) */}
+                {role === "student" ? (
+                  <div className="ms-0">
+                    <NotificationDropdown />
+                  </div>
+                ) : null}
+
+                {/* User / Logout */}
                 <Nav.Item className="d-flex align-items-center ms-0">
-                  <FontAwesomeIcon 
-                    icon={faUser} 
-                    className="text-white" 
-                  />
-                  <span className="ms-2 username-text admin-text">{username}</span>
+                  <FontAwesomeIcon icon={faUser} className="text-white" />
+                  <span className="ms-2 username-text admin-text">
+                    {username}
+                  </span>
                   <span
-                    onClick={handleLogout}  
-                    className='custom-nav-link mx-2' 
-                    style={{ cursor: 'pointer' }} >logout
+                    onClick={handleLogout}
+                    className="custom-nav-link mx-2"
+                    style={{ cursor: "pointer" }}
+                    title="Logout"
+                  >
+                    <FontAwesomeIcon icon={faSignOutAlt} /> Logout
                   </span>
                 </Nav.Item>
               </Nav>
@@ -121,10 +140,9 @@ const Layout = ({ children }) => {
         <p>&copy; AI EDUCATOR</p>
       </footer>
 
-      {/* Sound Configuration Modal */}
-      <SoundConfigModal 
-        show={showSoundConfig} 
-        onHide={() => setShowSoundConfig(false)} 
+      <SoundConfigModal
+        show={showSoundConfig}
+        onHide={() => setShowSoundConfig(false)}
       />
     </div>
   );
