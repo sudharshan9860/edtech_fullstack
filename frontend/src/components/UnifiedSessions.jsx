@@ -516,8 +516,8 @@ const UnifiedSessions = () => {
         ) : (
           <Row className="content-grid">
             {activeTab === 'self' 
-              ? filteredData.map((session, index) => renderSessionCard(session, index))
-              : filteredData.map((submission, index) => renderSubmissionCard(submission, index))
+              ? filteredData.slice(0, 10).map((session, index) => renderSessionCard(session, index))
+              : filteredData.slice(0, 10).map((submission, index) => renderSubmissionCard(submission, index))
             }
           </Row>
         )}

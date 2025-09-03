@@ -110,7 +110,6 @@ useEffect(() => {
       <div className="student-analysis-container">
         <div className="page-header">
           <h1 className="page-title">📊 My Performance Analysis</h1>
-          <p className="page-subtitle">Track your progress and identify areas for improvement</p>
         </div>
         
         <div className="student-info-banner">

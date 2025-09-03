@@ -37,11 +37,11 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
       ];
     }
     
-    // Add rollNo to existing students if not present
+    // Add rollNo to existing students if not present - FIXED TEMPLATE LITERAL
     const students = classesData[selectedClass.id].students || [];
     return students.map((student, index) => ({
       ...student,
-      rollNo: student.rollNo || 10HPS${String(index + 21).padStart(2, '0')}
+      rollNo: student.rollNo || `10HPS${String(index + 21).padStart(2, '0')}`
     }));
   };
 
@@ -158,7 +158,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
       weightage: '15%',
       priority: 'High',
       priorityColor: '#fee2e2',
-      recommendation: '🔥 High Priority'
+      recommendation: 'High Priority'
     },
     {
       chapter: 'Quadratic Applications',
@@ -166,7 +166,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
       weightage: '12%',
       priority: 'Medium',
       priorityColor: '#fef3c7',
-      recommendation: '⚠ Medium Priority'
+      recommendation: 'Medium Priority'
     },
     {
       chapter: 'Trigonometry',
@@ -174,7 +174,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
       weightage: '10%',
       priority: 'Maintain',
       priorityColor: '#d1fae5',
-      recommendation: '✅ Maintain'
+      recommendation: 'Maintain'
     }
   ];
 
@@ -217,7 +217,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
       <div className="score-progression-container">
         <div className="enhanced-header">
           <div className="header-content">
-            <h2 className="chart-title">📈 Homework vs Classwork: Date-wise Performance Analysis</h2>
+            <h2 className="chart-title">Homework vs Classwork: Date-wise Performance Analysis</h2>
             <p className="chart-subtitle">Score Comparison Over Time with All Submission Dates</p>
           </div>
         </div>
@@ -284,24 +284,24 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             </div>
             
             <div className="view-toggle-controls">
-              <div className="control-label">📊 View Options:</div>
+              <div className="control-label">View Options:</div>
               <button 
-                className={view-btn ${scoreDateView === 'combined' ? 'active' : ''}}
+                className={`view-btn ${scoreDateView === 'combined' ? 'active' : ''}`}
                 onClick={() => setScoreDateView('combined')}
               >
-                📊 Combined View
+                Combined View
               </button>
               <button 
-                className={view-btn ${scoreDateView === 'homework' ? 'active' : ''}}
+                className={`view-btn ${scoreDateView === 'homework' ? 'active' : ''}`}
                 onClick={() => setScoreDateView('homework')}
               >
-                📚 Homework Only
+                Homework Only
               </button>
               <button 
-                className={view-btn ${scoreDateView === 'classwork' ? 'active' : ''}}
+                className={`view-btn ${scoreDateView === 'classwork' ? 'active' : ''}`}
                 onClick={() => setScoreDateView('classwork')}
               >
-                ✏ Classwork Only
+                Classwork Only
               </button>
             </div>
 
@@ -337,7 +337,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
       <div className="chapter-analysis-container">
         <div className="enhanced-header">
           <div className="header-content">
-            <h2 className="chart-title">📚 Topic Analysis</h2>
+            <h2 className="chart-title">Topic Analysis</h2>
             <p className="chart-subtitle">Performance comparison across different topics</p>
           </div>
         </div>
@@ -396,24 +396,24 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             </div>
             
             <div className="view-toggle-controls">
-              <div className="control-label">📊 View Options:</div>
+              <div className="control-label">View Options:</div>
               <button 
-                className={view-btn ${chapterView === 'combined' ? 'active' : ''}}
+                className={`view-btn ${chapterView === 'combined' ? 'active' : ''}`}
                 onClick={() => setChapterView('combined')}
               >
-                📊 Combined View
+                Combined View
               </button>
               <button 
-                className={view-btn ${chapterView === 'homework' ? 'active' : ''}}
+                className={`view-btn ${chapterView === 'homework' ? 'active' : ''}`}
                 onClick={() => setChapterView('homework')}
               >
-                📚 Homework Only
+                Homework Only
               </button>
               <button 
-                className={view-btn ${chapterView === 'classwork' ? 'active' : ''}}
+                className={`view-btn ${chapterView === 'classwork' ? 'active' : ''}`}
                 onClick={() => setChapterView('classwork')}
               >
-                ✏ Classwork Only
+                Classwork Only
               </button>
             </div>
 
@@ -449,12 +449,12 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     return (
       <div className="mistake-analysis-container">
         <div className="enhanced-header">
-          <h2 className="section-title">🔍 Mistake-Progress-Analysis</h2>
+          <h2 className="section-title">Mistake-Progress-Analysis</h2>
         </div>
 
         {/* How Well Did I Do Section */}
         <div className="answer-categories-section">
-          <h3 className="categories-title">📊 How Well Did I Do? (Answer Categories)</h3>
+          <h3 className="categories-title">How Well Did I Do? (Answer Categories)</h3>
           <div className="categories-content">
             <div className="pie-chart-container">
               <ResponsiveContainer width="100%" height={400}>
@@ -469,11 +469,11 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                     dataKey="value"
                   >
                     {answerCategoriesData.map((entry, index) => (
-                      <Cell key={cell-${index}} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value, name) => [${value}%, name]}
+                    formatter={(value, name) => [`${value}%`, name]}
                     contentStyle={{ 
                       backgroundColor: 'white', 
                       border: '1px solid #e5e7eb',
@@ -511,7 +511,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
         {/* Enhanced Priority Chapters Section */}
         <div className="priority-chapters-section">
-          <h3 className="subsection-title">🎯 Priority Chapters (Based on NCERT Weightage)</h3>
+          <h3 className="subsection-title">Priority Chapters (Based on NCERT Weightage)</h3>
           <div className="priority-cards-grid">
             {priorityChaptersData.map((chapter, index) => (
               <div 
@@ -539,10 +539,10 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
         {/* Filter Section */}
         <div className="filters-section">
-          <h3 className="subsection-title">🔍 Explore Your Questions In Different Ways</h3>
+          <h3 className="subsection-title">Explore Your Questions In Different Ways</h3>
           <div className="filters-grid">
             <div className="filter-group">
-              <label className="filter-label">📊 Filter By Performance Percentage</label>
+              <label className="filter-label">Filter By Performance Percentage</label>
               <div className="filter-subtitle">Choose A Performance Range:</div>
               <select 
                 value={selectedPerformanceFilter}
@@ -558,7 +558,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             </div>
 
             <div className="filter-group">
-              <label className="filter-label">📚 Filter By Chapter</label>
+              <label className="filter-label">Filter By Chapter</label>
               <div className="filter-subtitle">Choose A Chapter:</div>
               <select 
                 value={selectedChapterFilter}
@@ -578,7 +578,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         {/* Results Section */}
         <div className="results-section">
           <div className="results-header">
-            <h3 className="results-title">📋 Filtered Results - {filteredQuestions.length} Questions Found</h3>
+            <h3 className="results-title">Filtered Results - {filteredQuestions.length} Questions Found</h3>
             <p className="results-subtitle">Showing questions based on your selected filters</p>
           </div>
 
@@ -629,7 +629,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
                     <td className="score-cell">{question.myScore}</td>
                     <td className="performance-cell">{question.performance}</td>
                     <td className="tracker-cell">{question.mistakeTracker}</td>
-                    <td className={status-cell status-${question.currentStatus.toLowerCase().replace(/\s+/g, '-')}}>
+                    <td className={`status-cell status-${question.currentStatus.toLowerCase().replace(/\s+/g, '-')}`}>
                       {question.currentStatus}
                     </td>
                     <td className="mistake-cell">{question.studentMistake}</td>
@@ -689,30 +689,30 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
     return (
       <div className="enhanced-summary-container">
         <div className="enhanced-header">
-          <h2 className="section-title">📋 Student Performance Summary</h2>
+          <h2 className="section-title">Student Performance Summary</h2>
         </div>
 
         {/* Summary Filters */}
         <div className="summary-filters">
-          <h3 className="filter-section-title">📊 Filter Summary View:</h3>
+          <h3 className="filter-section-title">Filter Summary View:</h3>
           <div className="filter-buttons">
             <button 
-              className={filter-btn ${summaryFilter === 'all' ? 'active' : ''}}
+              className={`filter-btn ${summaryFilter === 'all' ? 'active' : ''}`}
               onClick={() => setSummaryFilter('all')}
             >
-              📈 All Data
+              All Data
             </button>
             <button 
-              className={filter-btn ${summaryFilter === 'homework' ? 'active' : ''}}
+              className={`filter-btn ${summaryFilter === 'homework' ? 'active' : ''}`}
               onClick={() => setSummaryFilter('homework')}
             >
-              📚 Homework Only
+              Homework Only
             </button>
             <button 
-              className={filter-btn ${summaryFilter === 'classwork' ? 'active' : ''}}
+              className={`filter-btn ${summaryFilter === 'classwork' ? 'active' : ''}`}
               onClick={() => setSummaryFilter('classwork')}
             >
-              ✏ Classwork Only
+              Classwork Only
             </button>
           </div>
         </div>
@@ -785,7 +785,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
         {/* Statistics Summary */}
         <div className="statistics-summary">
-          <h3 className="stats-title">📈 Performance Statistics Summary</h3>
+          <h3 className="stats-title">Performance Statistics Summary</h3>
           <div className="stats-cards">
             <div className="stat-card">
               <div className="stat-number">{summaryData.totalAssessments}</div>
@@ -808,7 +808,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
 
         {/* NCERT Priority Chapters */}
         <div className="priority-chapters-summary">
-          <h3 className="priority-title">🎯 Priority Chapters (Based on NCERT Weightage)</h3>
+          <h3 className="priority-title">Priority Chapters (Based on NCERT Weightage)</h3>
           <div className="priority-summary-cards">
             {priorityChaptersData.map((chapter, index) => (
               <div 
@@ -849,7 +849,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             <button
               key={tab.key}
               onClick={() => setStudentAnalysisMainTab(tab.key)}
-              className={main-tab-button ${tab.key} ${studentAnalysisMainTab === tab.key ? 'active' : ''}}
+              className={`main-tab-button ${tab.key} ${studentAnalysisMainTab === tab.key ? 'active' : ''}`}
             >
               <span className="tab-icon">{tab.icon}</span>
               <span className="tab-label">{tab.label}</span>
@@ -858,7 +858,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
         </div>
 
         {/* Content Area */}
-        <div className={content-area ${isTransitioning ? 'loading' : ''}}>
+        <div className={`content-area ${isTransitioning ? 'loading' : ''}`}>
           {studentAnalysisMainTab === 'score-progression' && renderScoreDatewiseProgression()}
           {studentAnalysisMainTab === 'chapter-analysis' && renderChapterAnalysis()}
           {studentAnalysisMainTab === 'mistakes' && renderMistakeProgressAnalysisTab()}
@@ -878,7 +878,7 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
               <h2 className="header-title">Student Analysis Dashboard</h2>
               <p className="header-subtitle">
                 {selectedStudent ? 
-                  Detailed performance analysis for ${selectedStudent.rollNo} - ${selectedStudent.name} : 
+                  `Detailed performance analysis for ${selectedStudent.rollNo} - ${selectedStudent.name}` : 
                   'Select a student from the dropdown above to view detailed analysis'
                 }
               </p>
@@ -889,10 +889,10 @@ const StudentAnalysis = ({ selectedClass, selectedStudent, onStudentSelect, clas
             <div className="selector-group">
               <span className="selector-label">Select Class</span>
               <select
-                value={selectedClass.name}
+                value={selectedClass?.name || ''}
                 onChange={(e) => {
                   const classData = Object.values(classesData).find(cls => cls.name === e.target.value);
-                  if (classData) {
+                  if (classData && onClassChange) {
                     onClassChange(classData);
                   }
                 }}

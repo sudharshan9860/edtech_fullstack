@@ -51,6 +51,18 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
   const [isLoadingPreviousClasswork, setIsLoadingPreviousClasswork] = useState(false);
   const [previousClassworkError, setPreviousClassworkError] = useState(null);
 
+  // State for previous homework submissions modal
+  const [showPreviousHomework, setShowPreviousHomework] = useState(false);
+  const [previousHomeworkData, setPreviousHomeworkData] = useState([]);
+  const [isLoadingPreviousHomework, setIsLoadingPreviousHomework] = useState(false);
+  const [previousHomeworkError, setPreviousHomeworkError] = useState(null);
+
+  // State for homework list modal
+  const [showHomeworkListModal, setShowHomeworkListModal] = useState(false);
+  const [homeworkList, setHomeworkList] = useState([]);
+  const [isLoadingHomeworkList, setIsLoadingHomeworkList] = useState(false);
+  const [homeworkListError, setHomeworkListError] = useState(null);
+
   // Fetch classes on component mount
   useEffect(() => {
     async function fetchData() {
@@ -193,6 +205,96 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       setIsLoadingPreviousClasswork(false);
     }
   };
+
+  // Fetch previous homework submissions
+  const fetchPreviousHomeworkSubmissions = async () => {
+    setIsLoadingPreviousHomework(true);
+    setPreviousHomeworkError(null);
+    
+    try {
+      const response = await axiosInstance.get(`/homework-submission/?homework_code=HW-662037`);
+      console.log("Previous homework submissions:", response.data);
+      
+      // Handle different response formats
+      if (response.data) {
+        if (Array.isArray(response.data)) {
+          setPreviousHomeworkData(response.data);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          setPreviousHomeworkData(response.data.data);
+        } else if (response.data.submissions && Array.isArray(response.data.submissions)) {
+          setPreviousHomeworkData(response.data.submissions);
+        } else {
+          // If data is an object with submissions, convert to array
+          setPreviousHomeworkData([response.data]);
+        }
+      } else {
+        setPreviousHomeworkData([]);
+      }
+      setShowPreviousHomework(true);
+    } catch (error) {
+      console.error("Error fetching previous homework:", error);
+      setPreviousHomeworkError(error.response?.data?.message || "Failed to fetch previous homework submissions");
+      setPreviousHomeworkData([]);
+      setShowPreviousHomework(true);
+    } finally {
+      setIsLoadingPreviousHomework(false);
+    }
+  };
+
+  // Fetch homework list for analysis reports
+  const fetchHomeworkList = async () => {
+    setIsLoadingHomeworkList(true);
+    setHomeworkListError(null);
+    setHomeworkList([]);
+
+    try {
+      const response = await axiosInstance.get("/homework-list/");
+      console.log("Homework list:", response.data);
+      
+      if (response.data && response.data.homework_codes && Array.isArray(response.data.homework_codes)) {
+        setHomeworkList(response.data.homework_codes);
+      } else {
+        setHomeworkListError("No homework codes found or invalid response format.");
+      }
+      setShowHomeworkListModal(true);
+    } catch (error) {
+      console.error("Error fetching homework list:", error);
+      setHomeworkListError(error.response?.data?.message || "Failed to fetch homework list.");
+      setHomeworkList([]);
+      setShowHomeworkListModal(true);
+    } finally {
+      setIsLoadingHomeworkList(false);
+    }
+  };
+
+  // Handle homework selection from list modal
+  const handleHomeworkSelection = async (homeworkCode) => {
+    setShowHomeworkListModal(false);
+    setIsLoadingPreviousHomework(true);
+    setPreviousHomeworkError(null);
+
+    try {
+      const response = await axiosInstance.get(`/homework-submission/?homework_code=${homeworkCode}`);
+      console.log("Previous homework submissions for:", homeworkCode, response.data);
+      
+      if (response.data && Array.isArray(response.data)) {
+        setPreviousHomeworkData(response.data);
+      } else if (response.data && response.data.submissions && Array.isArray(response.data.submissions)) {
+        setPreviousHomeworkData(response.data.submissions);
+      } else {
+        setPreviousHomeworkData([response.data]);
+      }
+      setShowPreviousHomework(true);
+    } catch (error) {
+      console.error("Error fetching homework submissions for report:", error);
+      setPreviousHomeworkError(error.response?.data?.message || "Failed to fetch homework submissions for report.");
+      setPreviousHomeworkData([]);
+      setShowPreviousHomework(true);
+    } finally {
+      setIsLoadingPreviousHomework(false);
+    }
+  };
+
 
   // Determine if generate button should be enabled
   const isGenerateButtonEnabled = () => {
@@ -348,7 +450,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       setSelectedQuestions([]);
       
       // Show success message
-      alert("Homework assignment created successfully!");
+     
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create assignment");
       console.error("Error creating homework assignment:", error);
@@ -564,9 +666,9 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
           </Col>
           <Col xs={12} md={6}>
             <Form.Group controlId="classworkDueDate">
-              <Form.Label>Due Date</Form.Label>
+              <Form.Label>Duration in hours</Form.Label>
               <Form.Control
-                type="datetime-local"
+                type="number"
                 value={classworkDueDate}
                 onChange={(e) => setClassworkDueDate(e.target.value)}
                 required
@@ -652,6 +754,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       </Form>
     </div>
   );
+
 
   // Format subtopic display names
   const getSubtopicDisplayName = (subtopic, index) => {
@@ -929,7 +1032,341 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
     </Modal>
   );
 
+  // Render Previous Homework Modal
+  const renderPreviousHomeworkModal = () => (
+    <Modal 
+      show={showPreviousHomework} 
+      onHide={() => setShowPreviousHomework(false)}
+      size="xl"
+      scrollable
+    >
+      <Modal.Header closeButton className="bg-primary text-white">
+        <Modal.Title>
+          <i className="fas fa-chart-line me-2"></i>
+          Previous Homework Analysis Report
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="p-4">
+        {previousHomeworkError ? (
+          <div className="alert alert-danger">
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            {previousHomeworkError}
+          </div>
+        ) : previousHomeworkData.length === 0 ? (
+          <div className="alert alert-info text-center py-4">
+            <i className="fas fa-info-circle fa-2x mb-3"></i>
+            <h5>No previous homework submissions found.</h5>
+            <p className="mb-0">Start creating homework assignments to see analysis reports here.</p>
+          </div>
+        ) : (
+          <div className="homework-analysis-container">
+            {previousHomeworkData.map((submission, index) => (
+              <Card key={submission.id || index} className="mb-4 shadow-sm border-0">
+                <Card.Header className="bg-gradient-primary text-black py-3">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      {/* <h5 className="mb-1">
+                        <i className="fas fa-homework me-2"></i>
+                        Homework: {submission.homework || 'N/A'}
+                      </h5> */}
+                     
+                    </div>
+                    <div className="text">
+                      <Badge bg="light" text="dark" className="fs-2 px-3 py-2">
+                        <i className="fas fa-file-alt me-1"></i>
+                        Analysis Report of {submission.student_id}
+                      </Badge>
+                      <small className="opacity-75">
+                        {/* Student: {submission.student_name || 'N/A'} |  */}
+                        Submitted: {submission.submission_date ? new Date(submission.submission_date).toLocaleString() : 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+                </Card.Header>
+                
+                <Card.Body className="p-0">
+                  {/* Overall Performance Summary */}
+                  {submission.result_json && submission.result_json.questions && (
+                    <div className="p-4 bg-light">
+                      <h6 className="text-primary mb-3">
+                        <i className="fas fa-chart-pie me-2"></i>
+                        Performance Overview
+                      </h6>
+                      <Row>
+                        <Col md={3}>
+                          <div className="text-center p-3 bg-white rounded shadow-sm">
+                            <div className="text-success fs-4 fw-bold">
+                              {submission.result_json.questions.filter(q => q.answer_category === 'Correct').length}
+                            </div>
+                            <small className="text-muted">Correct Answers</small>
+                          </div>
+                        </Col>
+                        <Col md={3}>
+                          <div className="text-center p-3 bg-white rounded shadow-sm">
+                            <div className="text-warning fs-4 fw-bold">
+                              {submission.result_json.questions.filter(q => q.answer_category === 'Partially-Correct').length}
+                            </div>
+                            <small className="text-muted">Partially Correct</small>
+                          </div>
+                        </Col>
+                        <Col md={3}>
+                          <div className="text-center p-3 bg-white rounded shadow-sm">
+                            <div className="text-danger fs-4 fw-bold">
+                              {submission.result_json.questions.filter(q => q.answer_category !== 'Correct' && q.answer_category !== 'Partially-Correct').length}
+                            </div>
+                            <small className="text-muted">Incorrect</small>
+                          </div>
+                        </Col>
+                        <Col md={3}>
+                          <div className="text-center p-3 bg-white rounded shadow-sm">
+                            <div className="text-info fs-4 fw-bold">
+                              {submission.result_json.questions.reduce((sum, q) => sum + (q.total_score || 0), 0)}/{submission.result_json.questions.reduce((sum, q) => sum + (q.max_score || 0), 0)}
+                            </div>
+                            <small className="text-muted">Total Score</small>
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
+
+                  {/* Detailed Question Analysis */}
+                  {submission.result_json && submission.result_json.questions && (
+                    <div className="p-4">
+                      <h6 className="text-primary mb-3">
+                        <i className="fas fa-list-ul me-2"></i>
+                        Question-by-Question Analysis
+                      </h6>
+                      
+                      {submission.result_json.questions.map((question, qIndex) => (
+                        <Card key={qIndex} className="mb-3 border-0 shadow-sm">
+                          <Card.Header className={`py-2 ${
+                            question.answer_category === 'Correct' ? 'bg-success text-white' :
+                            question.answer_category === 'Partially-Correct' ? 'bg-warning text-dark' :
+                            'bg-danger text-white'
+                          }`}>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <h6 className="mb-0">
+                                <i className="fas fa-question-circle me-2"></i>
+                                Question {qIndex + 1}: {question.topic}
+                              </h6>
+                              <div className="d-flex align-items-center gap-2">
+                                <Badge bg="light" text="dark">
+                                  {question.answer_category}
+                                </Badge>
+                                <span className="fs-6">
+                                  {question.total_score}/{question.max_score}
+                                </span>
+                              </div>
+                            </div>
+                          </Card.Header>
+                          
+                          <Card.Body className="p-3">
+                            <Row>
+                              <Col md={8}>
+                                <div className="mb-3">
+                                  <strong className="text-primary">Question:</strong>
+                                  <p className="mb-2 mt-1">{question.question}</p>
+                                </div>
+                                
+                                <div className="mb-3">
+                                  <strong className="text-primary">Student's Work:</strong>
+                                  <p className="mb-2 mt-1 text-muted">{question.comment}</p>
+                                </div>
+                                
+                                <div className="mb-3">
+                                  <strong className="text-primary">Correction:</strong>
+                                  <p className="mb-0 mt-1 text-success">{question.correction_comment}</p>
+                                </div>
+                              </Col>
+                              
+                              <Col md={4}>
+                                <div className="bg-light p-3 rounded">
+                                  <h6 className="text-primary mb-2">Analysis</h6>
+                                  
+                                  <div className="mb-2">
+                                    <small className="text-muted">Score:</small>
+                                    <div className="d-flex align-items-center gap-2">
+                                      <span className="fw-bold">{question.total_score}</span>
+                                      <span className="text-muted">/</span>
+                                      <span className="text-muted">{question.max_score}</span>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="mb-2">
+                                    <small className="text-muted">Category:</small>
+                                    <Badge 
+                                      bg={
+                                        question.answer_category === 'Correct' ? 'success' :
+                                        question.answer_category === 'Partially-Correct' ? 'warning' :
+                                        'danger'
+                                      }
+                                      className="ms-2"
+                                    >
+                                      {question.answer_category}
+                                    </Badge>
+                                  </div>
+                                  
+                                  <div className="mb-2">
+                                    <small className="text-muted">Concepts:</small>
+                                    <div className="mt-1">
+                                      {question.concept_required && question.concept_required.map((concept, cIndex) => (
+                                        <Badge key={cIndex} bg="info" className="me-1 mb-1">
+                                          {concept}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </Col>
+                            </Row>
+                          </Card.Body>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Concepts Mastery Summary */}
+                  {submission.result_json && submission.result_json.questions && (
+                    <div className="p-4 bg-light">
+                      <h6 className="text-primary mb-3">
+                        <i className="fas fa-brain me-2"></i>
+                        Concepts Mastery Summary
+                      </h6>
+                      
+                      <div className="row">
+                        {(() => {
+                          const conceptStats = {};
+                          submission.result_json.questions.forEach(q => {
+                            if (q.concept_required) {
+                              q.concept_required.forEach(concept => {
+                                if (!conceptStats[concept]) {
+                                  conceptStats[concept] = { total: 0, correct: 0, questions: [] };
+                                }
+                                conceptStats[concept].total++;
+                                conceptStats[concept].questions.push(q);
+                                if (q.answer_category === 'Correct') {
+                                  conceptStats[concept].correct++;
+                                }
+                              });
+                            }
+                          });
+                          
+                          return Object.entries(conceptStats).map(([concept, stats]) => (
+                            <Col md={6} key={concept} className="mb-3">
+                              <Card className="border-0 shadow-sm">
+                                <Card.Body className="p-3">
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 className="mb-0 text-primary">{concept}</h6>
+                                    <Badge 
+                                      bg={
+                                        stats.correct === stats.total ? 'success' :
+                                        stats.correct >= stats.total * 0.7 ? 'warning' :
+                                        'danger'
+                                      }
+                                    >
+                                      {Math.round((stats.correct / stats.total) * 100)}%
+                                    </Badge>
+                                  </div>
+                                                                     <div className="progress mb-2" style={{ height: '8px' }}>
+                                     <div 
+                                       className={`progress-bar ${
+                                         stats.correct === stats.total ? 'bg-success' :
+                                         stats.correct >= stats.total * 0.7 ? 'bg-warning' :
+                                         'bg-danger'
+                                       }`}
+                                       style={{ width: `${(stats.correct / stats.total) * 100}%` }}
+                                     ></div>
+                                   </div>
+                                  <small className="text-muted">
+                                    {stats.correct} out of {stats.total} questions correct
+                                  </small>
+                                </Card.Body>
+                              </Card>
+                            </Col>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            ))}
+          </div>
+        )}
+      </Modal.Body>
+      <Modal.Footer className="bg-light">
+        <Button variant="secondary" onClick={() => setShowPreviousHomework(false)}>
+          <i className="fas fa-times me-2"></i>
+          Close
+        </Button>
+        {/* <Button variant="primary" onClick={() => window.print()}>
+          <i className="fas fa-print me-2"></i>
+          Print Report
+        </Button> */}
+      </Modal.Footer>
+    </Modal>
+  );
+
+  // Render Homework List Modal
+  const renderHomeworkListModal = () => (
+    <Modal
+      show={showHomeworkListModal}
+      onHide={() => setShowHomeworkListModal(false)}
+      size="lg"
+      centered
+    >
+      <Modal.Header closeButton className="bg-primary text-white">
+        <Modal.Title>
+          <i className="fas fa-list-alt me-2"></i>
+          Previous Homework Assignments
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {isLoadingHomeworkList ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3">Fetching previous homework assignments...</p>
+          </div>
+        ) : homeworkListError ? (
+          <div className="alert alert-danger text-center py-4">
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            {homeworkListError}
+          </div>
+        ) : homeworkList.length === 0 ? (
+          <div className="alert alert-info text-center py-4">
+            <i className="fas fa-info-circle fa-2x mb-3"></i>
+            <h5>No previous homework assignments found.</h5>
+            <p className="mb-0">Start creating new homework assignments to see them here.</p>
+          </div>
+        ) : (
+          <div className="list-group">
+            {homeworkList.map((homeworkCode, index) => (
+              <button
+                key={index}
+                className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                onClick={() => handleHomeworkSelection(homeworkCode)}
+              >
+                <span>{homeworkCode}</span>
+                <Badge bg="light" text="dark">
+                  View Report
+                </Badge>
+              </button>
+            ))}
+          </div>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowHomeworkListModal(false)}>
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+
   return (
+    <>
     <div className="quick-exercise-container">
       {/* Add Previous Classwork Button only for classwork mode */}
       {mode === "classwork" && !showClassworkForm && (
@@ -940,6 +1377,30 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
             disabled={isLoadingPreviousClasswork}
           >
             {isLoadingPreviousClasswork ? 'Loading...' : 'View Previous Classwork Submissions'}
+          </Button>
+        </div>
+      )}
+
+      {mode === "homework" && !showHomeworkForm && (
+        <div className="d-flex justify-content-end mb-3">
+          {/* <Button 
+            variant="info" 
+            onClick={fetchPreviousHomeworkSubmissions}
+            disabled={isLoadingPreviousHomework}
+          >
+            {isLoadingPreviousHomework ? 'Loading...' : 'View Previous Homework Submissions'}
+          </Button> */}
+        </div>
+      )}
+
+      {mode === "homework" && !showHomeworkForm && (
+        <div className="d-flex justify-content-end mb-3">
+          <Button 
+            variant="info" 
+            onClick={fetchHomeworkList}
+            disabled={isLoadingHomeworkList}
+          >
+            {isLoadingHomeworkList ? 'Loading...' : 'View Previous Homework Assignments'}
           </Button>
         </div>
       )}
@@ -1100,7 +1561,7 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
           )
         : (!showHomeworkForm ? (
             <div className="question-selection-container">
-              <h3>Quick Exercise Generator</h3>
+              <h3>Quick Homework Generator</h3>
               <p className="text-muted">Select class, subject, and chapter to generate questions for homework</p>
               <Form onSubmit={handleSubmit}>
                 <Row className="mb-3">
@@ -1286,7 +1747,16 @@ const QuickExerciseComponent = ({ onCreateHomework, mode = "homework" }) => {
       
       {/* Render Previous Classwork Modal */}
       {renderPreviousClassworkModal()}
+
+      {/* Render Previous Homework Modal */}
+      {renderPreviousHomeworkModal()}
+
+      {/* Render Homework List Modal */}
+      {renderHomeworkListModal()}
     </div>
+
+    <div></div>
+    </>
   );
 };
 

@@ -269,7 +269,7 @@ const RecentSessions = () => {
           ) : (
             // ...existing code...
         <Row className="session-grid">
-          {filteredSessions.map((session, index) => (
+          {filteredSessions.slice(0, 10).map((session, index) => (
             <Col key={index} md={4} sm={6} className="mb-3">
               <Card 
                 className="session-card" 

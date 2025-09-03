@@ -19,10 +19,7 @@ import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';
 import StudentGapAnalysisReport from '../components/StudentGapAnalysisReport';
 import WorksheetSubmission from '../components/WorksheetSubmission';
 import StudentAnalysisWrapper from '../components/StudentAnalysisWrapper';
-
-
-// In your routes
-
+import ChairmanDashboard from '../components/ChairmanDashboard';
 
 const AppRoutes = () => {
   return (
@@ -48,6 +45,17 @@ const AppRoutes = () => {
           <PrivateRoute>
             <Layout>
               <TeacherDash />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route        
+        path="/chairman-dash"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <ChairmanDashboard />
             </Layout>
           </PrivateRoute>
         }
@@ -95,6 +103,16 @@ const AppRoutes = () => {
           <PrivateRoute>
             <Layout>
               <ResultPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/similar-questions"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <SimilarQuestions />
             </Layout>
           </PrivateRoute>
         }
