@@ -1,158 +1,97 @@
-// src/components/AuthContext.js
-import React, { createContext, useState, useEffect } from "react";
-import axiosInstance from "../api/axiosInstance";
+// src/components/AuthContext.jsx - Updated to support admin authentication
+import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Initialize state from localStorage with fallback
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const token = localStorage.getItem("accessToken");
-    return !!token;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
+  const [userRole, setUserRole] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const [username, setUsername] = useState(() => {
-    return localStorage.getItem("username") || "";
-  });
-
-  const [role, setRole] = useState(() => {
-    return localStorage.getItem("role") || "";
-  });
-
-  const [className, setClassName] = useState(() => {
-    return localStorage.getItem("class_name") || ""; 
-  });
-
-  // Mock chairman credentials
-  const mockChairmanCredentials = {
-    username: "chairman",
-    password: "chairman123",
-    role: "chairman",
-    class_name: "Executive"
-  };
-
-  // Mock login function for chairman
-  const mockChairmanLogin = (username, password) => {
-    if (username === mockChairmanCredentials.username && 
-        password === mockChairmanCredentials.password) {
-      return {
-        success: true,
-        token: "mock-chairman-token-" + Date.now(),
-        user: mockChairmanCredentials
-      };
-    }
-    return { success: false };
-  };
-
-  // Sync state with localStorage changes
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === "accessToken") {
-        setIsAuthenticated(!!e.newValue);
-      } else if (e.key === "username") {
-        setUsername(e.newValue || "");
-      } else if (e.key === "role") {
-        setRole(e.newValue || "");
-      } else if (e.key === "class_name") {
-        setClassName(e.newValue || ""); 
+    // Check for existing authentication on app load
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem('access_token');
+      const storedUsername = localStorage.getItem('username');
+      const storedRole = localStorage.getItem('userRole');
+      const storedEmail = localStorage.getItem('userEmail');
+
+      if (token && storedUsername) {
+        setIsAuthenticated(true);
+        setUsername(storedUsername);
+        setUserRole(storedRole || 'student');
+        setUserEmail(storedEmail || '');
       }
+      setLoading(false);
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    checkAuthStatus();
   }, []);
 
-  const login = async (user, password, userRole, className) => {
-    console.log("Login attempt:", user, "with role:", userRole);
+  const login = (userData) => {
+    setIsAuthenticated(true);
+    setUsername(userData.username);
+    setUserRole(userData.role || 'student');
+    setUserEmail(userData.email || '');
     
-    try {
-      // Check if it's a chairman login attempt
-      if (user === "chairman") {
-        const mockResult = mockChairmanLogin(user, password);
-        if (mockResult.success) {
-          // Store in localStorage
-          localStorage.setItem("username", mockResult.user.username);
-          localStorage.setItem("accessToken", mockResult.token);
-          localStorage.setItem("role", mockResult.user.role);
-          localStorage.setItem("class_name", mockResult.user.class_name);
-          
-          // Update state
-          setIsAuthenticated(true);
-          setUsername(mockResult.user.username);
-          setRole(mockResult.user.role);
-          setClassName(mockResult.user.class_name);
-          
-          return mockResult;
-        } else {
-          throw new Error("Invalid chairman credentials");
-        }
-      }
-
-      // Regular authentication logic for other roles
-      // Store in localStorage
-      localStorage.setItem("username", user);
-      localStorage.setItem("accessToken", "token-placeholder");
-      localStorage.setItem("role", userRole);
-      localStorage.setItem("class_name", className || "");
-      
-      // Update state
-      setIsAuthenticated(true);
-      setUsername(user);
-      setRole(userRole);
-      setClassName(className || "");
-      
-      return { success: true };
-    } catch (error) {
-      console.error("Error during login:", error);
-      throw new Error("Failed to authenticate");
-    }
+    // Store in localStorage (already done in LoginPage, but ensure consistency)
+    localStorage.setItem('username', userData.username);
+    localStorage.setItem('userRole', userData.role || 'student');
+    localStorage.setItem('userEmail', userData.email || '');
   };
 
-  const logout = async () => {
-    try {
-      console.log("Logging out...");
-      
-      // Only call backend logout if not a mock chairman session
-      if (role !== "chairman") {
-        await axiosInstance.post('logout/', {}, {
-          withCredentials: true
-        });
-      }
+  const logout = () => {
+    setIsAuthenticated(false);
+    setUsername('');
+    setUserRole('');
+    setUserEmail('');
+    
+    // Clear all authentication-related data
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('streakData');
+    localStorage.removeItem('rewardData');
+    localStorage.removeItem('completedChapters');
+    
+    // Redirect to login
+    window.location.href = '/login';
+  };
 
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("username");
-      localStorage.removeItem("role");
-      localStorage.removeItem("class_name");
-      localStorage.removeItem("streakData");
-      localStorage.removeItem("rewardData");
-      localStorage.removeItem("completedChapters");
+  // Helper function to check if current user is admin
+  const isAdmin = () => {
+    return userRole === 'admin' || username === 'admin';
+  };
 
-      setIsAuthenticated(false);
-      setUsername("");
-      setRole("");
-      setClassName("");
+  // Helper function to check if current user is teacher
+  const isTeacher = () => {
+    return userRole === 'teacher';
+  };
 
-      window.location.href = "/login";
-    } catch (error) {
-      console.error("Error during logout:", error);
-      localStorage.clear();
-      setIsAuthenticated(false);
-      setUsername("");
-      setRole("");
-      setClassName("");
-      window.location.href = "/login";
-    }
+  // Helper function to check if current user is student
+  const isStudent = () => {
+    return userRole === 'student' || (!userRole && isAuthenticated);
+  };
+
+  const contextValue = {
+    isAuthenticated,
+    username,
+    userRole,
+    userEmail,
+    loading,
+    login,
+    logout,
+    isAdmin,
+    isTeacher,
+    isStudent
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      username, 
-      role, 
-      className,
-      login, 
-      logout 
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

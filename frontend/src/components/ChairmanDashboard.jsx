@@ -1,425 +1,244 @@
-// src/components/ChairmanDashboard.jsx - Enhanced with Fixed Layout
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Nav, Button, Table, Badge, Modal, Form, Container } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Button, Table, Alert, Spinner } from 'react-bootstrap';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
+import axiosInstance from '../api/axiosInstance';
 import './ChairmanDashboard.css';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const ChairmanDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState('');
-  const [selectedData, setSelectedData] = useState(null);
-
+  // State management
+  const [activeTab, setActiveTab] = useState('daily-report');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
+  // Dashboard data states
   const [dashboardData, setDashboardData] = useState({
-    overview: {
-      totalStudents: 250,
-      totalTeachers: 4,
-      totalSections: 8,
-      overallAverage: 79.1,
-      targetedStudents: 125,
-      untargetedStudents: 125,
-      monthlyGrowth: 2.3,
-      averageEngagement: 83.5,
-      budgetUtilization: 68
-    },
-    studentPerformance: {
-      testScoresTrend: [78, 83, 85, 79, 88],
-      testLabels: ['Test 1', 'Test 2', 'Test 3', 'Test 4', 'Test 5'],
-      gradeDistribution: {
-        'A+': 15,
-        'A': 25,
-        'B+': 30,
-        'B': 20,
-        'C': 8,
-        'F': 2
-      }
-    },
-    teacherAnalytics: {
-      engagement: [
-        { name: 'John Smith', engagement: 87, students: 32, subjects: ['Math', 'Physics'] },
-        { name: 'Sarah Johnson', engagement: 91, students: 28, subjects: ['Chemistry', 'Biology'] },
-        { name: 'Michael Brown', engagement: 79, students: 35, subjects: ['English', 'History'] },
-        { name: 'Emily Davis', engagement: 84, students: 30, subjects: ['Math', 'Computer Science'] }
-      ]
-    },
-    sections: [
-      { id: 1, name: 'Section A', students: 32, teacher: 'John Smith', average: 85, subjects: 4 },
-      { id: 2, name: 'Section B', students: 28, teacher: 'Sarah Johnson', average: 91, subjects: 3 },
-      { id: 3, name: 'Section C', students: 35, teacher: 'Michael Brown', average: 79, subjects: 5 },
-      { id: 4, name: 'Section D', students: 30, teacher: 'Emily Davis', average: 84, subjects: 4 }
-    ],
-    alerts: [
-      { 
-        type: 'danger', 
-        message: 'Section C (Teacher: Michael Brown) - Performance 79% significantly below target. Immediate intervention required.', 
-        priority: 'urgent', 
-        timestamp: '2 hours ago',
-        action: 'warn_teacher',
-        teacher: 'Michael Brown',
-        section: 'Section C',
-        performance: 79
-      },
-      { 
-        type: 'warning', 
-        message: '15 students in Section C need immediate attention in Mathematics - Teacher Michael Brown notified', 
-        priority: 'high', 
-        timestamp: '4 hours ago',
-        action: 'academic_support'
-      },
-      { 
-        type: 'info', 
-        message: 'New educational resources available for download', 
-        priority: 'medium', 
-        timestamp: '6 hours ago' 
-      },
-      { 
-        type: 'success', 
-        message: 'Overall improvement of 2.3% this month - Section B leading with 91%', 
-        priority: 'low', 
-        timestamp: '1 day ago' 
-      }
-    ]
+    totalHomeworks: 9,
+    totalClassworks: 15,
+    overallCompletion: 88,
+    overallScore: 8.2,
+    totalStudents: 1250,
+    averageAttendance: 92.5,
+    overallPerformance: 85,
+    teachersActive: 48
   });
 
-  const handleShowModal = (type, data = null) => {
-    setModalType(type);
-    setSelectedData(data);
-    setShowModal(true);
-  };
+  // Filters
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedBlock, setSelectedBlock] = useState('Block A');
+  const [selectedClass, setSelectedClass] = useState('All Classes');
 
-  const exportData = (type) => {
-    const exportData = {
-      timestamp: new Date().toISOString(),
-      type: type,
-      data: dashboardData
-    };
-    
-    const dataStr = JSON.stringify(exportData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `chairman_${type}_report_${new Date().toISOString().split('T')[0]}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
+  // Charts data
+  const [dailyActiveUsersData, setDailyActiveUsersData] = useState(null);
+  const [weeklyActiveUsersData, setWeeklyActiveUsersData] = useState(null);
 
-  // Chart data configurations
-  const trendChartData = {
-    labels: dashboardData.studentPerformance.testLabels,
-    datasets: [
-      {
-        label: 'Average Score',
-        data: dashboardData.studentPerformance.testScoresTrend,
-        borderColor: '#4FACFE',
-        backgroundColor: 'rgba(79, 172, 254, 0.1)',
-        borderWidth: 3,
+  // Sample data for charts
+  const mockStudentNames = [
+    "Aarav Sharma", "Vivaan Singh", "Aditya Kumar", "Vihaan Gupta", 
+    "Arjun Patel", "Sai Reddy", "Reyansh Mishra", "Krishna Yadav",
+    "Ananya Sharma", "Diya Singh", "Saanvi Kumar", "Aadhya Gupta"
+  ];
+
+  const teachers = ['Dr. Reed', 'Mr. Chen', 'Ms. Desai'];
+
+  useEffect(() => {
+    loadDashboardData();
+    initializeCharts();
+  }, [selectedDate, selectedBlock, selectedClass]);
+
+  const loadDashboardData = async () => {
+    // Initialize with enhanced chart data
+    setDailyActiveUsersData({
+      labels: ['Aug 31', 'Sep 1', 'Sep 2', 'Sep 3', 'Sep 4'],
+      datasets: [{
+        label: 'Daily Active Users',
+        data: [120, 150, 180, 135, 95],
+        borderColor: 'rgba(99, 102, 241, 1)',
+        backgroundColor: (context) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+          gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
+          gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)');
+          return gradient;
+        },
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: '#4FACFE',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 3,
-        pointRadius: 6
-      }
-    ]
-  };
-
-  const gradeDistributionData = {
-    labels: Object.keys(dashboardData.studentPerformance.gradeDistribution),
-    datasets: [
-      {
-        data: Object.values(dashboardData.studentPerformance.gradeDistribution),
-        backgroundColor: [
-          '#28a745',
-          '#4FACFE', 
-          '#FFC107',
-          '#FF8C00',
-          '#FF6384',
-          '#DC3545'
-        ],
         borderWidth: 3,
-        borderColor: '#fff'
-      }
-    ]
+        pointRadius: 6,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: 'rgba(99, 102, 241, 1)',
+        pointBorderWidth: 3,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: 'rgba(99, 102, 241, 1)',
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 3
+      }]
+    });
+
+    setWeeklyActiveUsersData({
+      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+      datasets: [{
+        label: 'Weekly Active Users',
+        data: [400, 420, 510, 400, 460, 530, 440, 520],
+        backgroundColor: (context) => {
+          const colors = [
+            'rgba(99, 102, 241, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(99, 102, 241, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(99, 102, 241, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(99, 102, 241, 0.8)',
+            'rgba(139, 92, 246, 0.8)'
+          ];
+          return colors[context.dataIndex];
+        },
+        borderColor: 'transparent',
+        borderRadius: 12,
+        borderSkipped: false
+      }]
+    });
   };
 
-  const renderOverview = () => (
-    <div className="overview-section">
-      <Container fluid>
-        {/* Key Metrics Row */}
-        <Row className="mb-4">
-          <Col xl={3} md={6}>
-            <Card className="metric-card gradient-blue">
-              <Card.Body className="text-center">
-                <div className="metric-header">
-                  <h6>Total Students</h6>
-                  <Badge bg="primary" className="trend-badge">+2.3%</Badge>
-                </div>
-                <div className="metric-value">{dashboardData.overview.totalStudents}</div>
-                <small className="text-white-50">Across {dashboardData.overview.totalSections} sections</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col xl={3} md={6}>
-            <Card className="metric-card gradient-green">
-              <Card.Body className="text-center">
-                <div className="metric-header">
-                  <h6>Overall Average</h6>
-                  <Badge bg="success" className="trend-badge">+{dashboardData.overview.monthlyGrowth}%</Badge>
-                </div>
-                <div className="metric-value">{dashboardData.overview.overallAverage}%</div>
-                <small className="text-white-50">Above national average</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col xl={3} md={6}>
-            <Card className="metric-card gradient-orange">
-              <Card.Body className="text-center">
-                <div className="metric-header">
-                  <h6>Budget Utilization</h6>
-                  <Badge bg="warning" className="trend-badge">{dashboardData.overview.budgetUtilization}%</Badge>
-                </div>
-                <div className="metric-value">$85K</div>
-                <small className="text-white-50">of $125K budget</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col xl={3} md={6}>
-            <Card className="metric-card gradient-purple">
-              <Card.Body className="text-center">
-                <div className="metric-header">
-                  <h6>Avg. Engagement</h6>
-                  <Badge bg="info" className="trend-badge">High</Badge>
-                </div>
-                <div className="metric-value">{dashboardData.overview.averageEngagement}%</div>
-                <small className="text-white-50">Excellent participation</small>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+  const initializeCharts = () => {
+    // Charts are initialized in loadDashboardData
+  };
 
-        {/* Charts Row */}
-        <Row className="mb-4">
-          <Col lg={6}>
-            <Card className="chart-card">
-              <Card.Header>
-                <div className="d-flex justify-content-between align-items-center">
-                  <h5 className="me-3">📈 Performance Trend Analysis</h5>
-                  <Button size="sm" variant="outline-primary" onClick={() => exportData('performance')}>
-                    Export
-                  </Button>
-                </div>
-              </Card.Header>
-              <Card.Body>
-                <div style={{ height: '300px', position: 'relative' }}>
-                  <Line 
-                    data={trendChartData} 
-                    options={{ 
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: { 
-                          position: 'top',
-                          labels: {
-                            usePointStyle: true,
-                            padding: 20
-                          }
-                        }
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: false,
-                          grid: {
-                            color: 'rgba(0,0,0,0.1)'
-                          }
-                        },
-                        x: {
-                          grid: {
-                            display: false
-                          }
-                        }
-                      }
-                    }} 
-                  />
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col lg={6}>
-            <Card className="chart-card">
-              <Card.Header>
-                <div className="d-flex justify-content-between align-items-center">
-                  <h5 className="me-3">🎯 Grade Distribution</h5>
-                  <Button size="sm" variant="outline-success" onClick={() => exportData('grades')}>
-                    Export
-                  </Button>
-                </div>
-              </Card.Header>
-              <Card.Body>
-                <div style={{ height: '300px', position: 'relative' }}>
-                  <Doughnut 
-                    data={gradeDistributionData} 
-                    options={{ 
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: { 
-                          position: 'right',
-                          labels: {
-                            usePointStyle: true,
-                            padding: 15
-                          }
-                        }
-                      }
-                    }} 
-                  />
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Alerts and Actions Row */}
-        <Row>
-          <Col lg={8}>
-            <Card>
-              <Card.Header>
-                <h5>⚠️ Priority Alerts & Notifications</h5>
-              </Card.Header>
-              <Card.Body>
-                {dashboardData.alerts.map((alert, index) => (
-                  <div key={index} className={`alert alert-${alert.type}`}>
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div>
-                        <Badge 
-                          bg={alert.priority === 'urgent' ? 'danger' : alert.priority === 'high' ? 'warning' : alert.priority === 'medium' ? 'info' : 'success'} 
-                          className="me-2"
-                        >
-                          {alert.priority.toUpperCase()}
-                        </Badge>
-                        {alert.message}
-                        {alert.action === 'warn_teacher' && (
-                          <div className="mt-2">
-                            <Button size="sm" variant="danger" className="me-2" onClick={() => handleShowModal('warnTeacher', alert)}>
-                              SEND WARNING TO {alert.teacher}
-                            </Button>
-                            <Button size="sm" variant="warning" onClick={() => handleShowModal('interventionPlan', alert)}>
-                              CREATE INTERVENTION PLAN
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      <small className="text-muted">{alert.timestamp}</small>
-                    </div>
-                  </div>
-                ))}
-                <div className="text-center mt-3">
-                  <Button variant="outline-primary" onClick={() => handleShowModal('allAlerts')}>
-                    VIEW ALL ALERTS
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col lg={4}>
-            <Card>
-              <Card.Header>
-                <h5>⚡ Quick Actions</h5>
-              </Card.Header>
-              <Card.Body>
-                <div className="d-grid gap-2">
-                  <Button variant="primary" onClick={() => handleShowModal('generateReport')}>
-                    GENERATE EXECUTIVE REPORT
-                  </Button>
-                  <Button variant="success" onClick={() => handleShowModal('scheduleAnnouncement')}>
-                    SCHEDULE ANNOUNCEMENT
-                  </Button>
-                  <Button variant="info" onClick={() => handleShowModal('viewCalendar')}>
-                    VIEW ACADEMIC CALENDAR
-                  </Button>
-                  <Button variant="warning" onClick={() => handleShowModal('budgetOverview')}>
-                    BUDGET OVERVIEW
-                  </Button>
-                  <Button variant="secondary" onClick={() => handleShowModal('systemSettings')}>
-                    SYSTEM SETTINGS
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
-  );
-
-  const renderStudentManagement = () => (
-    <Container fluid>
-      <Row>
+  // Render different sections
+  const renderDailyReport = () => (
+    <Container fluid className="p-0">
+      <Row className="mb-4">
         <Col>
-          <Card>
-            <Card.Header>
-              <h5>📚 Section-wise Student Management</h5>
-            </Card.Header>
+          <Card className="filter-card-enhanced">
             <Card.Body>
-              <Table responsive hover>
-                <thead>
-                  <tr>
-                    <th>Section</th>
-                    <th>Students</th>
-                    <th>Teacher</th>
-                    <th>Average Score</th>
-                    <th>Subjects</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dashboardData.sections.map((section) => (
-                    <tr key={section.id}>
-                      <td><strong>{section.name}</strong></td>
-                      <td>{section.students}</td>
-                      <td>{section.teacher}</td>
-                      <td>
-                        <Badge bg={section.average >= 85 ? 'success' : section.average >= 80 ? 'warning' : 'danger'}>
-                          {section.average}%
-                        </Badge>
-                      </td>
-                      <td>{section.subjects} subjects</td>
-                      <td>
-                        <Button size="sm" variant="outline-primary" className="me-1" onClick={() => handleShowModal('sectionDetail', section)}>
-                          View
-                        </Button>
-                        <Button size="sm" variant="outline-secondary" onClick={() => handleShowModal('editSection', section)}>
-                          Edit
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+              <Row className="align-items-center">
+                <Col md={6}>
+                  <h4 className="filter-title mb-0">
+                    <span className="title-icon">📊</span>
+                    Daily Report
+                  </h4>
+                </Col>
+                <Col md={6}>
+                  <Row className="g-2">
+                    <Col md={4}>
+                      <div className="custom-select-wrapper">
+                        <Form.Label className="select-label">
+                          <i className="fas fa-calendar-day"></i> Date
+                        </Form.Label>
+                        <div className="animated-select">
+                          <Form.Control
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="custom-date-input"
+                          />
+                        </div>
+                      </div>
+                    </Col>
+                    <Col md={4}>
+                      <div className="custom-select-wrapper">
+                        <Form.Label className="select-label">
+                          <i className="fas fa-building"></i> Block
+                        </Form.Label>
+                        <div className="animated-select">
+                          <Form.Select
+                            value={selectedBlock}
+                            onChange={(e) => setSelectedBlock(e.target.value)}
+                            className="custom-select"
+                          >
+                            <option>Block A</option>
+                            <option>Block B</option>
+                          </Form.Select>
+                          <span className="select-arrow">▼</span>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col md={4}>
+                      <div className="custom-select-wrapper">
+                        <Form.Label className="select-label">
+                          <i className="fas fa-users-class"></i> Class
+                        </Form.Label>
+                        <div className="animated-select">
+                          <Form.Select
+                            value={selectedClass}
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                            className="custom-select"
+                          >
+                            <option>All Classes</option>
+                            <option>Class 8</option>
+                            <option>Class 9</option>
+                            <option>Class 10</option>
+                          </Form.Select>
+                          <span className="select-arrow">▼</span>
+                        </div>
+                      </div>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row className="g-3 mb-4">
+        <Col md={3}>
+          <Card className="metric-card-animated metric-homework">
+            <div className="metric-icon">
+              <i className="fas fa-book"></i>
+            </div>
+            <Card.Body>
+              <h6 className="metric-label">TOTAL HOMEWORKS</h6>
+              <h2 className="metric-value">{dashboardData.totalHomeworks}</h2>
+              <div className="metric-progress">
+                <div className="progress-bar" style={{ width: '75%' }}></div>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="metric-card-animated metric-classwork">
+            <div className="metric-icon">
+              <i className="fas fa-chalkboard"></i>
+            </div>
+            <Card.Body>
+              <h6 className="metric-label">TOTAL CLASSWORKS</h6>
+              <h2 className="metric-value">{dashboardData.totalClassworks}</h2>
+              <div className="metric-progress">
+                <div className="progress-bar" style={{ width: '85%' }}></div>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="metric-card-animated metric-completion">
+            <div className="metric-icon">
+              <i className="fas fa-check-circle"></i>
+            </div>
+            <Card.Body>
+              <h6 className="metric-label">OVERALL COMPLETION</h6>
+              <h2 className="metric-value">{dashboardData.overallCompletion}%</h2>
+              <div className="metric-progress">
+                <div className="progress-bar" style={{ width: `${dashboardData.overallCompletion}%` }}></div>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="metric-card-animated metric-score">
+            <div className="metric-icon">
+              <i className="fas fa-star"></i>
+            </div>
+            <Card.Body>
+              <h6 className="metric-label">OVERALL AVG. SCORE</h6>
+              <h2 className="metric-value">{dashboardData.overallScore}/10</h2>
+              <div className="metric-progress">
+                <div className="progress-bar" style={{ width: `${dashboardData.overallScore * 10}%` }}></div>
+              </div>
             </Card.Body>
           </Card>
         </Col>
@@ -427,156 +246,398 @@ const ChairmanDashboard = () => {
     </Container>
   );
 
-  const renderTeacherManagement = () => (
-    <Container fluid>
-      <Row className="mb-4">
-        {/* Teacher Performance Overview */}
-        <Col lg={12}>
-          <Card>
-            <Card.Header>
-              <div className="d-flex justify-content-between align-items-center">
-                <h5>👨‍🏫 Faculty Performance & Management</h5>
-                <Button size="sm" variant="primary" onClick={() => handleShowModal('addTeacher')}>
-                  ADD NEW TEACHER
-                </Button>
-              </div>
-            </Card.Header>
+  const renderDashboard = () => (
+    <Container fluid className="p-0">
+      <Row className="g-3 mb-4">
+        <Col md={3}>
+          <Card className="metric-card text-center">
             <Card.Body>
-              <Table responsive hover>
-                <thead>
-                  <tr>
-                    <th>Teacher Name</th>
-                    <th>Section Assigned</th>
-                    <th>Students Count</th>
-                    <th>Subjects Taught</th>
-                    <th>Avg Performance</th>
-                    <th>Engagement Rate</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dashboardData.teacherAnalytics.engagement.map((teacher, index) => {
-                    const section = dashboardData.sections.find(s => s.teacher === teacher.name);
-                    const isLowPerforming = section && section.average < 80;
-                    return (
-                      <tr key={index} className={isLowPerforming ? 'table-danger' : section?.average >= 85 ? 'table-success' : ''}>
-                        <td>
-                          <strong>{teacher.name}</strong>
-                          {isLowPerforming && (
-                            <Badge bg="danger" className="ms-2">
-                              Low Performance
-                            </Badge>
-                          )}
-                        </td>
-                        <td>{section?.name || 'Not Assigned'}</td>
-                        <td>{teacher.students}</td>
-                        <td>
-                          {teacher.subjects.map((subject, idx) => (
-                            <Badge key={idx} bg="secondary" className="me-1">
-                              {subject}
-                            </Badge>
-                          ))}
-                        </td>
-                        <td>
-                          <Badge bg={section?.average >= 85 ? 'success' : section?.average >= 80 ? 'warning' : 'danger'}>
-                            {section?.average || 'N/A'}%
-                          </Badge>
-                        </td>
-                        <td>
-                          <Badge bg={teacher.engagement >= 85 ? 'success' : teacher.engagement >= 80 ? 'warning' : 'danger'}>
-                            {teacher.engagement}%
-                          </Badge>
-                        </td>
-                        <td>
-                          {isLowPerforming ? (
-                            <Badge bg="danger">Needs Attention</Badge>
-                          ) : section?.average >= 85 ? (
-                            <Badge bg="success">Excellent</Badge>
-                          ) : (
-                            <Badge bg="warning">Good</Badge>
-                          )}
-                        </td>
-                        <td>
-                          <Button size="sm" variant="outline-primary" className="me-1" onClick={() => handleShowModal('teacherDetail', teacher)}>
-                            View
-                          </Button>
-                          {isLowPerforming && (
-                            <Button size="sm" variant="outline-danger" onClick={() => handleShowModal('warnTeacher', {...teacher, section: section?.name, performance: section?.average})}>
-                              Warn
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
+              <h6 className="text-muted mb-2 small">TOTAL STUDENTS</h6>
+              <h2 className="text-primary mb-0 fw-bold">{dashboardData.totalStudents.toLocaleString()}</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="metric-card text-center">
+            <Card.Body>
+              <h6 className="text-muted mb-2 small">AVERAGE ATTENDANCE</h6>
+              <h2 className="text-primary mb-0 fw-bold">{dashboardData.averageAttendance}%</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="metric-card text-center">
+            <Card.Body>
+              <h6 className="text-muted mb-2 small">OVERALL PERFORMANCE</h6>
+              <h2 className="text-primary mb-0 fw-bold">{dashboardData.overallPerformance}%</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="metric-card text-center">
+            <Card.Body>
+              <h6 className="text-muted mb-2 small">TEACHERS ACTIVE</h6>
+              <h2 className="text-primary mb-0 fw-bold">{dashboardData.teachersActive}</h2>
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
-      {/* Teacher Performance Charts */}
       <Row>
-        <Col lg={6}>
-          <Card>
-            <Card.Header>
-              <h5>📊 Teacher Engagement Comparison</h5>
-            </Card.Header>
+        <Col>
+          <Card className="chart-card-enhanced">
             <Card.Body>
-              <div style={{ height: '300px', position: 'relative' }}>
-                <Bar 
+              <h5 className="chart-title mb-3">
+                <span className="title-gradient">School-wide Performance Trend</span>
+              </h5>
+              <div style={{ height: '350px' }}>
+                <Line 
                   data={{
-                    labels: dashboardData.teacherAnalytics.engagement.map(t => t.name.split(' ')[0]),
-                    datasets: [
-                      {
-                        label: 'Engagement Rate',
-                        data: dashboardData.teacherAnalytics.engagement.map(t => t.engagement),
-                        backgroundColor: dashboardData.teacherAnalytics.engagement.map(t => 
-                          t.engagement >= 85 ? '#28a745' : t.engagement >= 80 ? '#ffc107' : '#dc3545'
-                        ),
-                        borderRadius: 5
-                      }
-                    ]
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                      label: 'Overall Performance %',
+                      data: [78, 81, 80, 84, 86, 88],
+                      borderColor: 'rgba(99, 102, 241, 1)',
+                      backgroundColor: (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+                        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+                        gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.2)');
+                        gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+                        return gradient;
+                      },
+                      fill: true,
+                      tension: 0.4,
+                      borderWidth: 3,
+                      pointRadius: 5,
+                      pointBackgroundColor: '#fff',
+                      pointBorderColor: 'rgba(99, 102, 241, 1)',
+                      pointBorderWidth: 2,
+                      pointHoverRadius: 7,
+                      pointHoverBackgroundColor: 'rgba(99, 102, 241, 1)',
+                      pointHoverBorderColor: '#fff',
+                      pointHoverBorderWidth: 2
+                    }]
                   }} 
-                  options={{ 
+                  options={{
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                      legend: { display: false }
+                      legend: {
+                        display: false
+                      },
+                      tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                          label: function(context) {
+                            return `Performance: ${context.parsed.y}%`;
+                          }
+                        }
+                      }
                     },
                     scales: {
                       y: {
-                        beginAtZero: true,
-                        max: 100
+                        beginAtZero: false,
+                        min: 70,
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)',
+                          drawBorder: false
+                        },
+                        ticks: {
+                          color: '#64748b',
+                          font: {
+                            size: 12
+                          },
+                          callback: function(value) {
+                            return value + '%';
+                          }
+                        }
+                      },
+                      x: {
+                        grid: {
+                          display: false
+                        },
+                        ticks: {
+                          color: '#64748b',
+                          font: {
+                            size: 12
+                          }
+                        }
                       }
                     }
-                  }} 
+                  }}
                 />
               </div>
             </Card.Body>
           </Card>
         </Col>
+      </Row>
+    </Container>
+  );
+
+  const renderEngagement = () => (
+    <Container fluid className="p-0">
+      <Row className="g-3 mb-4">
         <Col lg={6}>
-          <Card>
-            <Card.Header>
-              <h5>⚠️ Performance Alerts</h5>
-            </Card.Header>
+          <Card className="chart-card-enhanced">
             <Card.Body>
-              <div className="alert alert-danger">
-                <strong>URGENT:</strong> Michael Brown (Section C) - Performance at 79%, 6% below acceptable threshold.
-                <div className="mt-2">
-                  <Button size="sm" variant="danger" onClick={() => handleShowModal('warnTeacher', {name: 'Michael Brown', section: 'Section C', performance: 79})}>
-                    SEND FORMAL WARNING
-                  </Button>
+              <h5 className="chart-title mb-3">
+                <span className="title-gradient">Daily Active Users</span>
+              </h5>
+              {dailyActiveUsersData ? (
+                <div style={{ height: '300px' }}>
+                  <Line 
+                    data={dailyActiveUsersData} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        },
+                        tooltip: {
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          titleColor: '#fff',
+                          bodyColor: '#fff',
+                          borderColor: 'rgba(99, 102, 241, 1)',
+                          borderWidth: 1,
+                          padding: 12,
+                          displayColors: false
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                          },
+                          ticks: {
+                            color: '#64748b',
+                            font: {
+                              size: 12
+                            }
+                          }
+                        },
+                        x: {
+                          grid: {
+                            display: false
+                          },
+                          ticks: {
+                            color: '#64748b',
+                            font: {
+                              size: 12
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Spinner animation="border" />
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col lg={6}>
+          <Card className="chart-card-enhanced">
+            <Card.Body>
+              <h5 className="chart-title mb-3">
+                <span className="title-gradient">Weekly Active Users</span>
+              </h5>
+              {weeklyActiveUsersData ? (
+                <div style={{ height: '300px' }}>
+                  <Bar 
+                    data={weeklyActiveUsersData} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        },
+                        tooltip: {
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          titleColor: '#fff',
+                          bodyColor: '#fff',
+                          borderColor: 'rgba(139, 92, 246, 1)',
+                          borderWidth: 1,
+                          padding: 12,
+                          displayColors: false
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                          },
+                          ticks: {
+                            color: '#64748b',
+                            font: {
+                              size: 12
+                            }
+                          }
+                        },
+                        x: {
+                          grid: {
+                            display: false
+                          },
+                          ticks: {
+                            color: '#64748b',
+                            font: {
+                              size: 12
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Spinner animation="border" />
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col>
+          <Card className="attendance-tracker-card">
+            <Card.Body>
+              <div className="tracker-header">
+                <h5 className="tracker-title">
+                  <span className="title-icon">👥</span>
+                  Student Attendance Tracker
+                </h5>
+                <div className="tracker-stats">
+                  <div className="stat-item">
+                    <span className="stat-value">92%</span>
+                    <span className="stat-label">Today</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value">88%</span>
+                    <span className="stat-label">This Week</span>
+                  </div>
                 </div>
               </div>
-              <div className="alert alert-success">
-                <strong>EXCELLENT:</strong> Sarah Johnson maintains highest performance at 91% (Section B).
-              </div>
-              <div className="alert alert-info">
-                <strong>IMPROVEMENT:</strong> John Smith showing consistent engagement at 87%.
+              
+              <Row className="mb-4 tracker-filters">
+                <Col md={3}>
+                  <div className="filter-group">
+                    <Form.Label className="filter-label">
+                      <i className="fas fa-building"></i> Block
+                    </Form.Label>
+                    <Form.Select className="filter-select">
+                      <option>Block A</option>
+                      <option>Block B</option>
+                    </Form.Select>
+                  </div>
+                </Col>
+                <Col md={3}>
+                  <div className="filter-group">
+                    <Form.Label className="filter-label">
+                      <i className="fas fa-graduation-cap"></i> Class
+                    </Form.Label>
+                    <Form.Select className="filter-select">
+                      <option>8</option>
+                      <option>9</option>
+                      <option>10</option>
+                    </Form.Select>
+                  </div>
+                </Col>
+                <Col md={3} className="d-flex align-items-end">
+                  <Button className="submit-button">
+                    <i className="fas fa-search"></i> SEARCH
+                  </Button>
+                </Col>
+              </Row>
+              
+              <div className="attendance-table-wrapper">
+                <Table className="attendance-table">
+                  <thead>
+                    <tr>
+                      <th className="student-name-header">
+                        <i className="fas fa-user-graduate"></i> STUDENT NAME
+                      </th>
+                      <th className="day-header">MON</th>
+                      <th className="day-header">TUE</th>
+                      <th className="day-header">WED</th>
+                      <th className="day-header">THU</th>
+                      <th className="day-header">FRI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mockStudentNames.map((name, index) => (
+                      <tr key={index} className="student-row">
+                        <td className="student-name">
+                          <div className="student-avatar">
+                            {name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <span>{name}</span>
+                        </td>
+                        <td className="attendance-cell">
+                          <div className="custom-checkbox">
+                            <Form.Check 
+                              type="checkbox" 
+                              defaultChecked={Math.random() > 0.2}
+                              className="attendance-check"
+                            />
+                          </div>
+                        </td>
+                        <td className="attendance-cell">
+                          <div className="custom-checkbox">
+                            <Form.Check 
+                              type="checkbox" 
+                              defaultChecked={Math.random() > 0.2}
+                              className="attendance-check"
+                            />
+                          </div>
+                        </td>
+                        <td className="attendance-cell">
+                          <div className="custom-checkbox">
+                            <Form.Check 
+                              type="checkbox" 
+                              defaultChecked={Math.random() > 0.2}
+                              className="attendance-check"
+                            />
+                          </div>
+                        </td>
+                        <td className="attendance-cell">
+                          <div className="custom-checkbox">
+                            <Form.Check 
+                              type="checkbox" 
+                              defaultChecked={Math.random() > 0.2}
+                              className="attendance-check"
+                            />
+                          </div>
+                        </td>
+                        <td className="attendance-cell">
+                          <div className="custom-checkbox">
+                            <Form.Check 
+                              type="checkbox" 
+                              defaultChecked={Math.random() > 0.2}
+                              className="attendance-check"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
               </div>
             </Card.Body>
           </Card>
@@ -585,229 +646,231 @@ const ChairmanDashboard = () => {
     </Container>
   );
 
-  const renderModal = () => (
-    <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>
-          {modalType === 'generateReport' && 'Generate Executive Report'}
-          {modalType === 'budgetOverview' && 'Budget Overview'}
-          {modalType === 'sectionDetail' && `Section Details - ${selectedData?.name}`}
-          {modalType === 'teacherDetail' && `Teacher Profile - ${selectedData?.name}`}
-          {modalType === 'warnTeacher' && `Performance Warning - ${selectedData?.name}`}
-          {modalType === 'interventionPlan' && `Intervention Plan - ${selectedData?.section}`}
-          {modalType === 'allAlerts' && 'All System Alerts'}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {modalType === 'generateReport' && (
-          <Form>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Report Type</Form.Label>
-                  <Form.Select>
-                    <option>Executive Summary</option>
-                    <option>Performance Analysis</option>
-                    <option>Financial Report</option>
-                    <option>Teacher Effectiveness</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Time Period</Form.Label>
-                  <Form.Select>
-                    <option>This Month</option>
-                    <option>Last 3 Months</option>
-                    <option>This Semester</option>
-                    <option>This Year</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
-          </Form>
-        )}
-        
-        {modalType === 'budgetOverview' && (
-          <Row>
-            <Col md={4}>
-              <Card className="text-center mb-3">
-                <Card.Body>
-                  <h4 className="text-primary">$125,000</h4>
-                  <small className="text-muted">Total Budget</small>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={4}>
-              <Card className="text-center mb-3">
-                <Card.Body>
-                  <h4 className="text-warning">$85,000</h4>
-                  <small className="text-muted">Spent</small>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={4}>
-              <Card className="text-center mb-3">
-                <Card.Body>
-                  <h4 className="text-success">$40,000</h4>
-                  <small className="text-muted">Remaining</small>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        )}
+  const renderTeacherAnalytics = () => {
+    const workloadData = {
+      labels: teachers,
+      datasets: [
+        {
+          label: 'Homeworks',
+          data: [15, 12, 18],
+          backgroundColor: '#3b82f6'
+        },
+        {
+          label: 'Classworks',
+          data: [30, 25, 35],
+          backgroundColor: '#8b5cf6'
+        }
+      ]
+    };
 
-        {modalType === 'sectionDetail' && selectedData && (
-          <div>
-            <p><strong>Section:</strong> {selectedData.name}</p>
-            <p><strong>Students:</strong> {selectedData.students}</p>
-            <p><strong>Teacher:</strong> {selectedData.teacher}</p>
-            <p><strong>Average Score:</strong> {selectedData.average}%</p>
-            <p><strong>Subjects:</strong> {selectedData.subjects}</p>
-          </div>
-        )}
+    const performanceData = {
+      labels: teachers,
+      datasets: [
+        {
+          label: 'HW Performance',
+          data: [88, 85, 90],
+          backgroundColor: '#10b981'
+        },
+        {
+          label: 'CW Performance',
+          data: [92, 89, 94],
+          backgroundColor: '#60a5fa'
+        }
+      ]
+    };
 
-        {modalType === 'teacherDetail' && selectedData && (
-          <div>
-            <p><strong>Teacher:</strong> {selectedData.name}</p>
-            <p><strong>Students:</strong> {selectedData.students}</p>
-            <p><strong>Subjects:</strong> {selectedData.subjects.join(', ')}</p>
-            <p><strong>Engagement Rate:</strong> {selectedData.engagement}%</p>
-          </div>
-        )}
+    const interventionData = {
+      labels: ['Taking Action', 'No Action'],
+      datasets: [{
+        data: [35, 13],
+        backgroundColor: ['#22c55e', '#ef4444'],
+        hoverOffset: 4
+      }]
+    };
 
-        {modalType === 'warnTeacher' && selectedData && (
-          <div className="alert alert-danger">
-            <h6>Performance Warning Notice</h6>
-            <p><strong>Teacher:</strong> {selectedData.name}</p>
-            <p><strong>Section:</strong> {selectedData.section}</p>
-            <p><strong>Current Performance:</strong> {selectedData.performance}%</p>
-            <p><strong>Issue:</strong> Performance significantly below institutional standards (85% minimum).</p>
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Warning Type</Form.Label>
-                <Form.Select>
-                  <option>Formal Written Warning</option>
-                  <option>Performance Improvement Plan</option>
-                  <option>Final Warning</option>
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Additional Comments</Form.Label>
-                <Form.Control as="textarea" rows={3} placeholder="Enter specific concerns and improvement expectations..." />
-              </Form.Group>
-            </Form>
-          </div>
-        )}
+    return (
+      <Container fluid className="p-0">
+        <Row className="mb-4">
+          <Col>
+            <Card>
+              <Card.Body>
+                <h5 className="mb-3">Workload Distribution</h5>
+                <div style={{ height: '300px' }}>
+                  <Bar 
+                    data={workloadData} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false
+                    }}
+                  />
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
-        {modalType === 'interventionPlan' && selectedData && (
-          <div>
-            <h6>Academic Intervention Plan</h6>
-            <p><strong>Section:</strong> {selectedData.section}</p>
-            <p><strong>Teacher:</strong> {selectedData.teacher}</p>
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Intervention Type</Form.Label>
-                <Form.Select>
-                  <option>Additional Teaching Support</option>
-                  <option>Student Tutoring Program</option>
-                  <option>Curriculum Modification</option>
-                  <option>Teacher Training</option>
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Timeline</Form.Label>
-                <Form.Select>
-                  <option>2 Weeks</option>
-                  <option>1 Month</option>
-                  <option>2 Months</option>
-                  <option>End of Semester</option>
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          </div>
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={() => setShowModal(false)}>
-          Close
-        </Button>
-        {modalType === 'generateReport' && (
-          <Button variant="success">Download Report</Button>
-        )}
-        {modalType === 'warnTeacher' && (
-          <>
-            <Button variant="warning">Send Warning Email</Button>
-            <Button variant="danger">Issue Formal Warning</Button>
-          </>
-        )}
-        {modalType === 'interventionPlan' && (
-          <Button variant="primary">Create Intervention Plan</Button>
-        )}
-      </Modal.Footer>
-    </Modal>
+        <Row className="g-3">
+          <Col lg={8}>
+            <Card>
+              <Card.Body>
+                <h5 className="mb-3">Performance vs Work Type</h5>
+                <div style={{ height: '250px' }}>
+                  <Bar 
+                    data={performanceData} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false
+                    }}
+                  />
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={4}>
+            <Card className="text-center">
+              <Card.Body>
+                <h5 className="mb-3">Low-Performer Intervention</h5>
+                <div style={{ height: '200px', display: 'flex', justifyContent: 'center' }}>
+                  <Doughnut 
+                    data={interventionData} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false
+                    }}
+                  />
+                </div>
+                <p className="text-muted mt-3 small">Percentage of teachers taking action</p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    );
+  };
+
+  const renderChatbot = () => (
+    <Container fluid className="p-0">
+      <Row>
+        <Col>
+          <Card>
+            <Card.Body>
+              <div style={{ height: '400px', overflowY: 'auto', backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1rem' }}>
+                <div className="d-flex justify-content-start mb-3">
+                  <div className="bg-secondary text-white p-2 rounded" style={{ maxWidth: '70%' }}>
+                    Hello! How can I help you with the school data today?
+                  </div>
+                </div>
+              </div>
+              
+              <Row className="g-2 mb-3">
+                <Col md={6}>
+                  <Button variant="outline-primary" size="sm" className="w-100">
+                    Best progress by class?
+                  </Button>
+                </Col>
+                <Col md={6}>
+                  <Button variant="outline-primary" size="sm" className="w-100">
+                    Which teacher gives the most homework?
+                  </Button>
+                </Col>
+                <Col md={6}>
+                  <Button variant="outline-primary" size="sm" className="w-100">
+                    Who is missing homework regularly?
+                  </Button>
+                </Col>
+                <Col md={6}>
+                  <Button variant="outline-primary" size="sm" className="w-100">
+                    Top performing students this week?
+                  </Button>
+                </Col>
+              </Row>
+              
+              <div className="input-group">
+                <Form.Control
+                  type="text"
+                  placeholder="Ask a question..."
+                />
+                <Button variant="primary">Send</Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'daily-report': return renderDailyReport();
+      case 'dashboard': return renderDashboard();
+      case 'engagement': return renderEngagement();
+      case 'teacher-analytics': return renderTeacherAnalytics();
+      case 'chatbot': return renderChatbot();
+      default: return renderDailyReport();
+    }
+  };
+
   return (
-    <div className="chairman-dashboard">
-      {/* Dashboard Content - Removed fixed header to prevent overlap */}
-      <div className="dashboard-content">
-        <div className="dashboard-header">
-          <h2>Chairman Executive Dashboard</h2>
-          <p>Comprehensive institutional oversight and management</p>
+    <div className="chairman-dashboard-wrapper">
+      <div className="sidebar-container">
+        <div className="sidebar">
+          <div className="sidebar-header">
+            <h4>Chairman Panel</h4>
+          </div>
+          
+          <div className="sidebar-menu">
+            <button
+              className={`sidebar-item ${activeTab === 'daily-report' ? 'active' : ''}`}
+              onClick={() => setActiveTab('daily-report')}
+            >
+              <i className="fas fa-chart-line me-2"></i>
+              Daily Report
+            </button>
+            <button
+              className={`sidebar-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              <i className="fas fa-tachometer-alt me-2"></i>
+              Dashboard
+            </button>
+            <button
+              className={`sidebar-item ${activeTab === 'engagement' ? 'active' : ''}`}
+              onClick={() => setActiveTab('engagement')}
+            >
+              <i className="fas fa-users me-2"></i>
+              Engagement
+            </button>
+            <button
+              className={`sidebar-item ${activeTab === 'teacher-analytics' ? 'active' : ''}`}
+              onClick={() => setActiveTab('teacher-analytics')}
+            >
+              <i className="fas fa-chalkboard-teacher me-2"></i>
+              Teacher Analytics
+            </button>
+            <button
+              className={`sidebar-item ${activeTab === 'chatbot' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chatbot')}
+            >
+              <i className="fas fa-robot me-2"></i>
+              Chatbot
+            </button>
+          </div>
         </div>
-
-        {/* Navigation Tabs */}
-        <Nav variant="tabs" className="mb-4">
-          <Nav.Item>
-            <Nav.Link 
-              active={activeTab === 'overview'} 
-              onClick={() => setActiveTab('overview')}
-            >
-              Executive Overview
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link 
-              active={activeTab === 'students'} 
-              onClick={() => setActiveTab('students')}
-            >
-              Student Management
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link 
-              active={activeTab === 'teachers'} 
-              onClick={() => setActiveTab('teachers')}
-            >
-              Faculty Management
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link 
-              active={activeTab === 'reports'} 
-              onClick={() => setActiveTab('reports')}
-            >
-              Executive Reports
-            </Nav.Link>
-          </Nav.Item>
-        </Nav>
-
-        {/* Tab Content */}
-        {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'students' && renderStudentManagement()}
-        {activeTab === 'teachers' && renderTeacherManagement()}
-        {activeTab === 'reports' && (
-          <Container fluid>
-            <div className="text-center p-5">
-              <h3>Executive Reports</h3>
-              <p>Advanced reporting and analytics dashboard coming soon.</p>
-            </div>
-          </Container>
-        )}
       </div>
 
-      {renderModal()}
+      <div className="main-content-container">
+        <div className="content-header-fixed">
+          <h2>School Performance Analytics</h2>
+          <p>Comprehensive insights and management dashboard</p>
+        </div>
+
+        {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
+        {success && <Alert variant="success" dismissible onClose={() => setSuccess('')}>{success}</Alert>}
+
+        <div className="content-body">
+          {renderContent()}
+        </div>
+      </div>
     </div>
   );
 };

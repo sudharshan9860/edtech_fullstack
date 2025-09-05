@@ -70,7 +70,7 @@ const Layout = ({ children }) => {
     <div id="main-content" className="d-flex flex-column min-vh-100">
       <Navbar expand="lg" className="custom-navbar">
         <Container fluid>
-          <Navbar.Brand className="h3 text-white">Dashboard</Navbar.Brand>
+          <Navbar.Brand className="h3 text-white">Smart Learners</Navbar.Brand>
           <Navbar.Toggle aria-controls="offcanvasNavbar" />
           <Navbar.Offcanvas id="offcanvasNavbar" placement="end">
             <Offcanvas.Header closeButton>

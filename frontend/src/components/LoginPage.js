@@ -37,47 +37,52 @@ function LoginPage() {
   }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      const response = await axiosInstance.login(username, password);
+  try {
+    const response = await axiosInstance.login(username, password);
 
-      const {
-        access,
-        refresh,
-        username: user,
-        role,
-        email,
-        full_name,
-        class_name,
-      } = response;
+    const {
+      access,
+      refresh,
+      username: user,
+      role,
+      email,
+      full_name,
+      class_name,
+    } = response;
 
-      // Extra user info (tokens already set by axiosInstance.login)
-      localStorage.setItem("username", user);
-      localStorage.setItem("fullName", full_name || "");
-      if (class_name) {
-        localStorage.setItem("className", class_name);
-      }
+    // Extra user info (tokens already set by axiosInstance.login)
+    localStorage.setItem("username", user);
+    localStorage.setItem("role", role);
+    localStorage.setItem("fullName", full_name || "");
+    if (class_name) {
+      localStorage.setItem("className", class_name);
+    }
 
-      // Update auth context
-      login(user, access, role, class_name);
+    // Update auth context
+    login(user, access, role, class_name);
 
-      // Navigate based on role
-      if (role === "teacher") {
+     // Navigate based on role
+      if (role === "admin") {
+        navigate("/chairman-dashboard");
+      } else if (role === "teacher") {
         navigate("/teacher-dash");
       } else {
         navigate("/student-dash");
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError(
-        err.response?.data?.detail ||
-          err.message ||
-          "Invalid username or password."
-      );
-    }
-  };
+
+  } catch (err) {
+    console.error("Login error:", err);
+    setError(
+      err.response?.data?.detail ||
+        err.message ||
+        "Invalid username or password."
+    );
+  }
+};
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

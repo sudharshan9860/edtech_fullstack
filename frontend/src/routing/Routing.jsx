@@ -7,6 +7,7 @@ import SolveQuestion from '../components/SolveQuestion';
 import ResultPage from '../components/ResultPage';
 import SignupPage from '../components/SignupPage';
 import PrivateRoute from '../components/PrivateRoute';
+import AdminRoute from '../components/AdminRoute'; // New admin route component
 import Layout from '../components/Layout';
 import QuestionListModal from '../components/QuestionListModal';
 import Analytics from '../components/Analytics';
@@ -19,7 +20,7 @@ import HomeworkSubmissionForm from '../components/HomeworkSubmissionForm';
 import StudentGapAnalysisReport from '../components/StudentGapAnalysisReport';
 import WorksheetSubmission from '../components/WorksheetSubmission';
 import StudentAnalysisWrapper from '../components/StudentAnalysisWrapper';
-import ChairmanDashboard from '../components/ChairmanDashboard';
+import ChairmanDashboard from '../components/ChairmanDashboard'; // New Chairman Dashboard
 
 const AppRoutes = () => {
   return (
@@ -27,6 +28,16 @@ const AppRoutes = () => {
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      
+      {/* Chairman Dashboard - Admin Only Route */}
+      <Route
+        path="/chairman-dashboard"
+        element={
+          <AdminRoute>
+            <ChairmanDashboard />
+          </AdminRoute>
+        }
+      />
       
       <Route
         path="/student-dash"
@@ -50,22 +61,13 @@ const AppRoutes = () => {
         }
       />
 
-      <Route        
-        path="/chairman-dash"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <ChairmanDashboard />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route path="/worksheet-submission" element={<PrivateRoute>
-            <Layout>
-              <WorksheetSubmission />
-            </Layout>
-          </PrivateRoute>} />
+      <Route path="/worksheet-submission" element={
+        <PrivateRoute>
+          <Layout>
+            <WorksheetSubmission />
+          </Layout>
+        </PrivateRoute>
+      } />
 
       <Route
         path="/solvequestion"
@@ -77,6 +79,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/progress-dashboard"
         element={
@@ -87,6 +90,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/questionlistmodal"
         element={
@@ -97,6 +101,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/resultpage"
         element={
@@ -107,6 +112,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/similar-questions"
         element={
@@ -117,6 +123,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/student-analysis"
         element={
@@ -160,6 +167,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/gap-analysis-report"
         element={
@@ -170,7 +178,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-      {/* Add the new Quests route */}
+      
       <Route
         path="/quests"
         element={
