@@ -30,13 +30,13 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignupPage />} />
       
       {/* Chairman Dashboard - Admin Only Route */}
-      <Route
-        path="/chairman-dashboard"
+       <Route 
+        path="/chairman-dashboard" 
         element={
           <AdminRoute>
             <ChairmanDashboard />
           </AdminRoute>
-        }
+        } 
       />
       
       <Route
